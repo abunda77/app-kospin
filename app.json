@@ -4,16 +4,21 @@
     "slug": "AppKospin",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo_icon.png",
+    "icon": "./assets/images/logo_icon_mobile_300.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logo_mobile_300.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo_icon.png",
+        "foregroundImage": "./assets/images/logo_mobile_1024.png",
         "backgroundColor": "#ffffff"
       }
     },
@@ -27,15 +32,16 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo_icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "image": "./assets/images/logo_mobile_300.png",
+          "imageWidth": 100,
+          "backgroundColor": "#0066AE",
+          "resizeMode": "contain"
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "tsconfigPaths": true
     }
   }
 }
