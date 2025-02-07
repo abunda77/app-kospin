@@ -1,7 +1,14 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
+import { Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import "../globals.css";
+import Animated, { 
+  useAnimatedStyle, 
+  withTiming, 
+  withSpring,
+  useSharedValue
+} from 'react-native-reanimated';
+import { useState } from 'react';
 
 interface MenuItem {
   id: number;
@@ -19,6 +26,39 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function HomeScreen() {
+  const [showLogin, setShowLogin] = useState(false);
+  const formHeight = useSharedValue(0);
+  const formOpacity = useSharedValue(0);
+  const loginContainerOpacity = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      height: formHeight.value,
+      opacity: formOpacity.value,
+      overflow: 'hidden',
+    };
+  });
+
+  const loginContainerStyle = useAnimatedStyle(() => {
+    return {
+      opacity: loginContainerOpacity.value,
+    };
+  });
+
+  const toggleLoginForm = () => {
+    if (!showLogin) {
+      setShowLogin(true);
+      formHeight.value = withSpring(280);
+      formOpacity.value = withTiming(1, { duration: 300 });
+      loginContainerOpacity.value = withTiming(0, { duration: 200 });
+    } else {
+      formHeight.value = withSpring(0);
+      formOpacity.value = withTiming(0, { duration: 200 });
+      loginContainerOpacity.value = withTiming(1, { duration: 300 });
+      setTimeout(() => setShowLogin(false), 300);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -41,10 +81,10 @@ export default function HomeScreen() {
 
           {/* Promo Banner */}
           <View style={styles.promoBanner}>
-            <Image 
-              source={require("@/assets/images/promo-banner.png")} 
+           <Image 
+              source={require("@/assets/images/banner_promo_mobile.png")} 
               style={styles.promoBannerImage}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </View>
         </View>
@@ -72,14 +112,74 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Login Button */}
-      <View style={styles.loginContainer}>
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginText}>Login</Text>
+      <Animated.View style={[styles.loginContainer, loginContainerStyle]}>
+        <TouchableOpacity 
+          style={[
+            styles.loginButton, 
+            showLogin && styles.loginButtonActive,
+            { justifyContent: 'center', alignItems: 'center' }
+          ]} 
+          onPress={toggleLoginForm}
+        >
+          <Text style={[styles.loginText, { color: '#fff' }]}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.biometricButton}>
+        {/* <TouchableOpacity 
+          style={[
+            styles.biometricButton,
+            { justifyContent: 'center', alignItems: 'center' }
+          ]}
+        >
           <Ionicons name="finger-print" size={28} color="#0066AE" />
+        </TouchableOpacity> */}
+      </Animated.View>
+
+      {/* Login Form Overlay */}
+      {showLogin && (
+        <TouchableOpacity 
+          style={styles.overlay} 
+          onPress={toggleLoginForm}
+          activeOpacity={1}
+        >
+          <TouchableOpacity 
+            style={styles.loginForm} 
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={toggleLoginForm}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+            <Text style={styles.loginHeader}>Silakan Login</Text>
+            
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput 
+                placeholder="Username"
+                style={styles.input}
+                placeholderTextColor="#999"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput 
+                placeholder="Password"
+                secureTextEntry
+                style={styles.input}
+                placeholderTextColor="#999"
+              />
+            </View>
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.submitButton}>
+              <Text style={styles.submitButtonText}>Masuk</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </TouchableOpacity>
-      </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -90,7 +190,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#0066Ae',
+    //backgroundColor: '#ff9900',
     padding: 16,
     paddingTop: 40,
   },
@@ -136,14 +237,13 @@ const styles = StyleSheet.create({
   },
   promoBanner: {
     width: '100%',
-    height: 200,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 10,
+    height: 'auto',
+    marginHorizontal: -16,
+    marginBottom: -16,
   },
   promoBannerImage: {
-    width: '100%',
-    height: '100%',
+    width: '110%',
+    height: 350,
   },
   fastMenuSection: {
     padding: 16,
@@ -151,7 +251,7 @@ const styles = StyleSheet.create({
   fastMenuHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 13,
   },
   fastMenuTitle: {
     fontSize: 18,
@@ -186,24 +286,88 @@ const styles = StyleSheet.create({
   loginContainer: {
     flexDirection: 'row',
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 0,  
     backgroundColor: '#fff',
-    borderTopWidth: 1,
+    borderTopWidth: 0,
     borderTopColor: '#eee',
   },
   loginButton: {
-    flex: 1,
     backgroundColor: '#0066AE',
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 15,
+    borderRadius: 8,
+    flex: 1,
+  },
+  loginButtonActive: {
+    backgroundColor: '#004c8c',
   },
   loginText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginForm: {
+    backgroundColor: '#fff',
+    padding: 24,
+    margin: 16,
+    borderRadius: 16,
+    elevation: 6,
+    width: '85%',
+    maxWidth: 400,
+  },
+  loginHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    height: 48,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    height: '100%',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: '#0066AE',
+    fontSize: 14,
+  },
+  submitButton: {
+    backgroundColor: '#0066AE',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   biometricButton: {
     width: 50,
@@ -212,5 +376,12 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    zIndex: 1,
   },
 });
