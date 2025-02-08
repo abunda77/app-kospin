@@ -18,15 +18,14 @@ interface MenuItem {
   id: number;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
-  route: "/(tabs)/qris" | "/(tabs)/brizzi" | "/(tabs)/ewallet" | "/(tabs)/explore";
+  route: "/(tabs)/qris" | "/(tabs)/mutasi" | "/(tabs)/aktivitas" | "/(tabs)/akun";
 }
 
 const menuItems: MenuItem[] = [
-  { id: 1, icon: 'card', label: 'QRIS', route: '/(tabs)/qris' },
-  { id: 2, icon: 'wallet', label: 'BRIZZI', route: '/(tabs)/brizzi' },
-  { id: 3, icon: 'cash', label: 'E Wallet', route: '/(tabs)/ewallet' },
-  { id: 4, icon: 'phone-portrait', label: 'BRIVA', route: '/(tabs)/explore' },
-  { id: 5, icon: 'swap-horizontal', label: 'Transfer', route: '/(tabs)/explore' },
+  { id: 1, icon: 'qr-code-outline', label: 'QRIS', route: '/(tabs)/qris' },
+  { id: 2, icon: 'document-text-outline', label: 'Mutasi', route: '/(tabs)/mutasi' },
+  { id: 3, icon: 'mail-outline', label: 'Aktivitas', route: '/(tabs)/aktivitas' },
+  { id: 4, icon: 'person-outline', label: 'Akun', route: '/(tabs)/akun' },
 ];
 
 export default function HomeScreen() {
@@ -253,21 +252,38 @@ export default function HomeScreen() {
         {/* Fast Menu Section */}
         <View style={styles.fastMenuSection}>
           <View style={styles.fastMenuHeader}>
-            <Text style={styles.fastMenuTitle}>Fast Menu</Text>
+            <Text style={styles.fastMenuTitle}>Fasilitas  </Text>
             <Ionicons name="information-circle-outline" size={20} color="#666" />
           </View>
           
           <View style={styles.menuGrid}>
-            {menuItems.map((item) => (
-              <Link href={item.route} key={item.id} asChild>
-                <TouchableOpacity style={styles.menuItem}>
-                  <View style={styles.menuIconContainer}>
-                    <Ionicons name={item.icon} size={24} color="#0066AE" />
-                  </View>
-                  <Text style={styles.menuLabel}>{item.label}</Text>
-                </TouchableOpacity>
-              </Link>
-            ))}
+            <TouchableOpacity style={styles.menuItem}>
+              <View style={styles.menuIconContainer}>
+                <Ionicons name="wallet-outline" size={24} color="#0066AE" />
+              </View>
+              <Text style={styles.menuLabel}>Tabungan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <View style={styles.menuIconContainer}>
+                <Ionicons name="trending-up-outline" size={24} color="#0066AE" />
+              </View>
+              <Text style={styles.menuLabel}>Deposito</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <View style={styles.menuIconContainer}>
+                <Ionicons name="cash-outline" size={24} color="#0066AE" />
+              </View>
+              <Text style={styles.menuLabel}>Kredit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <View style={styles.menuIconContainer}>
+                <Ionicons name="diamond-outline" size={24} color="#0066AE" />
+              </View>
+              <Text style={styles.menuLabel}>Gadai</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

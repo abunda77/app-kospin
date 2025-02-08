@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -19,12 +20,12 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (error) console.error('Error loading fonts:', error);
+    if (error) console.error(error);
   }, [error]);
 
-  const onLayoutRootView = useCallback(async () => {
+  useEffect(() => {
     if (loaded) {
-      await SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }, [loaded]);
 
@@ -34,9 +35,10 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <View style={{ flex: 1 }}>
         <Slot />
-        <StatusBar style="auto" />
+        <Toast />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </View>
     </ThemeProvider>
   );
