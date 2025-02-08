@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -43,13 +43,9 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: '#0066AE',
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e5e5',
-          height: 60,
-          paddingBottom: 5,
-        },
+        tabBarStyle: styles.tabBar,
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarLabelStyle: styles.tabBarLabel,
       }}>
       <Tabs.Screen
         name="index"
@@ -105,3 +101,33 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e5e5',
+    height: Platform.OS === 'ios' ? 85 : 65,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+    paddingTop: 5,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  tabBarItem: {
+    paddingVertical: 5,
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  }
+});
