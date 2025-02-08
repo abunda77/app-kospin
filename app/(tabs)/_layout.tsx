@@ -1,9 +1,43 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      console.log('Current auth token:', token);
+      setIsLoggedIn(!!token);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    }
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: '#0066AE',
+          headerShown: false,
+          tabBarStyle: {
+            display: 'none'
+          },
+        }}>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="dashboard" options={{ href: null }} />
+      </Tabs>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -20,24 +54,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={24} color={color} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen
         name="dashboard"
         options={{
-          tabBarStyle: { display: 'none' },
-          tabBarItemStyle: { display: 'none' },
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          tabBarStyle: { display: 'none' },
-          tabBarItemStyle: { display: 'none' },
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen

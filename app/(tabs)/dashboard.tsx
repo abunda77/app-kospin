@@ -1,10 +1,27 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
+
+interface MenuItem {
+  id: number;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  route: string;
+  color: string;
+}
+
+const menuItems: MenuItem[] = [
+  { id: 1, title: 'Transfer', icon: 'arrow-forward-outline', route: '/transfer', color: '#4CAF50' },
+  { id: 2, title: 'Tarik Tunai', icon: 'cash-outline', route: '/tarik-tunai', color: '#2196F3' },
+  { id: 3, title: 'Setor Tunai', icon: 'wallet-outline', route: '/setor-tunai', color: '#9C27B0' },
+  { id: 4, title: 'Pembayaran', icon: 'card-outline', route: '/pembayaran', color: '#FF9800' },
+  { id: 5, title: 'Pinjaman', icon: 'briefcase-outline', route: '/pinjaman', color: '#F44336' },
+  { id: 6, title: 'Simpanan', icon: 'save-outline', route: '/simpanan', color: '#009688' },
+];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -13,16 +30,26 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    checkAuthAndFetchData();
+  }, []);
+
+  const checkAuthAndFetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        router.replace('/(tabs)');
+        return;
+      }
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         const { name } = JSON.parse(userData);
         setUserName(name);
       }
-    };
-
-    fetchUserData();
-  }, []);
+    } catch (error) {
+      console.log('Error checking auth:', error);
+      router.replace('/(tabs)');
+    }
+  };
 
   const handleLogoutConfirmation = () => {
     setIsLogoutModalVisible(true);
@@ -32,6 +59,8 @@ export default function Dashboard() {
     setIsLogoutModalVisible(false);
     try {
       const token = await AsyncStorage.getItem('userToken');
+      console.log('Attempting logout with token:', token);
+      
       const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
         method: 'POST',
         headers: {
@@ -42,7 +71,7 @@ export default function Dashboard() {
       });
 
       const data = await response.json();
-      console.log('(NOBRIDGE) LOG Response data:', JSON.stringify(data));
+      console.log('Logout response:', data);
       
       if (data.status === 'success' || response.ok) {
         await AsyncStorage.removeItem('userToken');
@@ -57,28 +86,36 @@ export default function Dashboard() {
         throw new Error(data.message || 'Gagal melakukan logout');
       }
     } catch (error: any) {
+      console.error('Logout error:', error);
       Toast.show({
         type: 'error',
         text1: 'Error',
         text2: error.message || 'Gagal melakukan logout'
       });
-      console.error(error);
     }
   };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    const fetchUserData = async () => {
-      const userData = await AsyncStorage.getItem('userData');
-      if (userData) {
-        const { name } = JSON.parse(userData);
-        setUserName(name);
-      }
-    };
-    fetchUserData().finally(() => {
+    checkAuthAndFetchData().finally(() => {
       setRefreshing(false);
     });
   }, []);
+
+  const handleMenuPress = (route: string) => {
+    router.push(route);
+  };
+
+  const renderMenuItem = (item: MenuItem) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.menuItem, { backgroundColor: item.color }]}
+      onPress={() => handleMenuPress(item.route)}
+    >
+      <Ionicons name={item.icon} size={32} color="#fff" />
+      <Text style={styles.menuText}>{item.title}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -113,11 +150,15 @@ export default function Dashboard() {
             <Text style={styles.cardTitle}>Saldo Anda</Text>
             <Text style={styles.balance}>Rp 1.000.000</Text>
           </View>
+
+          <View style={styles.menuGrid}>
+            {menuItems.map(renderMenuItem)}
+          </View>
         </View>
-        <Toast />
+
         <Modal
-          animationType="slide"
           transparent={true}
+          animationType="slide"
           visible={isLogoutModalVisible}
           onRequestClose={() => setIsLogoutModalVisible(false)}
         >
@@ -127,14 +168,14 @@ export default function Dashboard() {
               <Text style={styles.modalText}>Apakah Anda yakin ingin logout?</Text>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonCancel]}
                   onPress={() => setIsLogoutModalVisible(false)}
+                  style={[styles.modalButton, styles.modalButtonCancel]}
                 >
                   <Text style={styles.modalButtonText}>Batal</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonConfirm]}
                   onPress={handleLogout}
+                  style={[styles.modalButton, styles.modalButtonConfirm]}
                 >
                   <Text style={styles.modalButtonText}>Logout</Text>
                 </TouchableOpacity>
@@ -142,10 +183,14 @@ export default function Dashboard() {
             </View>
           </View>
         </Modal>
+        <Toast />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const { width } = Dimensions.get('window');
+const menuItemWidth = (width - 60) / 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -163,12 +208,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-
   welcomeText: {
-    fontSize: 18,
     fontWeight: 'bold',
+    fontSize: 18,
     color: '#fff',
-    // padding: 10,
     overflow: 'hidden',
   },
   subText: {
@@ -191,6 +234,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    marginBottom: 20,
   },
   cardTitle: {
     fontSize: 16,
@@ -203,6 +247,36 @@ const styles = StyleSheet.create({
     color: '#0066AE',
     marginTop: 5,
   },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  menuItem: {
+    width: menuItemWidth,
+    height: 100,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  menuText: {
+    color: '#fff',
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -211,12 +285,12 @@ const styles = StyleSheet.create({
     top: 20,
     padding: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 0, 0, 0.75)', // Red with 80% opacity
+    backgroundColor: 'rgba(255, 0, 0, 0.75)',
   },
   logoutText: {
-    color: '#fff',
     marginLeft: 8,
     fontSize: 16,
+    color: '#fff',
   },
   modalContainer: {
     flex: 1,
