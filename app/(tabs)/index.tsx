@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput } from "react-native";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Platform, RefreshControl } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import "../globals.css";
@@ -8,7 +9,10 @@ import Animated, {
   withSpring,
   useSharedValue
 } from 'react-native-reanimated';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 
 interface MenuItem {
   id: number;
@@ -27,9 +31,160 @@ const menuItems: MenuItem[] = [
 
 export default function HomeScreen() {
   const [showLogin, setShowLogin] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    username: '',
+    password: ''
+  });
+  const router = useRouter();
   const formHeight = useSharedValue(0);
   const formOpacity = useSharedValue(0);
   const loginContainerOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (token) {
+        setIsLoggedIn(true);
+        router.replace('/dashboard');
+      } else {
+        setIsLoggedIn(false);
+        setUsername('');
+        setPassword('');
+        setShowLogin(false);
+      }
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUsername('');
+      setPassword('');
+      setShowLogin(false);
+    }
+  };
+
+  const handleLoginPress = () => {
+    setShowLogin(true);
+    formHeight.value = withSpring(400);
+    formOpacity.value = withSpring(1);
+    loginContainerOpacity.value = withSpring(0);
+  };
+
+  const handleLoginCancel = () => {
+    setShowLogin(false);
+    formHeight.value = withSpring(0);
+    formOpacity.value = withSpring(0);
+    loginContainerOpacity.value = withSpring(1);
+  };
+
+  const validateForm = () => {
+    const errors = {
+      username: '',
+      password: ''
+    };
+    let isValid = true;
+
+    if (!username.trim()) {
+      errors.username = 'Username harus diisi';
+      isValid = false;
+    }
+
+    if (!password.trim()) {
+      errors.password = 'Password harus diisi';
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validasi Gagal',
+        text2: 'Silakan isi semua field yang diperlukan',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const API_URL = `${getApiBaseUrl()}${API_ENDPOINTS.LOGIN}`;
+      console.log('Attempting login to:', API_URL);
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password
+        })
+      });
+
+      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', data);
+      
+      if (response.ok) {
+        if (!data.data?.token) {
+          throw new Error('Token tidak ditemukan dalam response');
+        }
+        
+        const { token, user } = data.data;
+        await AsyncStorage.setItem('userToken', token);
+        // Simpan data user juga untuk digunakan nanti
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
+        
+        Toast.show({
+          type: 'success',
+          text1: 'Login Berhasil',
+          text2: `Selamat datang kembali, ${user.name}!`
+        });
+        setIsLoggedIn(true);
+        router.replace('/dashboard');
+      } else {
+        const errorMessage = Platform.OS !== 'web' 
+          ? `Error: ${response.status}\nURL: ${API_URL}\nMessage: ${data.message || 'Unknown error'}`
+          : data.message || 'Silakan cek kembali username dan password Anda';
+
+        Toast.show({
+          type: 'error',
+          text1: 'Login Gagal',
+          text2: errorMessage,
+          visibilityTime: 4000,
+          position: 'bottom'
+        });
+      }
+    } catch (error) {
+      const errorMessage = Platform.OS !== 'web'
+        ? `Network Error\nURL: ${getApiBaseUrl()}${API_ENDPOINTS.LOGIN}\nDetails: ${error.message}`
+        : 'Terjadi kesalahan pada server';
+
+      console.error('Login error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        visibilityTime: 4000,
+        position: 'bottom'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -45,23 +200,29 @@ export default function HomeScreen() {
     };
   });
 
-  const toggleLoginForm = () => {
-    if (!showLogin) {
-      setShowLogin(true);
-      formHeight.value = withSpring(280);
-      formOpacity.value = withTiming(1, { duration: 300 });
-      loginContainerOpacity.value = withTiming(0, { duration: 200 });
-    } else {
-      formHeight.value = withSpring(0);
-      formOpacity.value = withTiming(0, { duration: 200 });
-      loginContainerOpacity.value = withTiming(1, { duration: 300 });
-      setTimeout(() => setShowLogin(false), 300);
-    }
-  };
+  const showLoginButton = !isLoggedIn;
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    checkLoginStatus().finally(() => {
+      setRefreshing(false);
+      setShowLogin(false);
+    });
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#2563eb"]}
+            tintColor="#2563eb"
+          />
+        }
+      >
         {/* Header Section */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -111,33 +272,28 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Login Button */}
-      <Animated.View style={[styles.loginContainer, loginContainerStyle]}>
-        <TouchableOpacity 
+      {/* Login Button Container */}
+      {showLoginButton && (
+        <Animated.View 
           style={[
-            styles.loginButton, 
-            showLogin && styles.loginButtonActive,
-            { justifyContent: 'center', alignItems: 'center' }
-          ]} 
-          onPress={toggleLoginForm}
-        >
-          <Text style={[styles.loginText, { color: '#fff' }]}>Login</Text>
-        </TouchableOpacity>
-        {/* <TouchableOpacity 
-          style={[
-            styles.biometricButton,
-            { justifyContent: 'center', alignItems: 'center' }
+            styles.loginButtonContainer,
+            { opacity: loginContainerOpacity }
           ]}
         >
-          <Ionicons name="finger-print" size={28} color="#0066AE" />
-        </TouchableOpacity> */}
-      </Animated.View>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={handleLoginPress}
+          >
+            <Text style={styles.loginButtonText}>Login</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
-      {/* Login Form Overlay */}
+      {/* Login Form */}
       {showLogin && (
         <TouchableOpacity 
           style={styles.overlay} 
-          onPress={toggleLoginForm}
+          onPress={handleLoginCancel}
           activeOpacity={1}
         >
           <TouchableOpacity 
@@ -147,7 +303,7 @@ export default function HomeScreen() {
           >
             <TouchableOpacity 
               style={styles.closeButton} 
-              onPress={toggleLoginForm}
+              onPress={handleLoginCancel}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="close" size={24} color="#666" />
@@ -158,28 +314,62 @@ export default function HomeScreen() {
               <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
               <TextInput 
                 placeholder="Username"
-                style={styles.input}
+                style={[styles.input, validationErrors.username ? styles.inputError : null]}
                 placeholderTextColor="#999"
+                value={username}
+                onChangeText={(text) => {
+                  setUsername(text);
+                  setValidationErrors(prev => ({ ...prev, username: '' }));
+                }}
               />
             </View>
+            {validationErrors.username ? (
+              <Text style={styles.errorText}>{validationErrors.username}</Text>
+            ) : null}
+
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
               <TextInput 
                 placeholder="Password"
-                secureTextEntry
-                style={styles.input}
+                secureTextEntry={!showPassword}
+                style={[styles.input, validationErrors.password ? styles.inputError : null]}
                 placeholderTextColor="#999"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setValidationErrors(prev => ({ ...prev, password: '' }));
+                }}
               />
+              <TouchableOpacity 
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.passwordToggle}
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
             </View>
+            {validationErrors.password ? (
+              <Text style={styles.errorText}>{validationErrors.password}</Text>
+            ) : null}
             <TouchableOpacity style={styles.forgotPassword}>
               <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Masuk</Text>
+            <TouchableOpacity 
+              style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Memproses...' : 'Masuk'}
+              </Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
       )}
+      <Toast />
     </SafeAreaView>
   );
 }
@@ -188,6 +378,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
     backgroundColor: '#0066Ae',
@@ -283,10 +476,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  loginContainer: {
+  loginButtonContainer: {
     flexDirection: 'row',
     padding: 16,
-    paddingBottom: 0,  
+    paddingBottom: 10,  
     backgroundColor: '#fff',
     borderTopWidth: 0,
     borderTopColor: '#eee',
@@ -298,12 +491,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flex: 1,
   },
-  loginButtonActive: {
-    backgroundColor: '#004c8c',
-  },
-  loginText: {
+  loginButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
   },
   overlay: {
     position: 'absolute',
@@ -364,18 +556,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  submitButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  biometricButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   closeButton: {
     position: 'absolute',
@@ -383,5 +570,20 @@ const styles = StyleSheet.create({
     right: 16,
     padding: 8,
     zIndex: 1,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+  },
+  inputError: {
+    borderColor: '#dc2626',
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 8,
+    marginLeft: 12,
   },
 });
