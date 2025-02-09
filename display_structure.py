@@ -32,7 +32,7 @@ def display_structure(root_dir, level=0, ignore_patterns=None):
     """
     ignore_patterns = ignore_patterns or []
     
-    if level < 2:  # Limit depth to 2 levels
+    if level < 3:  # Limit depth to 3 levels
         for item in os.listdir(root_dir):
             if should_ignore(item, ignore_patterns):
                 continue
