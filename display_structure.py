@@ -1,4 +1,5 @@
 import os
+import fnmatch
 
 def get_ignore_patterns(gitignore_path):
     """
@@ -18,9 +19,8 @@ def should_ignore(item_name, ignore_patterns):
     Memeriksa apakah suatu item harus diabaikan berdasarkan pola dalam .gitignore
     """
     for pattern in ignore_patterns:
-        # Sederhana: cocokkan nama file/folder dengan pola
-        # (ini tidak menangani wildcard yang rumit)
-        if item_name == pattern or item_name.endswith('/' + pattern) or item_name.endswith(pattern):
+        # Menggunakan fnmatch untuk mendukung wildcard
+        if fnmatch.fnmatch(item_name, pattern):
             return True
     return False
 
