@@ -47,28 +47,37 @@ export default function MenuLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#0066AE',
+          // backgroundColor: '#0066AE',
+          backgroundColor: '#ff9900',
+          // height: Platform.OS === 'ios' ? 110 : 65,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: '600',
+          fontSize: 18,
         },
+        headerTitleAlign: 'left',
         headerLeft: () => (
           <TouchableOpacity 
             onPress={handleBackToDashboard}
             style={{ 
-              marginLeft: Platform.OS === 'android' ? 0 : 10,
-              padding: Platform.OS === 'android' ? 10 : 0
+              marginLeft: Platform.OS === 'ios' ? 8 : 0,
+              padding: 12,
             }}
           >
-            <Ionicons 
-              name={Platform.OS === 'android' ? 'arrow-back' : 'chevron-back'} 
-              size={Platform.OS === 'android' ? 24 : 28} 
-              color="#fff" 
-            />
+            {/* <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color="#ffff" 
+            /> */}
           </TouchableOpacity>
         ),
-        animation: Platform.OS === 'android' ? 'fade_from_bottom' : 'default',
+        headerShadowVisible: false,
+        animation: 'slide_from_right',
+        animationDuration: 200,
+        contentStyle: {
+          backgroundColor: '#F5F5F5',
+        },
       }}
     >
       <Stack.Screen
