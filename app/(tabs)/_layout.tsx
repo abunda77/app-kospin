@@ -50,52 +50,36 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          href: null,
+          title: 'Beranda',
+          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={24} color={color} />
-          ),
+          title: 'Menu',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="mutasi"
         options={{
           title: 'Mutasi',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text-outline" size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="qris"
-        options={{
-          title: 'QRIS',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="qr-code-outline" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="document-text-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="aktivitas"
         options={{
           title: 'Aktivitas',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail-outline" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="mail-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="akun"
         options={{
           title: 'Akun',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
     </Tabs>

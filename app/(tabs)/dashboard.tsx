@@ -15,12 +15,12 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 1, title: 'Transfer', icon: 'arrow-forward-outline', route: '/transfer', color: '#4CAF50' },
-  { id: 2, title: 'Tarik Tunai', icon: 'cash-outline', route: '/tarik-tunai', color: '#2196F3' },
-  { id: 3, title: 'Setor Tunai', icon: 'wallet-outline', route: '/setor-tunai', color: '#9C27B0' },
-  { id: 4, title: 'Pembayaran', icon: 'card-outline', route: '/pembayaran', color: '#FF9800' },
-  { id: 5, title: 'Pinjaman', icon: 'briefcase-outline', route: '/pinjaman', color: '#F44336' },
-  { id: 6, title: 'Simpanan', icon: 'save-outline', route: '/simpanan', color: '#009688' },
+  { id: 1, title: 'Transfer', icon: 'arrow-forward-outline', route: '/(menu)/transfer', color: '#4CAF50' },
+  { id: 2, title: 'Tarik Tunai', icon: 'cash-outline', route: '/(menu)/tarik-tunai', color: '#2196F3' },
+  { id: 3, title: 'Setor Tunai', icon: 'wallet-outline', route: '/(menu)/setor-tunai', color: '#9C27B0' },
+  { id: 4, title: 'Pembayaran', icon: 'card-outline', route: '/(menu)/pembayaran', color: '#FF9800' },
+  { id: 5, title: 'Pinjaman', icon: 'briefcase-outline', route: '/(menu)/pinjaman', color: '#F44336' },
+  { id: 6, title: 'Simpanan', icon: 'save-outline', route: '/(menu)/simpanan', color: '#009688' },
 ];
 
 export default function Dashboard() {

@@ -18,14 +18,13 @@ interface MenuItem {
   id: number;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
-  route: "/(tabs)/qris" | "/(tabs)/mutasi" | "/(tabs)/aktivitas" | "/(tabs)/akun";
+  route: string;
 }
 
 const menuItems: MenuItem[] = [
-  { id: 1, icon: 'qr-code-outline', label: 'QRIS', route: '/(tabs)/qris' },
-  { id: 2, icon: 'document-text-outline', label: 'Mutasi', route: '/(tabs)/mutasi' },
-  { id: 3, icon: 'mail-outline', label: 'Aktivitas', route: '/(tabs)/aktivitas' },
-  { id: 4, icon: 'person-outline', label: 'Akun', route: '/(tabs)/akun' },
+  { id: 1, icon: 'document-text-outline', label: 'Mutasi', route: '/(tabs)/mutasi' },
+  { id: 2, icon: 'mail-outline', label: 'Aktivitas', route: '/(tabs)/aktivitas' },
+  { id: 3, icon: 'person-outline', label: 'Akun', route: '/(tabs)/akun' },
 ];
 
 export default function HomeScreen() {
