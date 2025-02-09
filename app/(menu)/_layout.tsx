@@ -1,8 +1,9 @@
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function MenuLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,15 +16,26 @@ export default function MenuLayout() {
   const checkLoginStatus = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
+      setIsLoggedIn(!!token);
       if (!token) {
-        router.replace('/(tabs)');
-        return;
+        Platform.OS === 'android' 
+          ? router.replace('/(tabs)') 
+          : router.push('/(tabs)'); 
       }
-      setIsLoggedIn(true);
     } catch (error) {
       console.error('Error checking login status:', error);
       setIsLoggedIn(false);
-      router.replace('/(tabs)');
+      Platform.OS === 'android' 
+        ? router.replace('/(tabs)') 
+        : router.push('/(tabs)');
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    if (Platform.OS === 'android') {
+      router.replace('/(tabs)/dashboard');
+    } else {
+      router.push('/(tabs)/dashboard');
     }
   };
 
@@ -41,7 +53,21 @@ export default function MenuLayout() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
-        headerBackVisible: false,
+        headerLeft: () => (
+          <TouchableOpacity 
+            onPress={handleBackToDashboard}
+            style={{ 
+              marginLeft: Platform.OS === 'android' ? 0 : 10,
+              padding: Platform.OS === 'android' ? 10 : 0
+            }}
+          >
+            <Ionicons 
+              name={Platform.OS === 'android' ? 'arrow-back' : 'chevron-back'} 
+              size={Platform.OS === 'android' ? 24 : 28} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+        ),
         animation: Platform.OS === 'android' ? 'fade_from_bottom' : 'default',
       }}
     >

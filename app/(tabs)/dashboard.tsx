@@ -102,8 +102,11 @@ export default function Dashboard() {
     });
   }, []);
 
-  const handleMenuPress = (route: string) => {
-    router.push(route);
+  const handleMenuPress = (route: MenuItem['route']) => {
+    router.push({
+      pathname: route,
+      params: { from: 'index' }
+    });
   };
 
   const renderMenuItem = (item: MenuItem) => (
@@ -152,7 +155,16 @@ export default function Dashboard() {
           </View>
 
           <View style={styles.menuGrid}>
-            {menuItems.map(renderMenuItem)}
+            {menuItems.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.menuItem, { backgroundColor: item.color }]}
+                onPress={() => handleMenuPress(item.route)}
+              >
+                <Ionicons name={item.icon} size={32} color="#fff" />
+                <Text style={styles.menuText}>{item.title}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 

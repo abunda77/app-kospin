@@ -28,12 +28,14 @@ export default function TabLayout() {
         screenOptions={{
           tabBarActiveTintColor: '#0066AE',
           headerShown: false,
-          tabBarStyle: {
-            display: 'none'
-          },
         }}>
-        <Tabs.Screen name="index" />
-        <Tabs.Screen name="dashboard" options={{ href: null }} />
+        <Tabs.Screen 
+          name="index" 
+          options={{
+            title: 'Beranda',
+            tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+          }}
+        />
       </Tabs>
     );
   }
@@ -90,22 +92,9 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
-    height: Platform.OS === 'ios' ? 85 : 65,
+    borderTopColor: '#E5E5E5',
+    height: Platform.OS === 'ios' ? 85 : 60,
     paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-    paddingTop: 5,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   tabBarItem: {
     paddingVertical: 5,
