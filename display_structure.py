@@ -32,20 +32,21 @@ def display_structure(root_dir, level=0, ignore_patterns=None):
     """
     ignore_patterns = ignore_patterns or []
     
-    for item in os.listdir(root_dir):
-        if should_ignore(item, ignore_patterns):
-            continue
+    if level < 2:  # Limit depth to 2 levels
+        for item in os.listdir(root_dir):
+            if should_ignore(item, ignore_patterns):
+                continue
+                
+            item_path = os.path.join(root_dir, item)
             
-        item_path = os.path.join(root_dir, item)
-        
-        # Print directory name
-        if os.path.isdir(item_path):
-            print('  ' * level + '├── ' + item + '/')
-            # Recursively display contents of directory
-            display_structure(item_path, level + 1, ignore_patterns)
-        else:
-            # Print file name
-            print('  ' * level + '└── ' + item)
+            # Print directory name
+            if os.path.isdir(item_path):
+                print('  ' * level + '├── ' + item + '/')
+                # Recursively display contents of directory
+                display_structure(item_path, level + 1, ignore_patterns)
+            else:
+                # Print file name
+                print('  ' * level + '└── ' + item)
 
 # Example usage
 if __name__ == "__main__":
