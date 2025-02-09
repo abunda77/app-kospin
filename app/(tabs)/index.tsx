@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Platform, RefreshControl } from "react-native";
+import { 
+  Image, 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  ScrollView, 
+  SafeAreaView, 
+  TextInput, 
+  Platform,
+  RefreshControl,
+  Modal,
+  Pressable,
+  useWindowDimensions
+} from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import "../globals.css";
@@ -21,6 +35,77 @@ interface MenuItem {
   route: string;
 }
 
+interface CustomTooltipProps {
+  isVisible: boolean;
+  onClose: () => void;
+  text: string;
+  position: {
+    x: number;
+    y: number;
+  };
+}
+
+interface ValidationErrors {
+  username?: string;
+  password?: string;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text, position }) => {
+  const [tooltipWidth, setTooltipWidth] = useState(0);
+  const [tooltipHeight, setTooltipHeight] = useState(0);
+  const { width: screenWidth } = useWindowDimensions();
+
+  if (!isVisible) return null;
+
+  // Hitung posisi tooltip yang optimal
+  const calculatePosition = () => {
+    const margin = 10; // Margin dari tepi layar
+    let left = position.x;
+    let top = position.y;
+
+    // Cek apakah tooltip akan terpotong di sebelah kanan
+    if (left + tooltipWidth + margin > screenWidth) {
+      left = screenWidth - tooltipWidth - margin;
+    }
+
+    // Pastikan tooltip tidak terpotong di sebelah kiri
+    if (left < margin) {
+      left = margin;
+    }
+
+    // Jika tooltip terlalu dekat dengan bagian atas layar
+    if (top < margin) {
+      top = margin;
+    }
+
+    return { left, top };
+  };
+
+  const tooltipPosition = calculatePosition();
+
+  return (
+    <Modal
+      transparent={true}
+      visible={isVisible}
+      onRequestClose={onClose}
+      animationType="fade"
+    >
+      <Pressable style={styles.tooltipOverlay} onPress={onClose}>
+        <View
+          style={[styles.tooltipContainer, tooltipPosition]}
+          onLayout={(event) => {
+            const { width, height } = event.nativeEvent.layout;
+            setTooltipWidth(width);
+            setTooltipHeight(height);
+          }}
+        >
+          <Text style={styles.tooltipText}>{text}</Text>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+};
+
 const menuItems: MenuItem[] = [
   { id: 1, icon: 'document-text-outline', label: 'Mutasi', route: '/(tabs)/mutasi' },
   { id: 2, icon: 'mail-outline', label: 'Aktivitas', route: '/(tabs)/aktivitas' },
@@ -35,14 +120,22 @@ export default function HomeScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({
-    username: '',
-    password: ''
-  });
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipText, setTooltipText] = useState('');
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  
   const router = useRouter();
   const formHeight = useSharedValue(0);
   const formOpacity = useSharedValue(0);
   const loginContainerOpacity = useSharedValue(1);
+
+  const showTooltip = (text: string, event: any) => {
+    const { pageX, pageY } = event.nativeEvent;
+    setTooltipText(text);
+    setTooltipPosition({ x: pageX, y: pageY - 50 }); // Offset to show above the touch point
+    setTooltipVisible(true);
+  };
 
   useEffect(() => {
     checkLoginStatus();
@@ -240,7 +333,7 @@ export default function HomeScreen() {
 
           {/* Promo Banner */}
           <View style={styles.promoBanner}>
-           <Image 
+            <Image 
               source={require("@/assets/images/banner_promo_mobile.png")} 
               style={styles.promoBannerImage}
               resizeMode="cover"
@@ -251,33 +344,49 @@ export default function HomeScreen() {
         {/* Fast Menu Section */}
         <View style={styles.fastMenuSection}>
           <View style={styles.fastMenuHeader}>
-            <Text style={styles.fastMenuTitle}>Fasilitas  </Text>
-            <Ionicons name="information-circle-outline" size={20} color="#666" />
+            <Text style={styles.fastMenuTitle}>Fasilitas</Text>
+            <TouchableOpacity
+              onPress={(e) => showTooltip('Fasilitas layanan keuangan yang tersedia di Kospin', e)}
+            >
+              <Ionicons name="information-circle-outline" size={20} color="#666" />
+            </TouchableOpacity>
           </View>
           
           <View style={styles.menuGrid}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={(e) => showTooltip('Simpan dana Anda dengan aman dan dapatkan bagi hasil yang menarik', e)}
+            >
               <View style={styles.menuIconContainer}>
                 <Ionicons name="wallet-outline" size={24} color="#0066AE" />
               </View>
               <Text style={styles.menuLabel}>Tabungan</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={(e) => showTooltip('Pinjaman dengan bunga rendah dan proses cepat', e)}
+            >
+              <View style={styles.menuIconContainer}>
+                <Ionicons name="cash-outline" size={24} color="#0066AE" />
+              </View>
+              <Text style={styles.menuLabel}>Pinjaman</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={(e) => showTooltip('Investasikan dana Anda dengan imbal hasil yang kompetitif', e)}
+            >
               <View style={styles.menuIconContainer}>
                 <Ionicons name="trending-up-outline" size={24} color="#0066AE" />
               </View>
               <Text style={styles.menuLabel}>Deposito</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
-              <View style={styles.menuIconContainer}>
-                <Ionicons name="cash-outline" size={24} color="#0066AE" />
-              </View>
-              <Text style={styles.menuLabel}>Kredit</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={(e) => showTooltip('Gadai barang berharga Anda dengan nilai taksir tinggi', e)}
+            >
               <View style={styles.menuIconContainer}>
                 <Ionicons name="diamond-outline" size={24} color="#0066AE" />
               </View>
@@ -285,8 +394,15 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
 
+        <CustomTooltip
+          isVisible={tooltipVisible}
+          onClose={() => setTooltipVisible(false)}
+          text={tooltipText}
+          position={tooltipPosition}
+        />
+      </ScrollView>
+      
       {/* Login Button Container */}
       {showLoginButton && (
         <Animated.View 
@@ -600,5 +716,21 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 8,
     marginLeft: 12,
+  },
+  tooltipText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  tooltipOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  tooltipContainer: {
+    position: 'absolute',
+    backgroundColor: '#333',
+    padding: 10,
+    borderRadius: 6,
+    maxWidth: 200,
+    elevation: 5,
   },
 });
