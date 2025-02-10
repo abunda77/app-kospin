@@ -4,6 +4,13 @@ import { Platform, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const TabBarIcon = (props: {
+  name: React.ComponentProps<typeof Ionicons>['name'];
+  color: string;
+}) => {
+  return <Ionicons size={24} style={{ marginBottom: -3 }} {...props} />;
+};
+
 export default function TabLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -33,7 +40,7 @@ export default function TabLayout() {
           name="index" 
           options={{
             title: 'Beranda',
-            tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+            tabBarIcon: ({ color }) => <TabBarIcon name="home-outline" color={color} />,
           }}
         />
       </Tabs>
@@ -53,35 +60,35 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Beranda',
-          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="home-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="dashboard"
         options={{
           title: 'Menu',
-          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="grid-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="mutasi"
         options={{
           title: 'Mutasi',
-          tabBarIcon: ({ color }) => <Ionicons name="document-text-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="document-text-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="aktivitas"
         options={{
           title: 'Aktivitas',
-          tabBarIcon: ({ color }) => <Ionicons name="mail-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="mail-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="akun"
         options={{
           title: 'Akun',
-          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="person-outline" color={color} />,
         }}
       />
     </Tabs>
