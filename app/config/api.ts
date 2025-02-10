@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   TABUNGAN_SALDO_BERJALAN: '/api/tabungan/saldo-berjalan',
   TABUNGAN_BY_PROFILE: '/api/tabungan/by-profile',
   TABUNGAN_MUTASI: '/api/tabungan/mutasi',
+  BANNER_MOBILE: 'api/banner-mobile/type/square',
   // Tambahkan endpoint lain di sini
 };
 

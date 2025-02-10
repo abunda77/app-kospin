@@ -50,6 +50,17 @@ interface ValidationErrors {
   password?: string;
 }
 
+interface BannerData {
+  id: number;
+  title: string;
+  url: string;
+  type: string;
+  note: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text, position }) => {
   const [tooltipWidth, setTooltipWidth] = useState(0);
   const [tooltipHeight, setTooltipHeight] = useState(0);
@@ -124,7 +135,8 @@ export default function HomeScreen() {
   const [tooltipText, setTooltipText] = useState('');
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  
+  const [bannerUrl, setBannerUrl] = useState<string>('');
+
   const router = useRouter();
   const formHeight = useSharedValue(0);
   const formOpacity = useSharedValue(0);
@@ -139,6 +151,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     checkLoginStatus();
+    fetchBanner();
   }, []);
 
   const checkLoginStatus = async () => {
@@ -158,6 +171,22 @@ export default function HomeScreen() {
       setUsername('');
       setPassword('');
       setShowLogin(false);
+    }
+  };
+
+  const fetchBanner = async () => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/${API_ENDPOINTS.BANNER_MOBILE}`);
+      const data = await response.json();
+      
+      if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+        const randomIndex = Math.floor(Math.random() * data.data.length);
+        const randomBanner = data.data[randomIndex];
+        setBannerUrl(randomBanner.url || '');
+      }
+    } catch (error) {
+      console.error('Error fetching banner:', error);
+      setBannerUrl('');
     }
   };
 
@@ -333,11 +362,19 @@ export default function HomeScreen() {
 
           {/* Promo Banner */}
           <View style={styles.promoBanner}>
-            <Image 
-              source={require("@/assets/images/banner_promo_mobile.png")} 
-              style={styles.promoBannerImage}
-              resizeMode="cover"
-            />
+            {bannerUrl ? (
+              <Image 
+                source={{ uri: bannerUrl }}
+                style={styles.promoBannerImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image 
+                source={require("@/assets/images/banner_promo_mobile.png")}
+                style={styles.promoBannerImage}
+                resizeMode="cover"
+              />
+            )}
           </View>
         </View>
 
