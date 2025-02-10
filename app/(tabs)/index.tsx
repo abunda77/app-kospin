@@ -182,11 +182,12 @@ export default function HomeScreen() {
       if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
         const randomIndex = Math.floor(Math.random() * data.data.length);
         const randomBanner = data.data[randomIndex];
-        setBannerUrl(randomBanner.url || '');
+        // Pastikan URL valid dan memiliki format yang benar
+        const validUrl = randomBanner.url.startsWith('http') ? randomBanner.url : `${getApiBaseUrl()}${randomBanner.url}`;
+        setBannerUrl(validUrl);
       }
     } catch (error) {
       console.error('Error fetching banner:', error);
-      setBannerUrl('');
     }
   };
 
