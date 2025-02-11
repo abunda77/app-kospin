@@ -27,6 +27,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
+import Skeleton from '../../components/Skeleton';
 
 interface MenuItem {
   id: number;
@@ -59,6 +60,11 @@ interface BannerData {
   image: string;
   created_at: string;
   updated_at: string;
+}
+
+interface BannerResponse {
+  status: string;
+  data: BannerData[];
 }
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text, position }) => {
@@ -135,7 +141,8 @@ export default function HomeScreen() {
   const [tooltipText, setTooltipText] = useState('');
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  const [bannerUrl, setBannerUrl] = useState<string>('');
+  const [banners, setBanners] = useState<BannerData[]>([]);
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   const router = useRouter();
   const formHeight = useSharedValue(0);
@@ -174,20 +181,29 @@ export default function HomeScreen() {
     }
   };
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const fetchBanner = async () => {
     try {
+      setBannerLoading(true);
       const response = await fetch(`${getApiBaseUrl()}/${API_ENDPOINTS.BANNER_MOBILE}`);
-      const data = await response.json();
+      const data: BannerResponse = await response.json();
       
-      if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.data.length);
-        const randomBanner = data.data[randomIndex];
-        // Pastikan URL valid dan memiliki format yang benar
-        const validUrl = randomBanner.url.startsWith('http') ? randomBanner.url : `${getApiBaseUrl()}${randomBanner.url}`;
-        setBannerUrl(validUrl);
+      if (data.status === 'success' && data.data.length > 0) {
+        const shuffledBanners = shuffleArray(data.data);
+        setBanners(shuffledBanners);
       }
     } catch (error) {
       console.error('Error fetching banner:', error);
+    } finally {
+      setBannerLoading(false);
     }
   };
 
@@ -361,20 +377,27 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Promo Banner */}
-          <View style={styles.promoBanner}>
-            {bannerUrl ? (
-              <Image 
-                source={{ uri: bannerUrl }}
-                style={styles.promoBannerImage}
-                resizeMode="cover"
-              />
+          {/* Banner Section */}
+          <View style={styles.bannerContainer}>
+            {bannerLoading ? (
+              <Skeleton width="100%" height={200} borderRadius={8} />
             ) : (
-              <Image 
-                source={require("@/assets/images/banner_promo_mobile.png")}
-                style={styles.promoBannerImage}
-                resizeMode="cover"
-              />
+              banners.length > 0 ? (
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.bannerContainer}
+                >
+                  {banners.map((banner) => (
+                    <Image
+                      key={banner.id}
+                      source={{ uri: banner.url }}
+                      style={styles.bannerImage}
+                      resizeMode="cover"
+                    />
+                  ))}
+                </ScrollView>
+              ) : null
             )}
           </View>
         </View>
@@ -597,14 +620,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 4,
   },
-  promoBanner: {
-    width: '100%',
+  bannerContainer: {
+    width: '110%',
     height: 'auto',
     marginHorizontal: -16,
-    marginBottom: -16,
+    marginBottom: -17,
   },
-  promoBannerImage: {
-    width: '110%',
+  bannerImage: {
+    width: '100%',
     height: 350,
   },
   fastMenuSection: {

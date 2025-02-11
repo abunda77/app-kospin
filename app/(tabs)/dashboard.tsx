@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
+import Skeleton from '../../components/Skeleton';
 
 interface MenuItem {
   id: number;
@@ -34,12 +35,14 @@ export default function Dashboard() {
   const [userName, setUserName] = useState<string>('');
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkAuthAndFetchData();
   }, []);
 
   const checkAuthAndFetchData = async () => {
+    setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
@@ -54,6 +57,8 @@ export default function Dashboard() {
     } catch (error) {
       console.log('Error checking auth:', error);
       router.replace('/(tabs)');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,19 +145,29 @@ export default function Dashboard() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.welcomeText}>
-            {userName ? `Halo, ${userName}` : 'Selamat Datang'}
-          </Text>
-          <Text style={styles.subText}>di Koperasi Sinara Artha</Text>
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogoutConfirmation}
-          >
-            <Ionicons name="log-out-outline" size={20} color="#fff" />
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
+          {isLoading ? (
+            <View style={styles.headerContent}>
+              <Skeleton width={200} height={24} />
+              <View style={{ height: 8 }} />
+              <Skeleton width={150} height={16} />
+            </View>
+          ) : (
+            <View style={styles.headerContent}>
+              <Text style={styles.welcomeText}>
+                {userName ? `Halo, ${userName}` : 'Selamat Datang'}
+              </Text>
+              <Text style={styles.subText}>di Koperasi Sinara Artha</Text>
+              <TouchableOpacity 
+                style={styles.logoutButton}
+                onPress={handleLogoutConfirmation}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#fff" />
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-        
+
         <View style={styles.content}>
           <View style={styles.card}>
             <Ionicons name="wallet-outline" size={24} color="#0066AE" />
@@ -161,16 +176,30 @@ export default function Dashboard() {
           </View>
 
           <View style={styles.menuGrid}>
-            {menuItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.menuItem, { backgroundColor: item.color }]}
-                onPress={() => handleMenuPress(item.route)}
-              >
-                <Ionicons name={item.icon} size={32} color="#fff" />
-                <Text style={styles.menuText}>{item.title}</Text>
-              </TouchableOpacity>
-            ))}
+            {isLoading ? (
+              <View style={styles.menuGridContainer}>
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <View key={item} style={[styles.menuItem, { backgroundColor: '#f5f5f5' }]}>
+                    <Skeleton width={50} height={50} borderRadius={25} />
+                    <View style={{ height: 8 }} />
+                    <Skeleton width={80} height={16} />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.menuGridContainer}>
+                {menuItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.menuItem, { backgroundColor: item.color }]}
+                    onPress={() => handleMenuPress(item.route)}
+                  >
+                    <Ionicons name={item.icon} size={32} color="#fff" />
+                    <Text style={styles.menuText}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
 
@@ -226,6 +255,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
+  headerContent: {
+    padding: 10,
+  },
   welcomeText: {
     fontWeight: 'bold',
     fontSize: 18,
@@ -270,6 +302,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginTop: 20,
+  },
+  menuGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   menuItem: {
     width: menuItemWidth,
