@@ -47,9 +47,14 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
   const [showAllMenu, setShowAllMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     checkAuthAndFetchData();
+    // Simulasi loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
   }, []);
 
   const checkAuthAndFetchData = async () => {
@@ -151,7 +156,11 @@ export default function Dashboard() {
           <View style={styles.headerTop}>
             <View style={styles.userInfo}>
               <Text style={styles.greeting}>Hai,</Text>
-              <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
+              {loading ? (
+                <Skeleton width={120} height={24} />
+              ) : (
+                <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
+              )}
             </View>
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconButton}>
@@ -172,9 +181,13 @@ export default function Dashboard() {
                 <View>
                   <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
                   <View style={styles.balanceWrapper}>
-                    <Text style={styles.balanceAmount}>
-                      {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
-                    </Text>
+                    {loading ? (
+                      <Skeleton width={150} height={32} />
+                    ) : (
+                      <Text style={styles.balanceAmount}>
+                        {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
+                      </Text>
+                    )}
                     <TouchableOpacity
                       onPress={() => setShowBalance(!showBalance)}
                       style={styles.eyeIconContainer}
@@ -191,42 +204,62 @@ export default function Dashboard() {
             </View>
 
             <View style={styles.menuGrid}>
-              {menuItems.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.menuItem}
-                  onPress={() => router.push(item.route)}
-                >
-                  <View style={styles.menuIconContainer}>
-                    <Image 
-                      source={item.icon}
-                      style={styles.menuIcon}
-                    />
+              {loading ? (
+                // Skeleton untuk menu items
+                Array(4).fill(0).map((_, index) => (
+                  <View key={index} style={styles.menuItem}>
+                    <Skeleton width={48} height={48} borderRadius={24} />
+                    <Skeleton width={60} height={16} marginTop={8} />
                   </View>
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
+                ))
+              ) : (
+                menuItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.menuItem}
+                    onPress={() => router.push(item.route)}
+                  >
+                    <View style={styles.menuIconContainer}>
+                      <Image 
+                        source={item.icon}
+                        style={styles.menuIcon}
+                      />
+                    </View>
+                    <Text style={styles.menuText}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           </View>
 
           {/* Secondary Menu */}
           <View style={styles.secondaryMenuContainer}>
             <View style={styles.secondaryMenuGrid}>
-              {visibleMenuItems.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.secondaryMenuItem}
-                  onPress={() => router.push(item.route)}
-                >
-                  <View style={styles.secondaryMenuIconContainer}>
-                    <Image 
-                      source={item.icon}
-                      style={styles.secondaryMenuIcon}
-                    />
+              {loading ? (
+                // Skeleton untuk secondary menu items
+                Array(8).fill(0).map((_, index) => (
+                  <View key={index} style={styles.secondaryMenuItem}>
+                    <Skeleton width={48} height={48} borderRadius={24} />
+                    <Skeleton width={50} height={14} marginTop={8} />
                   </View>
-                  <Text style={styles.secondaryMenuText}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
+                ))
+              ) : (
+                visibleMenuItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.secondaryMenuItem}
+                    onPress={() => router.push(item.route)}
+                  >
+                    <View style={styles.secondaryMenuIconContainer}>
+                      <Image 
+                        source={item.icon}
+                        style={styles.secondaryMenuIcon}
+                      />
+                    </View>
+                    <Text style={styles.secondaryMenuText}>{item.title}</Text>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
             {secondaryMenuItems.length > 4 && (
               <TouchableOpacity
@@ -250,12 +283,25 @@ export default function Dashboard() {
           {/* Financial Report Section */}
           <View style={styles.financialReportCard}>
             <View style={styles.financialReportHeader}>
-              <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewMoreText}>Tampilkan</Text>
-              </TouchableOpacity>
+              {loading ? (
+                <>
+                  <Skeleton width={120} height={20} />
+                  <Skeleton width={80} height={16} />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.viewMoreText}>Tampilkan</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
-            <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+            {loading ? (
+              <Skeleton width={140} height={16} marginTop={8} />
+            ) : (
+              <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+            )}
           </View>
         </View>
       </ScrollView>
