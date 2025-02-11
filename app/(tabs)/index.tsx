@@ -148,6 +148,7 @@ export default function HomeScreen() {
   const formHeight = useSharedValue(0);
   const formOpacity = useSharedValue(0);
   const loginContainerOpacity = useSharedValue(1);
+  const { width: windowWidth } = useWindowDimensions();
 
   const showTooltip = (text: string, event: any) => {
     const { pageX, pageY } = event.nativeEvent;
@@ -166,7 +167,6 @@ export default function HomeScreen() {
       const token = await AsyncStorage.getItem('userToken');
       if (token) {
         setIsLoggedIn(true);
-        router.replace('/dashboard');
       } else {
         setIsLoggedIn(false);
         setUsername('');
@@ -174,10 +174,7 @@ export default function HomeScreen() {
         setShowLogin(false);
       }
     } catch (error) {
-      setIsLoggedIn(false);
-      setUsername('');
-      setPassword('');
-      setShowLogin(false);
+      console.error('Error checking login status:', error);
     }
   };
 
@@ -323,6 +320,25 @@ export default function HomeScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      setIsLoggedIn(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Berhasil',
+        text2: 'Anda telah berhasil logout',
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Gagal',
+        text2: 'Terjadi kesalahan saat logout',
+      });
+    }
+  };
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       height: formHeight.value,
@@ -465,7 +481,7 @@ export default function HomeScreen() {
       </ScrollView>
       
       {/* Login Button Container */}
-      {showLoginButton && (
+      {(showLoginButton || isLoggedIn) && (
         <Animated.View 
           style={[
             styles.loginButtonContainer,
@@ -473,10 +489,16 @@ export default function HomeScreen() {
           ]}
         >
           <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLoginPress}
+            style={[
+              styles.loginButton,
+              isLoggedIn && styles.logoutButton,
+              { width: windowWidth * 0.9 }
+            ]}
+            onPress={isLoggedIn ? handleLogout : handleLoginPress}
           >
-            <Text style={styles.loginButtonText}>Login</Text>
+            <Text style={styles.loginButtonText}>
+              {isLoggedIn ? 'Logout' : 'Login'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -669,19 +691,30 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   loginButtonContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    paddingBottom: 10,  
-    backgroundColor: '#fff',
-    borderTopWidth: 0,
-    borderTopColor: '#eee',
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   loginButton: {
-    backgroundColor: '#0066AE',
-    paddingHorizontal: 32,
+    backgroundColor: '#007AFF',
     paddingVertical: 15,
-    borderRadius: 8,
-    flex: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
   },
   loginButtonText: {
     fontSize: 16,
