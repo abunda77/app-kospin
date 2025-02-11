@@ -25,7 +25,7 @@ const menuItems: MenuItem[] = [
   { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/transfer', color: '#0066AE' },
   { id: 2, title: 'Tarik', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
   { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
-  { id: 4, title: 'Pembelian', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+  { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
 ];
 
 const secondaryMenuItems: MenuItem[] = [
@@ -33,6 +33,10 @@ const secondaryMenuItems: MenuItem[] = [
   { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
   { id: 7, title: 'Kredit', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/tarik-tunai', color: '#0066AE' },
   { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/simpanan', color: '#0066AE' },
+  { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
+  { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+  { id: 11, title: 'Top Up', icon: require('../../assets/secondary-menu/topup.png'), route: '/(menu)/tarik-tunai', color: '#0066AE' },
+  { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/simpanan', color: '#0066AE' },
 ];
 
 export default function Dashboard() {
@@ -42,6 +46,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
+  const [showAllMenu, setShowAllMenu] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -126,38 +131,35 @@ export default function Dashboard() {
     });
   };
 
+  const visibleMenuItems = showAllMenu ? secondaryMenuItems : secondaryMenuItems.slice(0, 4);
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Header Section */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.userInfo}>
-              <Text style={styles.greeting}>Hai,</Text>
-              <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
-            </View>
-            <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={24} color="#FFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="headset-outline" size={24} color="#FFF" />
-              </TouchableOpacity>
-            </View>
+      {/* Sticky Header */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View style={styles.userInfo}>
+            <Text style={styles.greeting}>Hai,</Text>
+            <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
+          </View>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="notifications-outline" size={24} color="#FFF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="headset-outline" size={24} color="#FFF" />
+            </TouchableOpacity>
           </View>
         </View>
+      </View>
 
-        {/* Combined Card */}
-        <View style={styles.combinedCard}>
-          {/* Balance Section */}
-          <View style={styles.balanceSection}>
+      {/* Combined Card - Outside ScrollView to overlap with header */}
+      <View style={styles.combinedCard}>
+        <View style={styles.balanceSection}>
+          <View style={styles.balanceContainer}>
             <View>
               <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
-              <View style={styles.balanceContainer}>
+              <View style={styles.balanceWrapper}>
                 <Text style={styles.balanceAmount}>
                   {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
                 </Text>
@@ -173,34 +175,36 @@ export default function Dashboard() {
                 </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity style={styles.seeAllAccounts}>
-              <Text style={styles.seeAllAccountsText}>Semua Rekeningmu</Text>
-              <Ionicons name="chevron-forward" size={20} color="#BBBBBB" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Menu Section */}
-          <View style={styles.menuSection}>
-            <View style={styles.menuGrid}>
-              {menuItems.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.menuItem}
-                  onPress={() => router.push(item.route)}
-                >
-                  <View style={styles.menuIconContainer}>
-                    <Image 
-                      source={item.icon}
-                      style={styles.menuIcon}
-                    />
-                  </View>
-                  <Text style={styles.menuText}>{item.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
         </View>
 
+        <View style={styles.menuGrid}>
+          {menuItems.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.menuItem}
+              onPress={() => router.push(item.route)}
+            >
+              <View style={styles.menuIconContainer}>
+                <Image 
+                  source={item.icon}
+                  style={styles.menuIcon}
+                />
+              </View>
+              <Text style={styles.menuText}>{item.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+      >
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#666" />
@@ -208,22 +212,41 @@ export default function Dashboard() {
         </View>
 
         {/* Secondary Menu */}
-        <View style={styles.secondaryMenuGrid}>
-          {secondaryMenuItems.map((item) => (
+        <View style={styles.secondaryMenuContainer}>
+          <View style={styles.secondaryMenuGrid}>
+            {visibleMenuItems.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.secondaryMenuItem}
+                onPress={() => router.push(item.route)}
+              >
+                <View style={styles.secondaryMenuIconContainer}>
+                  <Image 
+                    source={item.icon}
+                    style={styles.secondaryMenuIcon}
+                  />
+                </View>
+                <Text style={styles.secondaryMenuText}>{item.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {secondaryMenuItems.length > 4 && (
             <TouchableOpacity
-              key={item.id}
-              style={styles.secondaryMenuItem}
-              onPress={() => router.push(item.route)}
+              style={styles.showMoreButton}
+              onPress={() => setShowAllMenu(!showAllMenu)}
             >
-              <View style={styles.secondaryMenuIconContainer}>
-                <Image 
-                  source={item.icon}
-                  style={styles.secondaryMenuIcon}
-                />
-              </View>
-              <Text style={styles.secondaryMenuText}>{item.title}</Text>
+              <Text style={styles.showMoreText}>
+                {showAllMenu ? 'Tutup' : 'Lainnya'}
+              </Text>
+              <Image 
+                source={require('../../assets/icons/chevron-down.png')} 
+                style={[
+                  styles.chevronIcon,
+                  showAllMenu && styles.chevronIconRotated
+                ]} 
+              />
             </TouchableOpacity>
-          ))}
+          )}
         </View>
 
         {/* Financial Report Section */}
@@ -276,11 +299,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  scrollView: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingTop: 280, // Adjusted to account for header + combinedCard height
+  },
   header: {
     backgroundColor: '#0066AE',
     paddingTop: 50,
-    paddingBottom: 30,
+    paddingBottom: 100,
     paddingHorizontal: 16,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   headerTop: {
     flexDirection: 'row',
@@ -307,17 +341,16 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 4,
   },
-  headerIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#FFFFFF',
-  },
   combinedCard: {
     backgroundColor: '#005488',
     borderRadius: 16,
     overflow: 'hidden',
     marginHorizontal: 16,
-    marginTop: -20,
+    marginTop: 120, // Position below header user info
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 2,
   },
   balanceSection: {
     padding: 16,
@@ -390,7 +423,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginVertical: 5,
+    marginTop: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
@@ -411,6 +445,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginTop : 1,
+    paddingTop: 20,
+  },
+  secondaryMenuContainer: {
     paddingHorizontal: 16,
     paddingTop: 16,
   },
@@ -436,6 +475,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
     textAlign: 'center',
+  },
+  showMoreButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    alignSelf: 'center',
+    gap: 4,
+  },
+  showMoreText: {
+    fontSize: 14,
+    color: '#0066AE',
+    fontWeight: '500',
+  },
+  chevronIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#0066AE',
+  },
+  chevronIconRotated: {
+    transform: [{ rotate: '180deg' }],
   },
   financialReportCard: {
     backgroundColor: '#FFF',
@@ -507,6 +569,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   balanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  balanceWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
