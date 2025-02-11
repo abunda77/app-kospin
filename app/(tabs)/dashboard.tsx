@@ -10,7 +10,13 @@ interface MenuItem {
   id: number;
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
-  route: string;
+  route: 
+    | "/(menu)/transfer" 
+    | "/(menu)/tarik-tunai" 
+    | "/(menu)/setor-tunai" 
+    | "/(menu)/pembayaran" 
+    | "/(menu)/pinjaman" 
+    | "/(menu)/simpanan";
   color: string;
 }
 

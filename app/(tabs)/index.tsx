@@ -289,7 +289,7 @@ export default function HomeScreen() {
           position: 'bottom'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage = Platform.OS !== 'web'
         ? `Network Error\nURL: ${getApiBaseUrl()}${API_ENDPOINTS.LOGIN}\nDetails: ${error.message}`
         : 'Terjadi kesalahan pada server';
