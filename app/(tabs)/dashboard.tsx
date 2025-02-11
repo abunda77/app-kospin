@@ -119,9 +119,10 @@ export default function Dashboard() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    checkAuthAndFetchData().finally(() => {
+    // Di sini Anda bisa menambahkan fungsi untuk memuat ulang data
+    setTimeout(() => {
       setRefreshing(false);
-    });
+    }, 2000);
   }, []);
 
   const handleMenuPress = (route: MenuItem['route']) => {
@@ -135,129 +136,133 @@ export default function Dashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Sticky Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.userInfo}>
-            <Text style={styles.greeting}>Hai,</Text>
-            <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
-          </View>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="headset-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* Combined Card - Outside ScrollView to overlap with header */}
-      <View style={styles.combinedCard}>
-        <View style={styles.balanceSection}>
-          <View style={styles.balanceContainer}>
-            <View>
-              <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
-              <View style={styles.balanceWrapper}>
-                <Text style={styles.balanceAmount}>
-                  {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowBalance(!showBalance)}
-                  style={styles.eyeIconContainer}
-                >
-                  <Ionicons
-                    name={showBalance ? 'eye-outline' : 'eye-off-outline'}
-                    size={20}
-                    color="#BBBBBB"
-                  />
-                </TouchableOpacity>
-              </View>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#0066AE']}
+            tintColor="#0066AE"
+          />
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <View style={styles.userInfo}>
+              <Text style={styles.greeting}>Hai,</Text>
+              <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
+            </View>
+            <View style={styles.headerIcons}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={24} color="#FFF" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="headset-outline" size={24} color="#FFF" />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        <View style={styles.menuGrid}>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={() => router.push(item.route)}
-            >
-              <View style={styles.menuIconContainer}>
-                <Image 
-                  source={item.icon}
-                  style={styles.menuIcon}
-                />
-              </View>
-              <Text style={styles.menuText}>{item.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Cari Fitur</Text>
-        </View>
-
-        {/* Secondary Menu */}
-        <View style={styles.secondaryMenuContainer}>
-          <View style={styles.secondaryMenuGrid}>
-            {visibleMenuItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.secondaryMenuItem}
-                onPress={() => router.push(item.route)}
-              >
-                <View style={styles.secondaryMenuIconContainer}>
-                  <Image 
-                    source={item.icon}
-                    style={styles.secondaryMenuIcon}
-                  />
+        <View style={styles.mainContent}>
+          {/* Combined Card */}
+          <View style={styles.combinedCard}>
+            <View style={styles.balanceSection}>
+              <View style={styles.balanceContainer}>
+                <View>
+                  <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
+                  <View style={styles.balanceWrapper}>
+                    <Text style={styles.balanceAmount}>
+                      {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowBalance(!showBalance)}
+                      style={styles.eyeIconContainer}
+                    >
+                      <Ionicons
+                        name={showBalance ? 'eye-outline' : 'eye-off-outline'}
+                        size={20}
+                        color="#BBBBBB"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <Text style={styles.secondaryMenuText}>{item.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {secondaryMenuItems.length > 4 && (
-            <TouchableOpacity
-              style={styles.showMoreButton}
-              onPress={() => setShowAllMenu(!showAllMenu)}
-            >
-              <Text style={styles.showMoreText}>
-                {showAllMenu ? 'Tutup' : 'Lainnya'}
-              </Text>
-              <Image 
-                source={require('../../assets/icons/chevron-down.png')} 
-                style={[
-                  styles.chevronIcon,
-                  showAllMenu && styles.chevronIconRotated
-                ]} 
-              />
-            </TouchableOpacity>
-          )}
-        </View>
+              </View>
+            </View>
 
-        {/* Financial Report Section */}
-        <View style={styles.financialReportCard}>
-          <View style={styles.financialReportHeader}>
-            <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewMoreText}>Tampilkan</Text>
-            </TouchableOpacity>
+            <View style={styles.menuGrid}>
+              {menuItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() => router.push(item.route)}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <Image 
+                      source={item.icon}
+                      style={styles.menuIcon}
+                    />
+                  </View>
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-          <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search-outline" size={20} color="#666" />
+            <Text style={styles.searchPlaceholder}>Cari Fitur</Text>
+          </View>
+
+          {/* Secondary Menu */}
+          <View style={styles.secondaryMenuContainer}>
+            <View style={styles.secondaryMenuGrid}>
+              {visibleMenuItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.secondaryMenuItem}
+                  onPress={() => router.push(item.route)}
+                >
+                  <View style={styles.secondaryMenuIconContainer}>
+                    <Image 
+                      source={item.icon}
+                      style={styles.secondaryMenuIcon}
+                    />
+                  </View>
+                  <Text style={styles.secondaryMenuText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {secondaryMenuItems.length > 4 && (
+              <TouchableOpacity
+                style={styles.showMoreButton}
+                onPress={() => setShowAllMenu(!showAllMenu)}
+              >
+                <Text style={styles.showMoreText}>
+                  {showAllMenu ? 'Tutup' : 'Lainnya'}
+                </Text>
+                <Image 
+                  source={require('../../assets/icons/chevron-down.png')} 
+                  style={[
+                    styles.chevronIcon,
+                    showAllMenu && styles.chevronIconRotated
+                  ]} 
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Financial Report Section */}
+          <View style={styles.financialReportCard}>
+            <View style={styles.financialReportHeader}>
+              <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewMoreText}>Tampilkan</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -302,19 +307,14 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  contentContainer: {
-    paddingTop: 280, // Adjusted to account for header + combinedCard height
-  },
   header: {
     backgroundColor: '#0066AE',
     paddingTop: 50,
     paddingBottom: 100,
     paddingHorizontal: 16,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
+  },
+  mainContent: {
+    marginTop: -50,
   },
   headerTop: {
     flexDirection: 'row',
@@ -336,20 +336,24 @@ const styles = StyleSheet.create({
   },
   headerIcons: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 25,
+    backgroundColor: '#005488',
+    padding: 10,
+    borderRadius: 8,
   },
   iconButton: {
     padding: 4,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   combinedCard: {
     backgroundColor: '#005488',
     borderRadius: 16,
     overflow: 'hidden',
     marginHorizontal: 16,
-    marginTop: 120, // Position below header user info
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    marginTop: -15, 
     zIndex: 2,
   },
   balanceSection: {
@@ -424,7 +428,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     marginHorizontal: 16,
     marginVertical: 5,
-    marginTop: 1,
+    marginTop: 40,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
@@ -456,7 +460,7 @@ const styles = StyleSheet.create({
   secondaryMenuItem: {
     width: '23%',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 14,
   },
   secondaryMenuIconContainer: {
     width: 48,
@@ -477,12 +481,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   showMoreButton: {
-    paddingVertical: 8,
+    paddingVertical: 10,    
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 1,
     alignSelf: 'center',
     gap: 4,
   },
