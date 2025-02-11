@@ -209,12 +209,6 @@ export default function Dashboard() {
             </View>
           </View>
 
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#666" />
-            <Text style={styles.searchPlaceholder}>Cari Fitur</Text>
-          </View>
-
           {/* Secondary Menu */}
           <View style={styles.secondaryMenuContainer}>
             <View style={styles.secondaryMenuGrid}>
@@ -421,29 +415,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FFFFFF',
     textAlign: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    marginHorizontal: 16,
-    marginVertical: 5,
-    marginTop: 40,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#EEE',
-  },
-  searchIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#666',
-  },
-  searchPlaceholder: {
-    marginLeft: 8,
-    color: '#666',
-    fontSize: 14,
   },
   secondaryMenuGrid: {
     flexDirection: 'row',
