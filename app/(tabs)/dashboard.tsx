@@ -1,16 +1,16 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import Skeleton from '../../components/Skeleton';
 
 interface MenuItem {
   id: number;
   title: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: any;
   route: 
     | "/(menu)/transfer" 
     | "/(menu)/tarik-tunai" 
@@ -22,12 +22,17 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 1, title: 'Transfer', icon: 'arrow-forward-outline', route: '/(menu)/transfer', color: '#4CAF50' },
-  { id: 2, title: 'Tarik Tunai', icon: 'cash-outline', route: '/(menu)/tarik-tunai', color: '#2196F3' },
-  { id: 3, title: 'Setor Tunai', icon: 'wallet-outline', route: '/(menu)/setor-tunai', color: '#9C27B0' },
-  { id: 4, title: 'Pembayaran', icon: 'card-outline', route: '/(menu)/pembayaran', color: '#FF9800' },
-  { id: 5, title: 'Pinjaman', icon: 'briefcase-outline', route: '/(menu)/pinjaman', color: '#F44336' },
-  { id: 6, title: 'Simpanan', icon: 'save-outline', route: '/(menu)/simpanan', color: '#009688' },
+  { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/transfer', color: '#0066AE' },
+  { id: 2, title: 'Tarik', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+  { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
+  { id: 4, title: 'Pembelian', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+];
+
+const secondaryMenuItems: MenuItem[] = [
+  { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
+  { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+  { id: 7, title: 'Kredit', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/tarik-tunai', color: '#0066AE' },
+  { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/simpanan', color: '#0066AE' },
 ];
 
 export default function Dashboard() {
@@ -36,6 +41,7 @@ export default function Dashboard() {
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showBalance, setShowBalance] = useState(true);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -120,233 +126,342 @@ export default function Dashboard() {
     });
   };
 
-  const renderMenuItem = (item: MenuItem) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[styles.menuItem, { backgroundColor: item.color }]}
-      onPress={() => handleMenuPress(item.route)}
-    >
-      <Ionicons name={item.icon} size={32} color="#fff" />
-      <Text style={styles.menuText}>{item.title}</Text>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        style={styles.scrollView}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#2563eb"]}
-            tintColor="#2563eb"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {/* Header Section */}
         <View style={styles.header}>
-          {isLoading ? (
-            <View style={styles.headerContent}>
-              <Skeleton width={200} height={24} />
-              <View style={{ height: 8 }} />
-              <Skeleton width={150} height={16} />
+          <View style={styles.headerTop}>
+            <View style={styles.userInfo}>
+              <Text style={styles.greeting}>Hai,</Text>
+              <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
             </View>
-          ) : (
-            <View style={styles.headerContent}>
-              <Text style={styles.welcomeText}>
-                {userName ? `Halo, ${userName}` : 'Selamat Datang'}
-              </Text>
-              <Text style={styles.subText}>di Koperasi Sinara Artha</Text>
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={handleLogoutConfirmation}
-              >
-                <Ionicons name="log-out-outline" size={20} color="#fff" />
-                <Text style={styles.logoutText}>Logout</Text>
+            <View style={styles.headerIcons}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={24} color="#FFF" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="headset-outline" size={24} color="#FFF" />
               </TouchableOpacity>
             </View>
-          )}
-        </View>
-
-        <View style={styles.content}>
-          <View style={styles.card}>
-            <Ionicons name="wallet-outline" size={24} color="#0066AE" />
-            <Text style={styles.cardTitle}>Saldo Anda</Text>
-            <Text style={styles.balance}>Rp 1.000.000</Text>
-          </View>
-
-          <View style={styles.menuGrid}>
-            {isLoading ? (
-              <View style={styles.menuGridContainer}>
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <View key={item} style={[styles.menuItem, { backgroundColor: '#f5f5f5' }]}>
-                    <Skeleton width={50} height={50} borderRadius={25} />
-                    <View style={{ height: 8 }} />
-                    <Skeleton width={80} height={16} />
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View style={styles.menuGridContainer}>
-                {menuItems.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[styles.menuItem, { backgroundColor: item.color }]}
-                    onPress={() => handleMenuPress(item.route)}
-                  >
-                    <Ionicons name={item.icon} size={32} color="#fff" />
-                    <Text style={styles.menuText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
         </View>
 
-        <Modal
-          transparent={true}
-          animationType="slide"
-          visible={isLogoutModalVisible}
-          onRequestClose={() => setIsLogoutModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Konfirmasi Logout</Text>
-              <Text style={styles.modalText}>Apakah Anda yakin ingin logout?</Text>
-              <View style={styles.modalButtonContainer}>
+        {/* Combined Card */}
+        <View style={styles.combinedCard}>
+          {/* Balance Section */}
+          <View style={styles.balanceSection}>
+            <View>
+              <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
+              <View style={styles.balanceContainer}>
+                <Text style={styles.balanceAmount}>
+                  {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
+                </Text>
                 <TouchableOpacity
-                  onPress={() => setIsLogoutModalVisible(false)}
-                  style={[styles.modalButton, styles.modalButtonCancel]}
+                  onPress={() => setShowBalance(!showBalance)}
+                  style={styles.eyeIconContainer}
                 >
-                  <Text style={styles.modalButtonText}>Batal</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleLogout}
-                  style={[styles.modalButton, styles.modalButtonConfirm]}
-                >
-                  <Text style={styles.modalButtonText}>Logout</Text>
+                  <Ionicons
+                    name={showBalance ? 'eye-outline' : 'eye-off-outline'}
+                    size={20}
+                    color="#BBBBBB"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
+            <TouchableOpacity style={styles.seeAllAccounts}>
+              <Text style={styles.seeAllAccountsText}>Semua Rekeningmu</Text>
+              <Ionicons name="chevron-forward" size={20} color="#BBBBBB" />
+            </TouchableOpacity>
           </View>
-        </Modal>
-        <Toast />
+
+          {/* Menu Section */}
+          <View style={styles.menuSection}>
+            <View style={styles.menuGrid}>
+              {menuItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() => router.push(item.route)}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <Image 
+                      source={item.icon}
+                      style={styles.menuIcon}
+                    />
+                  </View>
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={20} color="#666" />
+          <Text style={styles.searchPlaceholder}>Cari Fitur</Text>
+        </View>
+
+        {/* Secondary Menu */}
+        <View style={styles.secondaryMenuGrid}>
+          {secondaryMenuItems.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.secondaryMenuItem}
+              onPress={() => router.push(item.route)}
+            >
+              <View style={styles.secondaryMenuIconContainer}>
+                <Image 
+                  source={item.icon}
+                  style={styles.secondaryMenuIcon}
+                />
+              </View>
+              <Text style={styles.secondaryMenuText}>{item.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Financial Report Section */}
+        <View style={styles.financialReportCard}>
+          <View style={styles.financialReportHeader}>
+            <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
+            <TouchableOpacity>
+              <Text style={styles.viewMoreText}>Tampilkan</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+        </View>
       </ScrollView>
+
+      {/* Logout Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isLogoutModalVisible}
+        onRequestClose={() => setIsLogoutModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Konfirmasi Logout</Text>
+            <Text style={styles.modalText}>Apakah Anda yakin ingin logout?</Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                onPress={() => setIsLogoutModalVisible(false)}
+                style={[styles.modalButton, styles.modalButtonCancel]}
+              >
+                <Text style={styles.modalButtonText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={[styles.modalButton, styles.modalButtonConfirm]}
+              >
+                <Text style={styles.modalButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Toast />
     </SafeAreaView>
   );
 }
 
-const { width } = Dimensions.get('window');
-const menuItemWidth = (width - 60) / 2;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollView: {
-    flex: 1,
+    backgroundColor: '#F5F5F5',
   },
   header: {
-    padding: 20,
     backgroundColor: '#0066AE',
-    marginTop: 30,
-    marginBottom: 30,
-    overflow: 'hidden',
-    position: 'relative',
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 16,
   },
-  headerContent: {
-    padding: 10,
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  welcomeText: {
-    fontWeight: 'bold',
-    fontSize: 18,
-    color: '#fff',
-    overflow: 'hidden',
+  userInfo: {
+    flexDirection: 'column',
   },
-  subText: {
-    fontSize: 13,
-    color: '#fff',
-    opacity: 0.8,
-  },
-  content: {
-    padding: 20,
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    marginBottom: 20,
-  },
-  cardTitle: {
+  greeting: {
     fontSize: 16,
-    color: '#666',
-    marginTop: 10,
+    color: '#FFF',
+    opacity: 0.9,
   },
-  balance: {
-    fontSize: 24,
+  userName: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
-    marginTop: 5,
+    color: '#FFF',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  iconButton: {
+    padding: 4,
+  },
+  headerIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#FFFFFF',
+  },
+  combinedCard: {
+    backgroundColor: '#005488',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginHorizontal: 16,
+    marginTop: -20,
+  },
+  balanceSection: {
+    padding: 16,
+    backgroundColor: '#00549C',
+  },
+  menuSection: {
+    backgroundColor: '#003C6C',
+    padding: 16,
+    paddingTop: 24,
+  },
+  balanceLabel: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+  balanceAmount: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  seeAllAccounts: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  seeAllAccountsText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  chevronForwardIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#BBBBBB',
   },
   menuGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  menuGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    width: '100%',
+    paddingVertical: 8,
   },
   menuItem: {
-    width: menuItemWidth,
-    height: 100,
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
+    width: '23%',
     alignItems: 'center',
+  },
+  menuIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  menuIcon: {
+    width: 36,
+    height: 36,
+    // tintColor: '#FFFFFF',
   },
   menuText: {
-    color: '#fff',
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
-  logoutButton: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'absolute',
-    right: 20,
-    top: 20,
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 0, 0, 0.75)',
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#EEE',
   },
-  logoutText: {
+  searchIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#666',
+  },
+  searchPlaceholder: {
     marginLeft: 8,
+    color: '#666',
+    fontSize: 14,
+  },
+  secondaryMenuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  secondaryMenuItem: {
+    width: '23%',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  secondaryMenuIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  secondaryMenuIcon: {
+    width: 36,
+    height: 36,
+  },
+  secondaryMenuText: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+  },
+  financialReportCard: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 10,
+  },
+  financialReportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  financialReportTitle: {
     fontSize: 16,
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  viewMoreText: {
+    fontSize: 14,
+    color: '#0066AE',
+  },
+  financialReportDate: {
+    fontSize: 14,
+    color: '#666',
   },
   modalContainer: {
     flex: 1,
@@ -356,7 +471,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '80%',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
     borderRadius: 10,
     padding: 20,
     elevation: 5,
@@ -390,5 +505,18 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  }
+  },
+  balanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  eyeIconContainer: {
+    padding: 4,
+  },
+  eyeIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#BBBBBB',
+  },
 });
