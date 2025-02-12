@@ -13,6 +13,7 @@ import {
   Modal,
   Pressable,
   useWindowDimensions,
+  Alert
 } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -281,16 +282,20 @@ export default function HomeScreen() {
         
         const { token, user } = data.data;
         await AsyncStorage.setItem('userToken', token);
-        // Simpan data user juga untuk digunakan nanti
         await AsyncStorage.setItem('userData', JSON.stringify(user));
         
         Toast.show({
           type: 'success',
           text1: 'Login Berhasil',
-          text2: `Selamat datang kembali, ${user.name}!`
+          text2: `Selamat datang, ${data.data.user.name}`,
+          visibilityTime: 3000,
+          position: 'top'
         });
         setIsLoggedIn(true);
-        router.replace('/dashboard');
+        setShowLogin(false);
+        setTimeout(() => {
+          router.replace('/dashboard');
+        }, 1000); // delay 1 detik
       } else {
         const errorMessage = Platform.OS !== 'web' 
           ? `Error: ${response.status}\nURL: ${API_URL}\nMessage: ${data.message || 'Unknown error'}`
@@ -309,18 +314,18 @@ export default function HomeScreen() {
         ? `Network Error\nURL: ${getApiBaseUrl()}${API_ENDPOINTS.LOGIN}\nDetails: ${error.message}`
         : 'Terjadi kesalahan pada server';
 
-      console.error('Login error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: errorMessage,
-        visibilityTime: 4000,
-        position: 'bottom'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        console.error('Login error:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: errorMessage,
+          visibilityTime: 4000,
+          position: 'bottom'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const handleLogout = async () => {
     try {
@@ -353,6 +358,24 @@ export default function HomeScreen() {
         text2: 'Terjadi kesalahan saat logout',
       });
     }
+  };
+
+  const handleLogoutConfirmation = () => {
+    Alert.alert(
+      'Konfirmasi Logout',
+      'Apakah Anda yakin ingin keluar?',
+      [
+        {
+          text: 'Batal',
+          style: 'cancel'
+        },
+        {
+          text: 'Ya, Keluar',
+          onPress: handleLogout,
+          style: 'destructive'
+        }
+      ]
+    );
   };
 
   const handleForgotPassword = async () => {
@@ -575,30 +598,25 @@ export default function HomeScreen() {
         />
       </ScrollView>
       
-      {/* Login Button Container */}
-      {(showLoginButton || isLoggedIn) && (
-        <Animated.View 
-          style={[
-            styles.loginButtonContainer,
-            { opacity: loginContainerOpacity }
-          ]}
+      {/* Login/Logout Button */}
+      {isLoggedIn ? (
+        <TouchableOpacity
+          style={[styles.loginButton, styles.logoutButton]}
+          onPress={handleLogoutConfirmation}
         >
-          <TouchableOpacity
-            style={[
-              styles.loginButton,
-              isLoggedIn && styles.logoutButton,
-              { width: windowWidth * 0.9 }
-            ]}
-            onPress={isLoggedIn ? handleLogout : handleLoginPress}
-          >
-            <Text style={[
-              styles.loginButtonText,
-              isLoggedIn && { color: '#FF3B30' }
-            ]}>
-              {isLoggedIn ? 'Logout' : 'Login'}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+          <Text style={[styles.loginButtonText, styles.logoutButtonText]}>
+            Logout
+          </Text>
+        </TouchableOpacity>
+      ) : showLoginButton && (
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={handleLoginPress}
+        >
+          <Text style={styles.loginButtonText}>
+            Login
+          </Text>
+        </TouchableOpacity>
       )}
 
       {/* Form Lupa Password */}
@@ -841,7 +859,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  loginButtonContainer: {
+  loginContainer: {
     position: 'absolute',
     bottom: 20,
     left: 0,
@@ -852,10 +870,12 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: '#0066AE',
     paddingVertical: 15,
+    marginHorizontal: 20,
+    marginVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -874,6 +894,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
+  },
+  logoutButtonText: {
+    color: '#FF3B30',
   },
   overlay: {
     position: 'absolute',

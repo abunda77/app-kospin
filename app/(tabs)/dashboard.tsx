@@ -65,10 +65,27 @@ export default function Dashboard() {
         router.replace('/(tabs)');
         return;
       }
+
+      // Ambil data user dari AsyncStorage
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
-        const { name } = JSON.parse(userData);
-        setUserName(name);
+        const parsedData = JSON.parse(userData);
+        setUserName(parsedData.name);
+      } else {
+        // Jika tidak ada data user, fetch dari API
+        const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.USER_PROFILE}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUserName(data.data.name);
+          // Simpan data untuk penggunaan berikutnya
+          await AsyncStorage.setItem('userData', JSON.stringify(data.data));
+        }
       }
     } catch (error) {
       console.log('Error checking auth:', error);
