@@ -25,6 +25,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
@@ -167,7 +168,7 @@ export default function HomeScreen() {
 
   const checkLoginStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('secure_token');
       if (token) {
         setIsLoggedIn(true);
       } else {
@@ -281,7 +282,7 @@ export default function HomeScreen() {
         }
         
         const { token, user } = data.data;
-        await AsyncStorage.setItem('userToken', token);
+        await SecureStore.setItemAsync('secure_token', token);
         await AsyncStorage.setItem('userData', JSON.stringify(user));
         
         Toast.show({
@@ -329,7 +330,7 @@ export default function HomeScreen() {
 
   const handleLogout = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('secure_token');
       console.log('Attempting logout with token:', token);
       
       const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
@@ -343,7 +344,7 @@ export default function HomeScreen() {
       const data = await response.json();
       console.log('Response data:', data);
 
-      await AsyncStorage.removeItem('userToken');
+      await SecureStore.deleteItemAsync('secure_token');
       setIsLoggedIn(false);
       Toast.show({
         type: 'success',

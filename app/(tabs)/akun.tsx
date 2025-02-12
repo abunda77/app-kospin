@@ -8,9 +8,10 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter, useFocusEffect } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import Skeleton from '../../components/Skeleton'; // Import Skeleton component
@@ -43,16 +44,39 @@ interface UserProfile {
 
 export default function AccountScreen() {
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' atau 'password'
 
-  const fetchProfile = async () => {
+  useEffect(() => {
+    checkLoginStatus();
+    loadProfile();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkLoginStatus();
+      loadProfile();
+    }, [])
+  );
+
+  const checkLoginStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('secure_token');
+      setIsLoggedIn(!!token);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    }
+  };
+
+  const loadProfile = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
       if (!token) {
-        router.replace('/(tabs)');
+        setIsLoading(false);
         return;
       }
 
@@ -68,21 +92,43 @@ export default function AccountScreen() {
         setProfile(result.data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error loading profile:', error);
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    fetchProfile();
+    loadProfile().finally(() => setRefreshing(false));
   }, []);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0066AE" />
+      </View>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <SafeAreaView style={styles.containerLoggedOut}>
+        <View style={styles.headerLoggedOut}>
+          <Text style={styles.titleLoggedOut}>Akun</Text>
+        </View>
+        <View style={styles.contentLoggedOut}>
+          <Text style={styles.loginMessage}>Silakan login untuk melihat profil Anda</Text>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/login')}
+          >
+            <Text style={styles.loginButtonText}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -101,14 +147,6 @@ export default function AccountScreen() {
     }).format(Number(amount));
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0066AE" />
-      </View>
-    );
-  }
-
   return (
     <ScrollView 
       style={styles.container}
@@ -118,31 +156,18 @@ export default function AccountScreen() {
     >
       {/* Header Profile */}
       <View style={styles.header}>
-        {loading ? (
-          <>
-            <Skeleton width={80} height={80} borderRadius={40} />
-            <View style={styles.headerInfo}>
-              <Skeleton width={180} height={24} />
-              <View style={{ height: 8 }} />
-              <Skeleton width={100} height={20} />
-            </View>
-          </>
-        ) : (
-          <>
-            <Image
-              source={
-                profile?.avatar
-                  ? { uri: `${getApiBaseUrl()}/storage/${profile.avatar}` }
-                  : require('../../assets/icons/default-avatar.png')
-              }
-              style={styles.avatar}
-            />
-            <View style={styles.headerInfo}>
-              <Text style={styles.name}>{`${profile?.first_name} ${profile?.last_name}`}</Text>
-              <Text style={styles.memberType}>{profile?.type_member.toUpperCase()}</Text>
-            </View>
-          </>
-        )}
+        <Image
+          source={
+            profile?.avatar
+              ? { uri: `${getApiBaseUrl()}/storage/${profile.avatar}` }
+              : require('../../assets/icons/default-avatar.png')
+          }
+          style={styles.avatar}
+        />
+        <View style={styles.headerInfo}>
+          <Text style={styles.name}>{`${profile?.first_name} ${profile?.last_name}`}</Text>
+          <Text style={styles.memberType}>{profile?.type_member.toUpperCase()}</Text>
+        </View>
       </View>
 
       {/* Tab Navigation */}
@@ -180,103 +205,49 @@ export default function AccountScreen() {
       {/* Content based on active tab */}
       {activeTab === 'profile' ? (
         <View style={styles.infoSection}>
-          {loading ? (
-            // Skeleton loading untuk cards
-            <>
-              <View style={styles.infoCard}>
-                <Skeleton width={24} height={24} borderRadius={12} />
-                <View style={[styles.infoContent, { flex: 1 }]}>
-                  <Skeleton width={150} height={20} />
-                  <View style={{ height: 8 }} />
-                  <Skeleton width="90%" height={16} />
-                  <View style={{ height: 4 }} />
-                  <Skeleton width="85%" height={16} />
-                  <View style={{ height: 4 }} />
-                  <Skeleton width="80%" height={16} />
-                  <View style={{ height: 4 }} />
-                  <Skeleton width="75%" height={16} />
-                </View>
-              </View>
+          <View style={styles.infoCard}>
+            <Ionicons name="person-outline" size={24} color="#0066AE" />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Informasi Pribadi</Text>
+              <Text style={styles.infoValue}>NIK: {profile?.no_identity}</Text>
+              <Text style={styles.infoValue}>
+                Gender: {profile?.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
+              </Text>
+              <Text style={styles.infoValue}>
+                Tanggal Lahir: {formatDate(profile?.birthday || '')}
+              </Text>
+              <Text style={styles.infoValue}>Status: {profile?.mariage}</Text>
+              <Text style={styles.infoValue}>Pekerjaan: {profile?.job}</Text>
+            </View>
+          </View>
 
-              <View style={styles.infoCard}>
-                <Skeleton width={24} height={24} borderRadius={12} />
-                <View style={[styles.infoContent, { flex: 1 }]}>
-                  <Skeleton width={120} height={20} />
-                  <View style={{ height: 8 }} />
-                  <Skeleton width="90%" height={16} />
-                  <View style={{ height: 4 }} />
-                  <Skeleton width="85%" height={16} />
-                  <View style={{ height: 4 }} />
-                  <Skeleton width="80%" height={16} />
-                </View>
-              </View>
+          <View style={styles.infoCard}>
+            <Ionicons name="call-outline" size={24} color="#0066AE" />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Kontak</Text>
+              <Text style={styles.infoValue}>Email: {profile?.email}</Text>
+              <Text style={styles.infoValue}>Telepon: {profile?.phone}</Text>
+              <Text style={styles.infoValue}>WhatsApp: {profile?.whatsapp}</Text>
+            </View>
+          </View>
 
-              <View style={styles.infoCard}>
-                <Skeleton width={24} height={24} borderRadius={12} />
-                <View style={[styles.infoContent, { flex: 1 }]}>
-                  <Skeleton width={100} height={20} />
-                  <View style={{ height: 8 }} />
-                  <Skeleton width="95%" height={16} />
-                </View>
-              </View>
+          <View style={styles.infoCard}>
+            <Ionicons name="home-outline" size={24} color="#0066AE" />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Alamat</Text>
+              <Text style={styles.infoValue}>{profile?.address}</Text>
+            </View>
+          </View>
 
-              <View style={styles.infoCard}>
-                <Skeleton width={24} height={24} borderRadius={12} />
-                <View style={[styles.infoContent, { flex: 1 }]}>
-                  <Skeleton width={160} height={20} />
-                  <View style={{ height: 8 }} />
-                  <Skeleton width="90%" height={16} />
-                </View>
-              </View>
-            </>
-          ) : (
-            // Konten asli
-            <>
-              <View style={styles.infoCard}>
-                <Ionicons name="person-outline" size={24} color="#0066AE" />
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Informasi Pribadi</Text>
-                  <Text style={styles.infoValue}>NIK: {profile?.no_identity}</Text>
-                  <Text style={styles.infoValue}>
-                    Gender: {profile?.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                  </Text>
-                  <Text style={styles.infoValue}>
-                    Tanggal Lahir: {formatDate(profile?.birthday || '')}
-                  </Text>
-                  <Text style={styles.infoValue}>Status: {profile?.mariage}</Text>
-                  <Text style={styles.infoValue}>Pekerjaan: {profile?.job}</Text>
-                </View>
-              </View>
-
-              <View style={styles.infoCard}>
-                <Ionicons name="call-outline" size={24} color="#0066AE" />
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Kontak</Text>
-                  <Text style={styles.infoValue}>Email: {profile?.email}</Text>
-                  <Text style={styles.infoValue}>Telepon: {profile?.phone}</Text>
-                  <Text style={styles.infoValue}>WhatsApp: {profile?.whatsapp}</Text>
-                </View>
-              </View>
-
-              <View style={styles.infoCard}>
-                <Ionicons name="home-outline" size={24} color="#0066AE" />
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Alamat</Text>
-                  <Text style={styles.infoValue}>{profile?.address}</Text>
-                </View>
-              </View>
-
-              <View style={styles.infoCard}>
-                <Ionicons name="wallet-outline" size={24} color="#0066AE" />
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Informasi Finansial</Text>
-                  <Text style={styles.infoValue}>
-                    Pendapatan Bulanan: {formatCurrency(profile?.monthly_income || '0')}
-                  </Text>
-                </View>
-              </View>
-            </>
-          )}
+          <View style={styles.infoCard}>
+            <Ionicons name="wallet-outline" size={24} color="#0066AE" />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Informasi Finansial</Text>
+              <Text style={styles.infoValue}>
+                Pendapatan Bulanan: {formatCurrency(profile?.monthly_income || '0')}
+              </Text>
+            </View>
+          </View>
         </View>
       ) : (
         <View style={styles.infoSection}>
@@ -352,6 +323,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginTop: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  profileInfo: {
+    marginLeft: 15,
+    flex: 1,
+  },
   infoContent: {
     marginLeft: 15,
     flex: 1,
@@ -401,5 +390,49 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#0066AE',
     fontWeight: 'bold',
+  },
+  containerLoggedOut: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  headerLoggedOut: {
+    backgroundColor: '#0066AE',
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleLoggedOut: {
+    color: '#FFF',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 30,
+  },
+  contentLoggedOut: {
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginMessage: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  loginButton: {
+    backgroundColor: '#0066AE',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  loginButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
