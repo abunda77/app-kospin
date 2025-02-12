@@ -1,35 +1,45 @@
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Platform, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import LoginRequired from '../../components/LoginRequired';
 
 export default function MenuLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) {
+        Platform.OS === 'android' 
+          ? router.replace('/(tabs)') 
+          : router.push('/(tabs)');
+        return;
+      }
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      Platform.OS === 'android' 
+        ? router.replace('/(tabs)') 
+        : router.push('/(tabs)');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     checkLoginStatus();
   }, []);
 
-  const checkLoginStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      setIsLoggedIn(!!token);
-      if (!token) {
-        Platform.OS === 'android' 
-          ? router.replace('/(tabs)') 
-          : router.push('/(tabs)'); 
-      }
-    } catch (error) {
-      console.error('Error checking login status:', error);
-      setIsLoggedIn(false);
-      Platform.OS === 'android' 
-        ? router.replace('/(tabs)') 
-        : router.push('/(tabs)');
-    }
-  };
+  useFocusEffect(
+    React.useCallback(() => {
+      checkLoginStatus();
+    }, [])
+  );
 
   const handleBackToDashboard = () => {
     if (Platform.OS === 'android') {
@@ -38,6 +48,10 @@ export default function MenuLayout() {
       router.push('/(tabs)/dashboard');
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!isLoggedIn) {
     return null;

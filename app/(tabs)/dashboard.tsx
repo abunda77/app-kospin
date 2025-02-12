@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter, useFocusEffect } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
@@ -57,17 +57,23 @@ export default function Dashboard() {
     }, 2000);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      checkAuthAndFetchData();
+    }, [])
+  );
+
   const checkAuthAndFetchData = async () => {
     setIsLoading(true);
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('secure_token');
       if (!token) {
         router.replace('/(tabs)');
         return;
       }
 
-      // Ambil data user dari AsyncStorage
-      const userData = await AsyncStorage.getItem('userData');
+      // Ambil data user dari SecureStore
+      const userData = await SecureStore.getItemAsync('userData');
       if (userData) {
         const parsedData = JSON.parse(userData);
         setUserName(parsedData.name);
@@ -84,7 +90,7 @@ export default function Dashboard() {
           const data = await response.json();
           setUserName(data.data.name);
           // Simpan data untuk penggunaan berikutnya
-          await AsyncStorage.setItem('userData', JSON.stringify(data.data));
+          await SecureStore.setItemAsync('userData', JSON.stringify(data.data));
         }
       }
     } catch (error) {
@@ -102,7 +108,7 @@ export default function Dashboard() {
   const handleLogout = async () => {
     setIsLogoutModalVisible(false);
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('secure_token');
       console.log('Attempting logout with token:', token);
       
       const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
@@ -118,8 +124,8 @@ export default function Dashboard() {
       console.log('Logout response:', data);
       
       if (data.status === 'success' || response.ok) {
-        await AsyncStorage.removeItem('userToken');
-        await AsyncStorage.removeItem('userData');
+        await SecureStore.deleteItemAsync('secure_token');
+        await SecureStore.deleteItemAsync('userData');
         Toast.show({
           type: 'success',
           text1: 'Berhasil',

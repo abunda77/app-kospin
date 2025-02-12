@@ -15,6 +15,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import Skeleton from '../../components/Skeleton'; // Import Skeleton component
+import LoginRequired from '../../components/LoginRequired'; // Import LoginRequired component
 
 interface UserProfile {
   id: number;
@@ -112,22 +113,7 @@ export default function AccountScreen() {
   }
 
   if (!isLoggedIn) {
-    return (
-      <SafeAreaView style={styles.containerLoggedOut}>
-        <View style={styles.headerLoggedOut}>
-          <Text style={styles.titleLoggedOut}>Akun</Text>
-        </View>
-        <View style={styles.contentLoggedOut}>
-          <Text style={styles.loginMessage}>Silakan login untuk melihat profil Anda</Text>
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={() => router.push('/login')}
-          >
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
+    return <LoginRequired message="Silakan login untuk melihat profil Anda" />;
   }
 
   const formatDate = (dateString: string) => {
@@ -207,33 +193,47 @@ export default function AccountScreen() {
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
             <Ionicons name="person-outline" size={24} color="#0066AE" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Informasi Pribadi</Text>
-              <Text style={styles.infoValue}>NIK: {profile?.no_identity}</Text>
-              <Text style={styles.infoValue}>
-                Gender: {profile?.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-              </Text>
-              <Text style={styles.infoValue}>
-                Tanggal Lahir: {formatDate(profile?.birthday || '')}
-              </Text>
-              <Text style={styles.infoValue}>Status: {profile?.mariage}</Text>
-              <Text style={styles.infoValue}>Pekerjaan: {profile?.job}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>NIK</Text>
+              <Text style={styles.infoValue}>{profile?.no_identity}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Gender</Text>
+              <Text style={styles.infoValue}>{profile?.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Tanggal Lahir</Text>
+              <Text style={styles.infoValue}>{formatDate(profile?.birthday || '')}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Status</Text>
+              <Text style={styles.infoValue}>{profile?.mariage}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Pekerjaan</Text>
+              <Text style={styles.infoValue}>{profile?.job}</Text>
             </View>
           </View>
 
           <View style={styles.infoCard}>
             <Ionicons name="call-outline" size={24} color="#0066AE" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Kontak</Text>
-              <Text style={styles.infoValue}>Email: {profile?.email}</Text>
-              <Text style={styles.infoValue}>Telepon: {profile?.phone}</Text>
-              <Text style={styles.infoValue}>WhatsApp: {profile?.whatsapp}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <Text style={styles.infoValue}>{profile?.email}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Telepon</Text>
+              <Text style={styles.infoValue}>{profile?.phone}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>WhatsApp</Text>
+              <Text style={styles.infoValue}>{profile?.whatsapp}</Text>
             </View>
           </View>
 
           <View style={styles.infoCard}>
             <Ionicons name="home-outline" size={24} color="#0066AE" />
-            <View style={styles.infoContent}>
+            <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Alamat</Text>
               <Text style={styles.infoValue}>{profile?.address}</Text>
             </View>
@@ -241,18 +241,16 @@ export default function AccountScreen() {
 
           <View style={styles.infoCard}>
             <Ionicons name="wallet-outline" size={24} color="#0066AE" />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Informasi Finansial</Text>
-              <Text style={styles.infoValue}>
-                Pendapatan Bulanan: {formatCurrency(profile?.monthly_income || '0')}
-              </Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Pendapatan Bulanan</Text>
+              <Text style={styles.infoValue}>{formatCurrency(profile?.monthly_income || '0')}</Text>
             </View>
           </View>
         </View>
       ) : (
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
-            <View style={styles.infoContent}>
+            <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Ubah Password</Text>
               <Text style={styles.infoValue}>Fitur ubah password akan segera hadir</Text>
             </View>
@@ -268,12 +266,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-  },
   header: {
     backgroundColor: '#0066AE',
     padding: 20,
@@ -283,156 +275,95 @@ const styles = StyleSheet.create({
   avatar: {
     width: 80,
     height: 80,
-    marginTop: 40,
     borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#FFF',
+    marginRight: 15,
   },
   headerInfo: {
-    marginLeft: 15,
-    marginTop: 30,
+    flex: 1,
   },
   name: {
-    color: '#FFF',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 5,
   },
   memberType: {
+    fontSize: 14,
     color: '#FFF',
-    fontSize: 14,
     opacity: 0.8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginTop: 5,
-  },
-  infoSection: {
-    padding: 15,
-  },
-  infoCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 15,
-    borderRadius: 12,
-    marginHorizontal: 15,
-    marginTop: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  profileInfo: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  infoContent: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
-    padding: 5,
-    marginHorizontal: 15,
-    marginTop: -13,
-    borderRadius: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 10,
+    gap: 5,
   },
   activeTab: {
-    backgroundColor: '#E6F0F9',
+    borderBottomWidth: 2,
+    borderBottomColor: '#0066AE',
   },
   tabText: {
-    marginLeft: 8,
     fontSize: 14,
     color: '#666',
-    fontWeight: '500',
   },
   activeTabText: {
     color: '#0066AE',
     fontWeight: 'bold',
   },
-  containerLoggedOut: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+  infoSection: {
+    padding: 15,
   },
-  headerLoggedOut: {
-    backgroundColor: '#0066AE',
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  titleLoggedOut: {
-    color: '#FFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 30,
-  },
-  contentLoggedOut: {
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loginMessage: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  loginButton: {
-    backgroundColor: '#0066AE',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
+  infoCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  loginButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  infoRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    alignItems: 'flex-start',
+  },
+  infoLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: '#666',
+  },
+  infoValue: {
+    flex: 2,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  skeletonContainer: {
+    padding: 15,
+  },
+  skeletonCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
   },
 });
