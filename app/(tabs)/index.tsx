@@ -12,7 +12,7 @@ import {
   RefreshControl,
   Modal,
   Pressable,
-  useWindowDimensions
+  useWindowDimensions,
 } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -131,6 +131,8 @@ const menuItems: MenuItem[] = [
 
 export default function HomeScreen() {
   const [showLogin, setShowLogin] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -353,6 +355,85 @@ export default function HomeScreen() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validasi Gagal',
+        text2: 'Silakan masukkan email Anda',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const API_URL = `${getApiBaseUrl()}${API_ENDPOINTS.FORGOT_PASSWORD}`;
+      console.log('[FORGOT PASSWORD] Request URL:', API_URL);
+      console.log('[FORGOT PASSWORD] Request Body:', { email: forgotPasswordEmail });
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: forgotPasswordEmail
+        })
+      });
+
+      const data = await response.json();
+      console.log('[FORGOT PASSWORD] Response Status:', response.status);
+      console.log('[FORGOT PASSWORD] Response Data:', data);
+      
+      if (response.ok) {
+        console.log('[FORGOT PASSWORD] Success: Link reset password akan dikirim');
+        Toast.show({
+          type: 'success',
+          text1: 'Berhasil',
+          text2: 'Link reset password akan dikirim ke email Anda',
+          position: 'bottom'
+        });
+        setShowForgotPassword(false);
+        setForgotPasswordEmail('');
+      } else {
+        console.log('[FORGOT PASSWORD] Error:', data.message || 'Terjadi kesalahan');
+        Toast.show({
+          type: 'error',
+          text1: 'Gagal',
+          text2: data.message || 'Terjadi kesalahan',
+          position: 'bottom'
+        });
+      }
+    } catch (error: any) {
+      console.error('[FORGOT PASSWORD] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Terjadi kesalahan pada server',
+        position: 'bottom'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleShowForgotPassword = () => {
+    setShowLogin(false);
+    setShowForgotPassword(true);
+    formHeight.value = withSpring(300);
+    formOpacity.value = withSpring(1);
+    loginContainerOpacity.value = withSpring(0);
+  };
+
+  const handleForgotPasswordCancel = () => {
+    setShowForgotPassword(false);
+    formHeight.value = withSpring(0);
+    formOpacity.value = withSpring(0);
+    loginContainerOpacity.value = withSpring(1);
+  };
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       height: formHeight.value,
@@ -520,85 +601,138 @@ export default function HomeScreen() {
         </Animated.View>
       )}
 
-      {/* Login Form */}
+      {/* Form Lupa Password */}
+      {showForgotPassword && (
+        <Animated.View
+          style={[
+            styles.formContainer,
+            animatedStyle,
+            { height: formHeight }
+          ]}
+        >
+          <View style={styles.formHeader}>
+            <Text style={styles.formTitle}>Lupa Password</Text>
+            <TouchableOpacity
+              onPress={handleForgotPasswordCancel}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.inputContainer}>
+            {/* <Text style={styles.label}>Email</Text> */}
+            <TextInput
+              style={styles.input}
+              placeholder="Masukkan email Anda"
+              value={forgotPasswordEmail}
+              onChangeText={setForgotPasswordEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleForgotPassword}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Text style={styles.buttonText}>Memproses...</Text>
+            ) : (
+              <Text style={styles.buttonText}>Kirim Link Reset Password</Text>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* Form Login */}
       {showLogin && (
-        <TouchableOpacity 
-          style={styles.overlay} 
-          onPress={handleLoginCancel}
-          activeOpacity={1}
+        <Animated.View
+          style={[
+            styles.formContainer,
+            animatedStyle,
+            { height: formHeight }
+          ]}
         >
           <TouchableOpacity 
-            style={styles.loginForm} 
+            style={styles.overlay} 
+            onPress={handleLoginCancel}
             activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
           >
             <TouchableOpacity 
-              style={styles.closeButton} 
-              onPress={handleLoginCancel}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={styles.loginForm} 
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
             >
-              <Ionicons name="close" size={24} color="#666" />
-            </TouchableOpacity>
-            <Text style={styles.loginHeader}>Silakan Login</Text>
-            
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput 
-                placeholder="Username"
-                style={[styles.input, validationErrors.username ? styles.inputError : null]}
-                placeholderTextColor="#999"
-                value={username}
-                onChangeText={(text) => {
-                  setUsername(text);
-                  setValidationErrors(prev => ({ ...prev, username: '' }));
-                }}
-              />
-            </View>
-            {validationErrors.username ? (
-              <Text style={styles.errorText}>{validationErrors.username}</Text>
-            ) : null}
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput 
-                placeholder="Password"
-                secureTextEntry={!showPassword}
-                style={[styles.input, validationErrors.password ? styles.inputError : null]}
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setValidationErrors(prev => ({ ...prev, password: '' }));
-                }}
-              />
               <TouchableOpacity 
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.passwordToggle}
+                style={styles.closeButton} 
+                onPress={handleLoginCancel}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={20} 
-                  color="#666" 
-                />
+                <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
-            </View>
-            {validationErrors.password ? (
-              <Text style={styles.errorText}>{validationErrors.password}</Text>
-            ) : null}
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Lupa Password?</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-              onPress={handleLogin}
-              disabled={isLoading}
-            >
-              <Text style={styles.submitButtonText}>
-                {isLoading ? 'Memproses...' : 'Masuk'}
-              </Text>
+              <Text style={styles.loginHeader}>Silakan Login</Text>
+              
+              <View style={styles.inputContainer}>
+                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput 
+                  placeholder="Username"
+                  style={[styles.input, validationErrors.username ? styles.inputError : null]}
+                  placeholderTextColor="#999"
+                  value={username}
+                  onChangeText={(text) => {
+                    setUsername(text);
+                    setValidationErrors(prev => ({ ...prev, username: '' }));
+                  }}
+                />
+              </View>
+              {validationErrors.username ? (
+                <Text style={styles.errorText}>{validationErrors.username}</Text>
+              ) : null}
+
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput 
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  style={[styles.input, validationErrors.password ? styles.inputError : null]}
+                  placeholderTextColor="#999"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setValidationErrors(prev => ({ ...prev, password: '' }));
+                  }}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.passwordToggle}
+                >
+                  <Ionicons 
+                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                    size={20} 
+                    color="#666" 
+                  />
+                </TouchableOpacity>
+              </View>
+              {validationErrors.password ? (
+                <Text style={styles.errorText}>{validationErrors.password}</Text>
+              ) : null}
+              <TouchableOpacity style={styles.forgotPassword}>
+                <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? 'Memproses...' : 'Masuk'}
+                </Text>
+              </TouchableOpacity>
             </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
+        </Animated.View>
       )}
       <Toast />
     </SafeAreaView>
@@ -716,7 +850,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   loginButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0066AE',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -727,7 +861,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 3.84,
   },
   logoutButton: {
@@ -747,17 +881,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(245,245,245,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   loginForm: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     padding: 24,
-    margin: 16,
+    marginTop: 0,
     borderRadius: 16,
-    elevation: 6,
-    width: '85%',
+    // elevation: ,
+    width: '100%',
     maxWidth: 400,
   },
   loginHeader: {
@@ -845,5 +979,45 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: 200,
     elevation: 5,
+  },
+  formContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 24,
+  },
+  formHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
+  },
+  button: {
+    backgroundColor: '#0066AE',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
