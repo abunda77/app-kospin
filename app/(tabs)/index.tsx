@@ -322,6 +322,20 @@ export default function HomeScreen() {
 
   const handleLogout = async () => {
     try {
+      const token = await AsyncStorage.getItem('userToken');
+      console.log('Attempting logout with token:', token);
+      
+      const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      console.log('Response data:', data);
+
       await AsyncStorage.removeItem('userToken');
       setIsLoggedIn(false);
       Toast.show({
@@ -496,7 +510,10 @@ export default function HomeScreen() {
             ]}
             onPress={isLoggedIn ? handleLogout : handleLoginPress}
           >
-            <Text style={styles.loginButtonText}>
+            <Text style={[
+              styles.loginButtonText,
+              isLoggedIn && { color: '#FF3B30' }
+            ]}>
               {isLoggedIn ? 'Logout' : 'Login'}
             </Text>
           </TouchableOpacity>
@@ -714,7 +731,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#F4F4F4',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
   },
   loginButtonText: {
     fontSize: 16,

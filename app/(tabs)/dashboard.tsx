@@ -209,7 +209,9 @@ export default function Dashboard() {
                 Array(4).fill(0).map((_, index) => (
                   <View key={index} style={styles.menuItem}>
                     <Skeleton width={48} height={48} borderRadius={24} />
-                    <Skeleton width={60} height={16} marginTop={8} />
+                    <View style={{ marginTop: 8 }}>
+                      <Skeleton width={60} height={16} />
+                    </View>
                   </View>
                 ))
               ) : (
@@ -240,7 +242,9 @@ export default function Dashboard() {
                 Array(8).fill(0).map((_, index) => (
                   <View key={index} style={styles.secondaryMenuItem}>
                     <Skeleton width={48} height={48} borderRadius={24} />
-                    <Skeleton width={50} height={14} marginTop={8} />
+                    <View style={{ marginTop: 8 }}>
+                      <Skeleton width={50} height={14} />
+                    </View>
                   </View>
                 ))
               ) : (
@@ -298,7 +302,9 @@ export default function Dashboard() {
               )}
             </View>
             {loading ? (
-              <Skeleton width={140} height={16} marginTop={8} />
+              <View style={{ marginTop: 8 }}>
+                <Skeleton width={140} height={16} />
+              </View>
             ) : (
               <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
             )}
