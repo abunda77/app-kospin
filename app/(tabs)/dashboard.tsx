@@ -17,7 +17,8 @@ interface MenuItem {
     | "/(menu)/setor-tunai" 
     | "/(menu)/pembayaran" 
     | "/(menu)/pinjaman" 
-    | "/(menu)/simpanan";
+    | "/(menu)/simpanan"
+    | "/(menu)/belanja";
   color: string;
 }
 
@@ -25,7 +26,7 @@ const menuItems: MenuItem[] = [
   { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/transfer', color: '#0066AE' },
   { id: 2, title: 'Tarik', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
   { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
-  { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
+  { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/belanja', color: '#0066AE' },
 ];
 
 const secondaryMenuItems: MenuItem[] = [

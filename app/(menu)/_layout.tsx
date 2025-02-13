@@ -61,8 +61,8 @@ export default function MenuLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          // backgroundColor: '#0066AE',
-          backgroundColor: '#ff9900',
+          backgroundColor: '#0066AE',
+          // backgroundColor: '#ff9900',
           // height: Platform.OS === 'ios' ? 110 : 65,
         },
         headerTintColor: '#fff',
