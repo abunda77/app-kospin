@@ -48,6 +48,17 @@ interface TabunganResponse {
     }>;
   };
 }
+
+interface SaldoBerjalanResponse {
+  status: boolean;
+  message: string;
+  data: {
+    info_rekening: {
+      saldo_berjalan: string;
+    };
+  };
+}
+
 // Fix route
 const menuItems: MenuItem[] = [
   { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#0066AE' },
@@ -212,8 +223,8 @@ export default function Dashboard() {
       const profileData = await profileResponse.json();
       const profileId = profileData.data.id;
 
-      // Then fetch the balance using the profile ID
-      const balanceResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_BY_PROFILE}`, {
+      // Then fetch the tabungan data
+      const tabunganResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_BY_PROFILE}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -223,11 +234,24 @@ export default function Dashboard() {
         body: JSON.stringify({ id_profile: profileId })
       });
 
-      if (!balanceResponse.ok) throw new Error('Failed to fetch balance');
-      const balanceData: TabunganResponse = await balanceResponse.json();
+      if (!tabunganResponse.ok) throw new Error('Failed to fetch balance');
+      const tabunganData: TabunganResponse = await tabunganResponse.json();
 
-      if (balanceData.data.tabungan.length > 0) {
-        setBalance(balanceData.data.tabungan[0].saldo);
+      if (tabunganData.data.tabungan.length > 0) {
+        // Get saldo berjalan for the first tabungan
+        const saldoBerjalanResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_SALDO_BERJALAN}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ no_tabungan: tabunganData.data.tabungan[0].no_tabungan })
+        });
+
+        if (!saldoBerjalanResponse.ok) throw new Error('Failed to fetch saldo berjalan');
+        const saldoBerjalanData: SaldoBerjalanResponse = await saldoBerjalanResponse.json();
+        setBalance(saldoBerjalanData.data.info_rekening.saldo_berjalan.toString());
       }
     } catch (error) {
       console.error('Error fetching balance:', error);

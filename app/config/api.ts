@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
   TABUNGAN_MUTASI: '/api/tabungan/mutasi',
   USER_PROFILE: '/api/profiles',
   BANNER_MOBILE: 'api/banner-mobile/type/square',
+  DEPOSITO_BY_PROFILE: '/api/deposito/by-profile',
   // Tambahkan endpoint lain di sini
 };
 
