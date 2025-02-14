@@ -6,38 +6,65 @@ import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Skeleton from '../../components/Skeleton';
+import React from 'react';
 
 interface MenuItem {
   id: number;
   title: string;
   icon: any;
   route: 
-    | "/(menu)/transfer" 
-    | "/(menu)/tarik-tunai" 
-    | "/(menu)/setor-tunai" 
-    | "/(menu)/pembayaran" 
-    | "/(menu)/pinjaman" 
-    | "/(menu)/simpanan"
-    | "/(menu)/belanja";
+    | "/(menu)/setor"
+    | "/(menu)/tarik"
+    | "/(menu)/angsuran"
+    | "/(menu)/belanja"
+    | "/(menu)/tabungan"
+    | "/(menu)/deposito"
+    | "/(menu)/kredit"
+    | "/(menu)/gadai"
+    | "/(menu)/e-wallet"
+    | "/(menu)/qris"
+    | "/(menu)/top-up"
+    | "/(menu)/tagihan";
   color: string;
 }
 
+interface TabunganResponse {
+  status: boolean;
+  message: string;
+  data: {
+    info_profile: {
+      id_profile: number;
+      nama_lengkap: string;
+      no_identity: string;
+      phone: string;
+    };
+    tabungan: Array<{
+      id: number;
+      no_tabungan: string;
+      saldo: string;
+      produk_tabungan: {
+        nama_produk: string;
+      };
+    }>;
+  };
+}
+// Fix route
 const menuItems: MenuItem[] = [
-  { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/transfer', color: '#0066AE' },
-  { id: 2, title: 'Tarik', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
-  { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
+  { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#0066AE' },
+  { id: 2, title: 'Tarik Tunai', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/tarik', color: '#0066AE' },
+  { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/angsuran', color: '#0066AE' },
   { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/belanja', color: '#0066AE' },
 ];
 
 const secondaryMenuItems: MenuItem[] = [
-  { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
-  { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
-  { id: 7, title: 'Kredit', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/tarik-tunai', color: '#0066AE' },
-  { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/simpanan', color: '#0066AE' },
-  { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/setor-tunai', color: '#0066AE' },
-  { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/pembayaran', color: '#0066AE' },
-  { id: 11, title: 'Top Up', icon: require('../../assets/secondary-menu/topup.png'), route: '/(menu)/tarik-tunai', color: '#0066AE' },
-  { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/simpanan', color: '#0066AE' },
+  { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/tabungan', color: '#0066AE' },
+  { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/deposito', color: '#0066AE' },
+  { id: 7, title: 'Kredit', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/kredit', color: '#0066AE' },
+  { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/gadai', color: '#0066AE' },
+  { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/e-wallet', color: '#0066AE' },
+  { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/qris', color: '#0066AE' },
+  { id: 11, title: 'Top Up', icon: require('../../assets/secondary-menu/topup.png'), route: '/(menu)/top-up', color: '#0066AE' },
+  { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/tagihan', color: '#0066AE' },
 ];
 
 export default function Dashboard() {
@@ -49,9 +76,11 @@ export default function Dashboard() {
   const [showBalance, setShowBalance] = useState(true);
   const [showAllMenu, setShowAllMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState<string>('0');
 
   useEffect(() => {
     checkAuthAndFetchData();
+    fetchBalance();
     // Simulasi loading
     setTimeout(() => {
       setLoading(false);
@@ -163,6 +192,51 @@ export default function Dashboard() {
 
   const visibleMenuItems = showAllMenu ? secondaryMenuItems : secondaryMenuItems.slice(0, 4);
 
+  const fetchBalance = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) return;
+
+      // First get the profile ID
+      const profileResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.PROFILES}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!profileResponse.ok) throw new Error('Failed to fetch profile');
+      const profileData = await profileResponse.json();
+      const profileId = profileData.data.id;
+
+      // Then fetch the balance using the profile ID
+      const balanceResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_BY_PROFILE}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ id_profile: profileId })
+      });
+
+      if (!balanceResponse.ok) throw new Error('Failed to fetch balance');
+      const balanceData: TabunganResponse = await balanceResponse.json();
+
+      if (balanceData.data.tabungan.length > 0) {
+        setBalance(balanceData.data.tabungan[0].saldo);
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Gagal mengambil data saldo'
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -179,11 +253,13 @@ export default function Dashboard() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.userInfo}>
-              <Text style={styles.greeting}>Hai,</Text>
+              <Text style={styles.greeting}>Selamat datang,</Text>
               {loading ? (
                 <Skeleton width={120} height={24} />
               ) : (
-                <Text style={styles.userName}>{userName || 'Pengguna'}</Text>
+                <Text style={styles.userName}>
+                  {userName?.split(' ')[0] || 'Pengguna'}
+                </Text>
               )}
             </View>
             <View style={styles.headerIcons}>
@@ -209,7 +285,14 @@ export default function Dashboard() {
                       <Skeleton width={150} height={32} />
                     ) : (
                       <Text style={styles.balanceAmount}>
-                        {showBalance ? 'Rp1.234.567,00' : '••••••••••'}
+                        {showBalance 
+                          ? new Intl.NumberFormat('id-ID', {
+                              style: 'currency',
+                              currency: 'IDR',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            }).format(Number(balance))
+                          : '••••••••••'}
                       </Text>
                     )}
                     <TouchableOpacity
@@ -243,7 +326,7 @@ export default function Dashboard() {
                   <TouchableOpacity
                     key={item.id}
                     style={styles.menuItem}
-                    onPress={() => router.push(item.route)}
+                    onPress={() => handleMenuPress(item.route)}
                   >
                     <View style={styles.menuIconContainer}>
                       <Image 
@@ -276,7 +359,7 @@ export default function Dashboard() {
                   <TouchableOpacity
                     key={item.id}
                     style={styles.secondaryMenuItem}
-                    onPress={() => router.push(item.route)}
+                    onPress={() => handleMenuPress(item.route)}
                   >
                     <View style={styles.secondaryMenuIconContainer}>
                       <Image 

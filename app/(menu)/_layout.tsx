@@ -101,21 +101,21 @@ export default function MenuLayout() {
         }}
       />
       <Stack.Screen
-        name="tarik-tunai"
+        name="tarik"
         options={{
           title: 'Tarik Tunai',
         }}
       />
       <Stack.Screen
-        name="setor-tunai"
+        name="setor"
         options={{
           title: 'Setor Tunai',
         }}
       />
       <Stack.Screen
-        name="pembayaran"
+        name="tagihan"
         options={{
-          title: 'Pembayaran',
+          title: 'Tagihan',
         }}
       />
       <Stack.Screen
@@ -128,6 +128,60 @@ export default function MenuLayout() {
         name="simpanan"
         options={{
           title: 'Simpanan',
+        }}
+      />
+      <Stack.Screen
+        name="tabungan"
+        options={{
+          title: 'Tabungan',
+        }}
+      />
+      <Stack.Screen
+        name="deposito"
+        options={{
+          title: 'Deposito',
+        }}
+      />
+      <Stack.Screen
+        name="kredit"
+        options={{
+          title: 'Kredit',
+        }}
+      />
+      <Stack.Screen
+        name="gadai"
+        options={{
+          title: 'Gadai',
+        }}
+      />
+      <Stack.Screen
+        name="e-wallet"
+        options={{
+          title: 'E-Wallet',
+        }}
+      />
+      <Stack.Screen
+        name="qris"
+        options={{
+          title: 'QRIS',
+        }}
+      />
+      <Stack.Screen
+        name="top-up"
+        options={{
+          title: 'Top Up',
+        }}
+      />
+      <Stack.Screen
+        name="angsuran"
+        options={{
+          title: 'Angsuran',
+        }}
+      />
+      <Stack.Screen
+        name="belanja"
+        options={{
+          title: 'Belanja',
         }}
       />
     </Stack>
