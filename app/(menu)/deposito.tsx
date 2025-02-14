@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useFocusEffect } from 'expo-router';
 import LoginRequired from '../../components/LoginRequired';
 
 export default function Deposito() {
@@ -11,9 +12,10 @@ export default function Deposito() {
     try {
       const token = await SecureStore.getItemAsync('secure_token');
       setIsLoggedIn(!!token);
-      setIsLoading(false);
     } catch (error) {
       console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -21,6 +23,16 @@ export default function Deposito() {
   useEffect(() => {
     checkLoginStatus();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkLoginStatus();
+    }, [])
+  );
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!isLoggedIn) {
     return <LoginRequired />;
@@ -34,3 +46,5 @@ export default function Deposito() {
     </SafeAreaView>
   );
 }
+
+

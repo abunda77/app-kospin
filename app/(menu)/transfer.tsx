@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from 'expo-router';
 import LoginRequired from '../../components/LoginRequired';
 
-export default function Transfer() {
+export default function TransferScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,7 +44,7 @@ export default function Transfer() {
         <Text style={styles.title}>Transfer</Text>
       </View>
       <View style={styles.content}>
-        <Text className="text-xl font-bold">Halaman Transfer</Text>
+        <Text>Halaman Transfer</Text>
       </View>
     </SafeAreaView>
   );

@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from 'expo-router';
 import LoginRequired from '../../components/LoginRequired';
 
-export default function TarikTunai() {
+export default function TarikScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,34 +39,12 @@ export default function TarikTunai() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Tarik Tunai</Text>
-      </View>
-      <View style={styles.content}>
-        <Text className="text-xl font-bold">Halaman Tarik Tunai</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Halaman Tarik Tunai</Text>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    padding: 40,
-    marginTop: 0,
-    backgroundColor: '#0066AE',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-});
+
