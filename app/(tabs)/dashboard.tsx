@@ -69,7 +69,7 @@ const secondaryMenuItems: MenuItem[] = [
 
 export default function Dashboard() {
   const router = useRouter();
-  const [userName, setUserName] = useState<string>('');
+  const [userName, setUserName] = useState<string>(''); // Changed from string to string
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +106,8 @@ export default function Dashboard() {
       const userData = await SecureStore.getItemAsync('userData');
       if (userData) {
         const parsedData = JSON.parse(userData);
-        setUserName(parsedData.name);
+        const fullName = `${parsedData.first_name} ${parsedData.last_name}`.trim();
+        setUserName(fullName);
       } else {
         // Jika tidak ada data user, fetch dari API
         const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.USER_PROFILE}`, {
@@ -118,7 +119,8 @@ export default function Dashboard() {
         
         if (response.ok) {
           const data = await response.json();
-          setUserName(data.data.name);
+          const fullName = `${data.data.first_name} ${data.data.last_name}`.trim();
+          setUserName(fullName);
           // Simpan data untuk penggunaan berikutnya
           await SecureStore.setItemAsync('userData', JSON.stringify(data.data));
         }
@@ -253,12 +255,12 @@ export default function Dashboard() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.userInfo}>
-              <Text style={styles.greeting}>Selamat datang,</Text>
+              <Text style={styles.greeting}>Hai,</Text>
               {loading ? (
                 <Skeleton width={120} height={24} />
               ) : (
                 <Text style={styles.userName}>
-                  {userName?.split(' ')[0] || 'Pengguna'}
+                  {userName || 'Pengguna'}
                 </Text>
               )}
             </View>
