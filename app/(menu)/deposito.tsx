@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: Math.min(24 * FONT_SCALE, 28),
     fontWeight: 'bold',
     color: '#000000',
-    marginTop: -10,    
+    marginTop: 10,    
     textAlign: 'left',
     marginBottom: 10,
   },

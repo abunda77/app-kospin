@@ -203,7 +203,9 @@ export default function Dashboard() {
     });
   };
 
-  const visibleMenuItems = showAllMenu ? secondaryMenuItems : secondaryMenuItems.slice(0, 4);
+  const visibleMenuItems = showAllMenu 
+    ? secondaryMenuItems 
+    : secondaryMenuItems.slice(0, 8);
 
   const fetchBalance = async () => {
     try {
@@ -398,7 +400,7 @@ export default function Dashboard() {
                 ))
               )}
             </View>
-            {secondaryMenuItems.length > 4 && (
+            {secondaryMenuItems.length > 8 && (
               <TouchableOpacity
                 style={styles.showMoreButton}
                 onPress={() => setShowAllMenu(!showAllMenu)}
@@ -604,19 +606,18 @@ const styles = StyleSheet.create({
   secondaryMenuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: 16,
-    marginTop : 1,
-    paddingTop: 20,
+    paddingVertical: 16,
   },
   secondaryMenuContainer: {
     paddingHorizontal: 16,
     paddingTop: 16,
   },
   secondaryMenuItem: {
-    width: '23%',
+    width: '25%',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   secondaryMenuIconContainer: {
     width: 48,
