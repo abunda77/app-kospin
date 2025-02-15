@@ -8,6 +8,9 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "experiments": {
+      "typedRoutes": true
+    },
     "splash": {
       "image": "./assets/images/logo_mobile_300.png",
       "resizeMode": "contain",
@@ -38,10 +41,6 @@
           "resizeMode": "contain"
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
-    }
+    ]
   }
 }
