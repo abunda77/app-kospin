@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import type { Route } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
@@ -13,18 +14,18 @@ interface MenuItem {
   title: string;
   icon: any;
   route: 
-    | "/(menu)/setor"
-    | "/(menu)/tarik"
-    | "/(menu)/angsuran"
-    | "/(menu)/belanja"
-    | "/(menu)/tabungan"
-    | "/(menu)/deposito"
-    | "/(menu)/kredit"
-    | "/(menu)/gadai"
-    | "/(menu)/e-wallet"
-    | "/(menu)/qris"
-    | "/(menu)/top-up"
-    | "/(menu)/tagihan";
+    | '/(menu)/setor'
+    | '/(menu)/tarik'
+    | '/(menu)/angsuran'
+    | '/(menu)/belanja'
+    | '/(menu)/tabungan'
+    | '/(menu)/deposito'
+    | '/(menu)/kredit'
+    | '/(menu)/gadai'
+    | '/(menu)/e-wallet'
+    | '/(menu)/qris'
+    | '/(menu)/top-up'
+    | '/(menu)/tagihan';
   color: string;
 }
 
@@ -196,11 +197,20 @@ export default function Dashboard() {
     }, 2000);
   }, []);
 
-  const handleMenuPress = (route: MenuItem['route']) => {
-    router.push({
-      pathname: route,
-      params: { from: 'index' }
-    });
+  const handleMenuPress = (route: 
+    | '/(menu)/setor'
+    | '/(menu)/tarik'
+    | '/(menu)/angsuran'
+    | '/(menu)/belanja'
+    | '/(menu)/tabungan'
+    | '/(menu)/deposito'
+    | '/(menu)/kredit'
+    | '/(menu)/gadai'
+    | '/(menu)/e-wallet'
+    | '/(menu)/qris'
+    | '/(menu)/top-up'
+    | '/(menu)/tagihan') => {
+    router.push(route);
   };
 
   const visibleMenuItems = showAllMenu 
