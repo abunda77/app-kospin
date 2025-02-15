@@ -20,7 +20,7 @@ export const API_ENDPOINTS = {
   USER_PROFILE: '/api/profiles',
   BANNER_MOBILE: 'api/banner-mobile/type/square',
   DEPOSITO_BY_PROFILE: '/api/deposito/by-profile',
-  // Tambahkan endpoint lain di sini
+  REGIONS: '/api/regions', // Base endpoint for regions
 };
 
 // Default export untuk menghilangkan warning

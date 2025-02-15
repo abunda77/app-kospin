@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import Skeleton from '../../components/Skeleton'; // Import Skeleton component
 import LoginRequired from '../../components/LoginRequired'; // Import LoginRequired component
+import Toast from 'react-native-toast-message';
 
 interface UserProfile {
   id: number;
@@ -43,6 +44,14 @@ interface UserProfile {
   avatar: string;
 }
 
+interface Region {
+  code: string;
+  name: string;
+  level: string;
+  parent: string | null;
+  children: Region[];
+}
+
 export default function AccountScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -50,30 +59,92 @@ export default function AccountScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' atau 'password'
+  const [village, setVillage] = useState<string>('');
+  const [city, setCity] = useState<string>('');
+  const [district, setDistrict] = useState<string>('');
+  const [province, setProvince] = useState<string>('');
 
-  useEffect(() => {
-    checkLoginStatus();
-    loadProfile();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      checkLoginStatus();
-      loadProfile();
-    }, [])
-  );
-
-  const checkLoginStatus = async () => {
+  const fetchRegionDetails = useCallback(async (code: string): Promise<Region | null> => {
     try {
       const token = await SecureStore.getItemAsync('secure_token');
-      setIsLoggedIn(!!token);
-    } catch (error) {
-      console.error('Error checking login status:', error);
-      setIsLoggedIn(false);
-    }
-  };
+      if (!token) return null;
 
-  const loadProfile = async () => {
+      // Format the code properly without cleaning
+      const response = await fetch(
+        `${getApiBaseUrl()}${API_ENDPOINTS.REGIONS}/${code}`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Region API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          code: code
+        });
+        return null;
+      }
+
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching region:', error);
+      return null;
+    }
+  }, []);
+
+  const loadRegionDetails = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      // Fetch Province (level: 1)
+      if (profile.province_id) {
+        const provinceData = await fetchRegionDetails(profile.province_id);
+        if (provinceData) {
+          setProvince(provinceData.name);
+        }
+      }
+
+      // Fetch District (level: 2)
+      if (profile.district_id) {
+        const districtData = await fetchRegionDetails(profile.district_id);
+        if (districtData) {
+          setDistrict(districtData.name);
+        }
+      }
+
+      // Fetch City (level: 3)
+      if (profile.city_id) {
+        const cityData = await fetchRegionDetails(profile.city_id);
+        if (cityData) {
+          setCity(cityData.name);
+        }
+      }
+
+      // Fetch Village (level: 4)
+      if (profile.village_id) {
+        const villageData = await fetchRegionDetails(profile.village_id);
+        if (villageData) {
+          setVillage(villageData.name);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading region details:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Gagal memuat data wilayah',
+        position: 'bottom'
+      });
+    }
+  }, [profile, fetchRegionDetails]);
+
+  const loadProfile = useCallback(async () => {
     try {
       const token = await SecureStore.getItemAsync('secure_token');
       if (!token) {
@@ -97,12 +168,40 @@ export default function AccountScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const onRefresh = React.useCallback(() => {
+  const checkLoginStatus = useCallback(async () => {
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      setIsLoggedIn(!!token);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkLoginStatus();
+    loadProfile();
+  }, [checkLoginStatus, loadProfile]);
+
+  useEffect(() => {
+    if (profile) {
+      loadRegionDetails();
+    }
+  }, [profile, loadRegionDetails]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkLoginStatus();
+      loadProfile();
+    }, [checkLoginStatus, loadProfile])
+  );
+
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadProfile().finally(() => setRefreshing(false));
-  }, []);
+  }, [loadProfile]);
 
   if (isLoading) {
     return (
@@ -237,6 +336,30 @@ export default function AccountScreen() {
               <Text style={styles.infoLabel}>Alamat</Text>
               <Text style={styles.infoValue}>{profile?.address}</Text>
             </View>
+            {village && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Desa</Text>
+                <Text style={styles.infoValue}>{village}</Text>
+              </View>
+            )}
+            {city && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Kecamatan</Text>
+                <Text style={styles.infoValue}>{city}</Text>
+              </View>
+            )}
+            {district && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Kabupaten</Text>
+                <Text style={styles.infoValue}>{district}</Text>
+              </View>
+            )}
+            {province && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Provinsi</Text>
+                <Text style={styles.infoValue}>{province}</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.infoCard}>
@@ -324,34 +447,34 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   infoCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    marginBottom: 16,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   infoRow: {
     flexDirection: 'row',
-    marginBottom: 10,
-    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   infoLabel: {
-    flex: 1,
     fontSize: 14,
     color: '#666',
+    flex: 1,
   },
   infoValue: {
-    flex: 2,
     fontSize: 14,
     color: '#333',
-    fontWeight: '500',
+    flex: 2,
+    textAlign: 'right',
   },
   loadingContainer: {
     flex: 1,
