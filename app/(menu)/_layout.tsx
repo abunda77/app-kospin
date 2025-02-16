@@ -149,6 +149,12 @@ export default function MenuLayout() {
         }}
       />
       <Stack.Screen
+        name="kredit/history"
+        options={{
+          title: 'History Pembayaran',
+        }}
+      />
+      <Stack.Screen
         name="gadai"
         options={{
           title: 'Gadai',

@@ -20,10 +20,13 @@ export const API_ENDPOINTS = {
   USER_PROFILE: '/api/profiles',
   BANNER_MOBILE: 'api/banner-mobile/type/square',
   DEPOSITO_BY_PROFILE: '/api/deposito/by-profile',
-  REGIONS: '/api/regions', // Base endpoint for regions
+  REGIONS: '/api/regions',
+  PINJAMAN_BY_PROFILE: '/api/pinjaman/by-profile',
+  PINJAMAN_HISTORY_PEMBAYARAN: '/api/pinjaman/history-pembayaran',
+  PINJAMAN_TAGIHAN: '/api/pinjaman/tagihan',
+  ANGSURAN_DETAILS: '/api/angsuran/details',
 };
 
-// Default export untuk menghilangkan warning
 export default {
   getApiBaseUrl,
   API_ENDPOINTS
