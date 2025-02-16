@@ -71,7 +71,7 @@ const menuItems: MenuItem[] = [
 const secondaryMenuItems: MenuItem[] = [
   { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/tabungan', color: '#0066AE' },
   { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/deposito', color: '#0066AE' },
-  { id: 7, title: 'Kredit', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/kredit', color: '#0066AE' },
+  { id: 7, title: 'Pinjaman', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/kredit', color: '#0066AE' },
   { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/gadai', color: '#0066AE' },
   { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/e-wallet', color: '#0066AE' },
   { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/qris', color: '#0066AE' },

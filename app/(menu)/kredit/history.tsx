@@ -44,11 +44,19 @@ export function PaymentHistory() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!dateString) return '-';
+    try {
+      // Split the DD/MM/YYYY format
+      const [day, month, year] = dateString.split('/');
+      return new Date(`${year}-${month}-${day}`).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '-';
+    }
   };
 
   const getStatusColor = (status: string) => {
