@@ -290,7 +290,7 @@ export default function Angsuran() {
 
       const data: AngsuranDetailResponse = await response.json();
       router.push({
-        pathname: "/(menu)/kredit/pembayaran",
+        pathname: "/(menu)/kredit/detail-angsuran",
         params: { detailData: JSON.stringify(data.data) }
       });
     } catch (error) {
@@ -445,6 +445,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
+    backgroundColor: '#F5f5f5',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   productName: {
     fontSize: 18,

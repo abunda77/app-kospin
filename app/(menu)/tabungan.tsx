@@ -307,6 +307,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    backgroundColor: '#F5f5f5',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   productName: {
     fontSize: 18,
