@@ -104,44 +104,47 @@ export default function Angsuran() {
 
   const fetchTagihanData = async (token: string) => {
     try {
-      // First API call - Profile
+      // First get the profile ID
       const profileResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.PROFILES}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
 
-      if (!profileResponse.ok) {
-        throw new Error(`Failed to fetch profile: ${profileResponse.status}`);
-      }
-
+      if (!profileResponse.ok) throw new Error('Failed to fetch profile');
       const profileData = await profileResponse.json();
+      const profileId = profileData.data.id_user;
 
-      // Second API call - Get Pinjaman to get no_pinjaman
-      const pinjamanResponse = await fetch(
-        `${getApiBaseUrl()}${API_ENDPOINTS.PINJAMAN_BY_PROFILE}?id_profile=${profileData.data.id_user}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+      // First API call - Get Pinjaman with profile info
+      const pinjamanUrl = `${getApiBaseUrl()}${API_ENDPOINTS.PINJAMAN_BY_PROFILE}?id_profile=${profileId}`;
+      const pinjamanResponse = await fetch(pinjamanUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
-      );
+      });
 
       if (!pinjamanResponse.ok) {
+        console.error('Pinjaman Response Error:', {
+          status: pinjamanResponse.status,
+          statusText: pinjamanResponse.statusText
+        });
         throw new Error(`Failed to fetch pinjaman data: ${pinjamanResponse.status}`);
       }
 
       const pinjamanData = await pinjamanResponse.json();
 
+      // Set the profile data directly from the pinjaman response
+      setTagihanData({
+        info_profile: {
+          id_user: pinjamanData.data.info_profile.id_profile, // Use id_profile from the response
+          nama_lengkap: pinjamanData.data.info_profile.nama_lengkap
+        },
+        tagihan: []
+      });
+
       if (!pinjamanData.data.pinjaman || pinjamanData.data.pinjaman.length === 0) {
-        setTagihanData({
-          info_profile: profileData.data,
-          tagihan: []
-        });
         return;
       }
 
@@ -186,7 +189,7 @@ export default function Angsuran() {
       });
 
       setTagihanData({
-        info_profile: profileData.data,
+        info_profile: pinjamanData.data.info_profile,
         tagihan: allTagihan
       });
 
@@ -310,101 +313,105 @@ export default function Angsuran() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
-          />
-        }
-      >
-        <View style={styles.headerContainer}>
-          <View style={styles.content}>
-            <Text style={styles.headerTitle}>Informasi Angsuran</Text>
-            {isLoading ? (
-              <Skeleton width={200} height={20} />
-            ) : (
-              <Text style={styles.headerSubtitle}>
-                {tagihanData?.info_profile.nama_lengkap}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.content}>
-          {isLoading ? (
-            renderSkeletonCards()
-          ) : tagihanData?.tagihan.length === 0 ? (
-            <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateText}>
-                Anda tidak memiliki tagihan angsuran
-              </Text>
+      {!isLoggedIn ? (
+        <LoginRequired />
+      ) : (
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#0066AE']}
+              tintColor="#0066AE"
+            />
+          }
+        >
+          <View style={styles.headerContainer}>
+            <View style={styles.content}>
+              <Text style={styles.headerTitle}>Informasi Angsuran</Text>
+              {isLoading ? (
+                <Skeleton width={200} height={20} />
+              ) : (
+                <Text style={styles.headerSubtitle}>
+                  {tagihanData?.info_profile?.nama_lengkap}
+                </Text>
+              )}
             </View>
-          ) : (
-            tagihanData?.tagihan.map((item, index) => (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.productName}>{item.produk_pinjaman}</Text>
-                </View>
-                <View style={styles.cardBody}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Nomor Pinjaman</Text>
-                    <Text style={styles.value}>{item.no_pinjaman}</Text>
+          </View>
+
+          <View style={styles.content}>
+            {isLoading ? (
+              renderSkeletonCards()
+            ) : tagihanData?.tagihan.length === 0 ? (
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>
+                  Anda tidak memiliki tagihan angsuran
+                </Text>
+              </View>
+            ) : (
+              tagihanData?.tagihan.map((item, index) => (
+                <View key={index} style={styles.card}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.productName}>{item.produk_pinjaman}</Text>
                   </View>
-                  {/* <View style={styles.infoRow}>
-                    <Text style={styles.label}>Angsuran Ke</Text>
-                    <Text style={styles.value}>{item.periode}</Text>
-                  </View> */}
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Pokok</Text>
-                    <Text style={styles.value}>{formatCurrency(item.pokok.toString())}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Bunga</Text>
-                    <Text style={styles.value}>{formatCurrency(item.bunga.toString())}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Total Angsuran</Text>
-                    <Text style={styles.balanceValue}>
-                      {formatCurrency(item.total_angsuran.toString())}
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Jatuh Tempo</Text>
-                    <Text style={styles.value}>{formatDate(item.tanggal_jatuh_tempo)}</Text>
-                  </View>
-                  {/* <View style={styles.infoRow}>
-                    <Text style={styles.label}>Status</Text>
-                    <Text style={[styles.value, styles.statusText]}>
-                      {item.status_pembayaran}
-                    </Text>
-                  </View> */}
-                  {/* <View style={styles.infoRow}>
-                    <Text style={styles.label}>Countdown</Text>
-                    <Text style={styles.value}>{item.countdown}</Text>
-                  </View> */}
-                  {/* {item.denda > 0 && (
+                  <View style={styles.cardBody}>
                     <View style={styles.infoRow}>
-                      <Text style={styles.label}>Denda</Text>
-                      <Text style={[styles.value, styles.dendaText]}>
-                        {formatCurrency(item.denda.toString())}
+                      <Text style={styles.label}>Nomor Pinjaman</Text>
+                      <Text style={styles.value}>{item.no_pinjaman}</Text>
+                    </View>
+                    {/* <View style={styles.infoRow}>
+                      <Text style={styles.label}>Angsuran Ke</Text>
+                      <Text style={styles.value}>{item.periode}</Text>
+                    </View> */}
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>Pokok</Text>
+                      <Text style={styles.value}>{formatCurrency(item.pokok.toString())}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>Bunga</Text>
+                      <Text style={styles.value}>{formatCurrency(item.bunga.toString())}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>Total Angsuran</Text>
+                      <Text style={styles.balanceValue}>
+                        {formatCurrency(item.total_angsuran.toString())}
                       </Text>
                     </View>
-                  )} */}
-                  <TouchableOpacity 
-                    style={styles.historyButton}
-                    onPress={() => fetchAngsuranDetails(item.no_pinjaman)}
-                  >
-                    <Text style={styles.historyButtonText}>Lihat Detail Angsuran</Text>
-                  </TouchableOpacity>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>Jatuh Tempo</Text>
+                      <Text style={styles.value}>{formatDate(item.tanggal_jatuh_tempo)}</Text>
+                    </View>
+                    {/* <View style={styles.infoRow}>
+                      <Text style={styles.label}>Status</Text>
+                      <Text style={[styles.value, styles.statusText]}>
+                        {item.status_pembayaran}
+                      </Text>
+                    </View> */}
+                    {/* <View style={styles.infoRow}>
+                      <Text style={styles.label}>Countdown</Text>
+                      <Text style={styles.value}>{item.countdown}</Text>
+                    </View> */}
+                    {/* {item.denda > 0 && (
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Denda</Text>
+                        <Text style={[styles.value, styles.dendaText]}>
+                          {formatCurrency(item.denda.toString())}
+                        </Text>
+                      </View>
+                    )} */}
+                    <TouchableOpacity 
+                      style={styles.historyButton}
+                      onPress={() => fetchAngsuranDetails(item.no_pinjaman)}
+                    >
+                      <Text style={styles.historyButtonText}>Lihat Detail Angsuran</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
+              ))
+            )}
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -430,6 +437,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 16,
     color: '#666666',
+    marginTop: 4,
   },
   card: {
     backgroundColor: '#FFFFFF',
