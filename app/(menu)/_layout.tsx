@@ -190,6 +190,12 @@ export default function MenuLayout() {
           title: 'Belanja',
         }}
       />
+      <Stack.Screen
+        name="kredit/pembayaran"
+        options={{
+          title: 'Pembayaran',
+        }}
+      />
     </Stack>
   );
 }

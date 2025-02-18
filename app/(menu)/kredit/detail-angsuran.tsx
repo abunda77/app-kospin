@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -8,6 +8,8 @@ import {
   TouchableOpacity 
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { Modal } from 'react-native';
 
 const formatCurrency = (amount: string | number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -47,12 +49,32 @@ interface DetailAngsuran {
 
 export default function DetailAngsuran() {
   const params = useLocalSearchParams();
+  const router = useRouter();
   const detailData: DetailAngsuran = JSON.parse(params.detailData as string);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     const [day, month, year] = dateString.split('/');
     return `${day}/${month}/${year}`;
+  };
+
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [selectedAngsuran, setSelectedAngsuran] = useState<any>(null);
+
+  const handlePaymentConfirmation = (angsuran: any) => {
+    setSelectedAngsuran(angsuran);
+    setIsConfirmModalVisible(true);
+  };
+
+  const handleConfirmPayment = () => {
+    setIsConfirmModalVisible(false);
+    router.push({
+      pathname: '/(menu)/kredit/pembayaran',
+      params: { 
+        noPinjaman: detailData.info_pinjaman.no_pinjaman,
+        totalTagihan: selectedAngsuran.total_tagihan.toString()
+      }
+    });
   };
 
   return (
@@ -100,7 +122,10 @@ export default function DetailAngsuran() {
                 <Text style={styles.periodeText}>Angsuran ke-{angsuran.periode}</Text>
                 <Text style={[
                   styles.statusText,
-                  { color: angsuran.status_pembayaran === 'LUNAS' ? '#4CAF50' : '#FF9800' }
+                  styles.statusBadge,
+                  angsuran.status_pembayaran === 'LUNAS' 
+                    ? styles.statusBadgeSuccess 
+                    : styles.statusBadgeDanger
                 ]}>
                   {angsuran.status_pembayaran}
                 </Text>
@@ -141,11 +166,78 @@ export default function DetailAngsuran() {
                     <Text style={styles.value}>{formatDate(angsuran.tanggal_pembayaran)}</Text>
                   </View>
                 )}
+                {angsuran.status_pembayaran === 'BELUM BAYAR' && (
+                  <TouchableOpacity 
+                    style={styles.payButton}
+                    onPress={() => handlePaymentConfirmation({
+                      ...angsuran,
+                      total_tagihan: angsuran.total_angsuran + angsuran.denda
+                    })}
+                  >
+                    <Text style={styles.payButtonText}>Bayar Sekarang</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ))}
         </View>
       </ScrollView>
+
+      {/* Modal Konfirmasi Pembayaran */}
+      <Modal
+        visible={isConfirmModalVisible}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Konfirmasi Pembayaran</Text>
+            <Text style={styles.modalText}>Detail Pembayaran:</Text>
+            {selectedAngsuran && (
+              <>
+                <View style={styles.modalDetailRow}>
+                  <Text>Total Angsuran:</Text>
+                  <Text>{formatCurrency(selectedAngsuran.total_angsuran.toString())}</Text>
+                </View>
+                {selectedAngsuran.denda > 0 && (
+                  <View style={styles.modalDetailRow}>
+                    <Text>Denda:</Text>
+                    <Text style={styles.dendaText}>{formatCurrency(selectedAngsuran.denda.toString())}</Text>
+                  </View>
+                )}
+                <View style={styles.modalDetailRow}>
+                  <Text style={styles.totalText}>Total Pembayaran:</Text>
+                  <Text style={styles.totalText}>{formatCurrency(selectedAngsuran.total_tagihan.toString())}</Text>
+                </View>
+              </>
+            )}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setIsConfirmModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={() => {
+                  setIsConfirmModalVisible(false);
+                  router.push({
+                    pathname: '/kredit/pembayaran',
+                    params: { 
+                      noPinjaman: detailData.info_pinjaman.no_pinjaman,
+                      totalTagihan: selectedAngsuran.total_tagihan.toString(),
+                      periode: selectedAngsuran.periode.toString()
+                    }
+                  });
+                }}
+              >
+                <Text style={styles.modalButtonText}>Lanjutkan</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -237,5 +329,86 @@ const styles = StyleSheet.create({
   dendaText: {
     color: '#FF0000',
     fontWeight: '600',
+  },
+  payButton: {
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  payButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '90%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  modalDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  totalText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#E0E0E0',
+  },
+  confirmButton: {
+    backgroundColor: '#0066AE',
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  statusBadgeSuccess: {
+    backgroundColor: '#E7F7ED',
+    color: '#28a745',
+  },
+  statusBadgeDanger: {
+    backgroundColor: '#FFE9E9',
+    color: '#dc3545',
   },
 });

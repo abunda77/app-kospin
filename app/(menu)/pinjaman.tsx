@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   historyButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#28a745',  // Changed to green color
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 20,
