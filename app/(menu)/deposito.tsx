@@ -252,7 +252,7 @@ export default function Deposito() {
                     </View>
                     <View style={styles.infoRow}>
                       <Text style={styles.label}>Nominal</Text>
-                      <Text style={styles.balanceValue}>
+                      <Text style={[styles.balanceValue, styles.nominalValue]}>
                         {formatCurrency(item.nominal_penempatan)}
                       </Text>
                     </View>
@@ -262,7 +262,7 @@ export default function Deposito() {
                     </View>
                     <View style={styles.infoRow}>
                       <Text style={styles.label}>Nominal Bunga</Text>
-                      <Text style={styles.balanceValue}>
+                      <Text style={[styles.balanceValue, styles.bungaValue]}>
                         {formatCurrency(item.nominal_bunga)}
                       </Text>
                     </View>
@@ -276,15 +276,31 @@ export default function Deposito() {
                     </View>
                     <View style={styles.infoRow}>
                       <Text style={styles.label}>Status</Text>
-                      <Text style={[styles.value, styles.statusText]}>
-                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                      </Text>
+                      <View style={[
+                        styles.badge,
+                        item.status.toLowerCase() === 'active' ? styles.activeBadge : styles.inactiveBadge
+                      ]}>
+                        <Text style={[
+                          styles.statusText,
+                          item.status.toLowerCase() === 'active' ? styles.activeStatusText : styles.inactiveStatusText
+                        ]}>
+                          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                        </Text>
+                      </View>
                     </View>
                     <View style={styles.infoRow}>
                       <Text style={styles.label}>Perpanjangan Otomatis</Text>
-                      <Text style={styles.value}>
-                        {item.perpanjangan_otomatis ? 'Ya' : 'Tidak'}
-                      </Text>
+                      <View style={[
+                        styles.badge,
+                        item.perpanjangan_otomatis ? styles.autoBadge : styles.manualBadge
+                      ]}>
+                        <Text style={[
+                          styles.statusText,
+                          item.perpanjangan_otomatis ? styles.autoText : styles.manualText
+                        ]}>
+                          {item.perpanjangan_otomatis ? 'Ya' : 'Tidak'}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
@@ -370,11 +386,45 @@ const styles = StyleSheet.create({
   },
   balanceValue: {
     fontSize: 16,
-    color: '#333333',
     fontWeight: 'bold',
   },
-  statusText: {
+  nominalValue: {
     color: '#0066AE',
-    fontWeight: 'bold',
+  },
+  bungaValue: {
+    color: '#34A853',
+  },
+  badge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  activeBadge: {
+    backgroundColor: '#E6F4EA',
+  },
+  inactiveBadge: {
+    backgroundColor: '#F1F3F4',
+  },
+  autoBadge: {
+    backgroundColor: '#E8F0FE',
+  },
+  manualBadge: {
+    backgroundColor: '#FEF3C7',
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activeStatusText: {
+    color: '#34A853',
+  },
+  inactiveStatusText: {
+    color: '#5F6368',
+  },
+  autoText: {
+    color: '#1A73E8',
+  },
+  manualText: {
+    color: '#D97706',
   },
 });

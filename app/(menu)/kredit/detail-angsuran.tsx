@@ -77,6 +77,19 @@ export default function DetailAngsuran() {
     });
   };
 
+  const canPayInstallment = (currentPeriode: number) => {
+    // Jika ini adalah angsuran pertama, boleh dibayar
+    if (currentPeriode === 1) return true;
+    
+    // Cek status pembayaran angsuran sebelumnya
+    const previousInstallment = detailData.detail_angsuran.find(
+      (angsuran) => angsuran.periode === currentPeriode - 1
+    );
+    
+    // Hanya boleh bayar jika angsuran sebelumnya sudah LUNAS
+    return previousInstallment?.status_pembayaran === 'LUNAS';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -166,7 +179,7 @@ export default function DetailAngsuran() {
                     <Text style={styles.value}>{formatDate(angsuran.tanggal_pembayaran)}</Text>
                   </View>
                 )}
-                {angsuran.status_pembayaran === 'BELUM BAYAR' && (
+                {angsuran.status_pembayaran === 'BELUM BAYAR' && canPayInstallment(angsuran.periode) && (
                   <TouchableOpacity 
                     style={styles.payButton}
                     onPress={() => handlePaymentConfirmation({
@@ -176,6 +189,11 @@ export default function DetailAngsuran() {
                   >
                     <Text style={styles.payButtonText}>Bayar Sekarang</Text>
                   </TouchableOpacity>
+                )}
+                {angsuran.status_pembayaran === 'BELUM BAYAR' && !canPayInstallment(angsuran.periode) && (
+                  <View style={[styles.payButton, { backgroundColor: '#ccc' }]}>
+                    <Text style={styles.payButtonText}>Bayar Angsuran Sebelumnya</Text>
+                  </View>
                 )}
               </View>
             </View>
