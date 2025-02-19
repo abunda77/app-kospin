@@ -194,12 +194,25 @@ export default function HomeScreen() {
   const fetchBanner = async () => {
     try {
       setBannerLoading(true);
-      const response = await fetch(`${getApiBaseUrl()}/${API_ENDPOINTS.BANNER_MOBILE}`);
+      const baseUrl = getApiBaseUrl();
+      const url = `${baseUrl}${API_ENDPOINTS.BANNER_MOBILE}`;
+      console.log('Fetching banner from URL:', url);
+      
+      const response = await fetch(url);
       const data: BannerResponse = await response.json();
+      console.log('Banner API Response:', {
+        status: data.status,
+        dataLength: data.data?.length || 0,
+        firstBanner: data.data?.[0],
+        allData: data
+      });
       
       if (data.status === 'success' && data.data.length > 0) {
         const shuffledBanners = shuffleArray(data.data);
+        console.log('Shuffled Banners:', shuffledBanners);
         setBanners(shuffledBanners);
+      } else {
+        console.log('No banners found or invalid response');
       }
     } catch (error) {
       console.error('Error fetching banner:', error);

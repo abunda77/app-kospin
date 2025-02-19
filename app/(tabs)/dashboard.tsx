@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image, useWindowDimensions } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import type { Route } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Skeleton from '../../components/Skeleton';
 import React from 'react';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 
 interface MenuItem {
   id: number;
@@ -20,7 +21,7 @@ interface MenuItem {
     | '/(menu)/belanja'
     | '/(menu)/tabungan'
     | '/(menu)/deposito'
-    | '/(menu)/pinjaman' // Change this to '/(menu)/pinjaman'
+    | '/(menu)/pinjaman' 
     | '/(menu)/gadai'
     | '/(menu)/e-wallet'
     | '/(menu)/qris'
@@ -60,6 +61,17 @@ interface SaldoBerjalanResponse {
   };
 }
 
+interface BannerData {
+  id: number;
+  title: string;
+  url: string;
+  type: string;
+  note: string | null;
+  image: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Fix route
 const menuItems: MenuItem[] = [
   { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#0066AE' },
@@ -81,7 +93,8 @@ const secondaryMenuItems: MenuItem[] = [
 
 export default function Dashboard() {
   const router = useRouter();
-  const [userName, setUserName] = useState<string>(''); // Changed from string to string
+  const { width: windowWidth } = useWindowDimensions();
+  const [userName, setUserName] = useState<string>(''); 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,10 +102,12 @@ export default function Dashboard() {
   const [showAllMenu, setShowAllMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState<string>('0');
+  const [banners, setBanners] = useState<BannerData[]>([]);
 
   useEffect(() => {
     checkAuthAndFetchData();
     fetchBalance();
+    fetchBanners();
     // Simulasi loading
     setTimeout(() => {
       setLoading(false);
@@ -204,7 +219,7 @@ export default function Dashboard() {
     | '/(menu)/belanja'
     | '/(menu)/tabungan'
     | '/(menu)/deposito'
-    | '/(menu)/pinjaman'  // Add this route
+    | '/(menu)/pinjaman'  
     | '/(menu)/gadai'
     | '/(menu)/e-wallet'
     | '/(menu)/qris'
@@ -275,17 +290,36 @@ export default function Dashboard() {
     }
   };
 
+  const fetchBanners = async () => {
+    try {
+      const baseUrl = await getApiBaseUrl();
+      const response = await fetch(`${baseUrl}${API_ENDPOINTS.BANNER_MOBILE_DASHBOARD}`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        setBanners(data.data.slice(-3)); // Mengambil 3 banner terakhir
+      }
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+    }
+  };
+
+  const renderBannerItem = ({ item }: { item: BannerData }) => {
+    return (
+      <View style={[styles.bannerItem, { width: windowWidth - 32 }]}>
+        <Image
+          source={{ uri: item.url }}
+          style={styles.bannerImage}
+          resizeMode="cover"
+        />
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        style={styles.scrollView}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         <View style={styles.header}>
@@ -427,6 +461,26 @@ export default function Dashboard() {
                 />
               </TouchableOpacity>
             )}
+          </View>
+
+          {/* Banner Carousel */}
+          <View style={styles.bannerContainer}>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              style={styles.scrollView}
+            >
+              {banners.map((banner) => (
+                <View key={banner.id} style={[styles.bannerItem, { width: windowWidth - 32 }]}>
+                  <Image
+                    source={{ uri: banner.url }}
+                    style={styles.bannerImage}
+                    resizeMode="cover"
+                  />
+                </View>
+              ))}
+            </ScrollView>
           </View>
 
           {/* Financial Report Section */}
@@ -756,5 +810,19 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     tintColor: '#BBBBBB',
+  },
+  bannerContainer: {
+    marginHorizontal: 16,
+    marginTop: 1,
+    height: 150,
+  },
+  bannerItem: {
+    marginRight: 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
   },
 });
