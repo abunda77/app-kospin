@@ -88,7 +88,7 @@ const secondaryMenuItems: MenuItem[] = [
   { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/gadai', color: '#0066AE' },
   { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/e-wallet', color: '#0066AE' },
   { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/qris', color: '#0066AE' },
-  { id: 11, title: 'Top Up', icon: require('../../assets/secondary-menu/topup.png'), route: '/(menu)/top-up', color: '#0066AE' },
+  { id: 11, title: 'Pulsa/Paket Data', icon: require('../../assets/secondary-menu/pulsa.png'), route: '/(menu)/top-up', color: '#0066AE' },
   { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/tagihan', color: '#0066AE' },
 ];
 
