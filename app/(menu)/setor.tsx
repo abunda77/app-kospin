@@ -15,6 +15,7 @@ import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import LoginRequired from '../../components/LoginRequired';
 import Skeleton from '../../components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface TabunganResponse {
   status: boolean;
@@ -192,8 +193,17 @@ export default function SetorTunai() {
                       }
                     })}
                   >
-                    <Ionicons name="wallet-outline" size={20} color="#fff" />
-                    <Text style={styles.setorButtonText}>Setor Tunai</Text>
+                    <LinearGradient
+                      colors={['#0066AE', '#0095FF']}
+                      style={styles.gradientButton}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    >
+                      <View style={styles.buttonContent}>
+                        <Ionicons name="wallet-outline" size={20} color="#fff" />
+                        <Text style={styles.setorButtonText}>Setor Tunai</Text>
+                      </View>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -281,18 +291,25 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   setorButton: {
-    backgroundColor: '#008AF0',
-    padding: 12,
+    marginTop: 16,
+    overflow: 'hidden',
     borderRadius: 8,
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   setorButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
+    marginLeft: 8,
   },
   emptyStateContainer: {
     padding: 20,

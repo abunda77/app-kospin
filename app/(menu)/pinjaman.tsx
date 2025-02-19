@@ -15,6 +15,7 @@ import Skeleton from '../../components/Skeleton';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface PinjamanResponse {
   status: boolean;
@@ -401,7 +402,14 @@ export default function Kredit() {
                     style={styles.historyButton}
                     onPress={() => fetchPaymentHistory(item.no_pinjaman)}
                   >
-                    <Text style={styles.historyButtonText}>Lihat History Pembayaran</Text>
+                    <LinearGradient
+                      colors={['#0066AE', '#0095FF']}
+                      style={styles.gradientButton}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    >
+                      <Text style={styles.historyButtonText}>Lihat History Pembayaran</Text>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -533,16 +541,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   historyButton: {
-    backgroundColor: '#008AF0',  // Changed to green color
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 16,
+    overflow: 'hidden',
+    borderRadius: 8,
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
   },
   historyButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });

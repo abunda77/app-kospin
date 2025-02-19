@@ -16,6 +16,7 @@ import LoginRequired from '../../components/LoginRequired';
 import { getApiBaseUrl, API_ENDPOINTS } from '@/app/config/api';
 import Skeleton from '../../components/Skeleton';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface TagihanResponse {
   status: boolean;
@@ -403,7 +404,14 @@ export default function Angsuran() {
                       style={styles.historyButton}
                       onPress={() => fetchAngsuranDetails(item.no_pinjaman)}
                     >
-                      <Text style={styles.historyButtonText}>Lihat Detail Angsuran</Text>
+                      <LinearGradient
+                        colors={['#0066AE', '#0095FF']}
+                        style={styles.gradientButton}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                      >
+                        <Text style={styles.historyButtonText}>Lihat Detail Angsuran</Text>
+                      </LinearGradient>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -429,15 +437,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333333',
+    color: '#1A237E',
     marginBottom: 8,
+    letterSpacing: 0.5,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#666666',
+    color: '#455A64',
     marginTop: 4,
+    letterSpacing: 0.25,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -452,15 +462,16 @@ const styles = StyleSheet.create({
   cardHeader: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    backgroundColor: '#F5f5f5',
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#F8F9FF',
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
   productName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
+    fontWeight: '700',
+    color: '#0066AE',
+    letterSpacing: 0.15,
   },
   cardBody: {
     padding: 16,
@@ -473,30 +484,64 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666666',
+    color: '#546E7A',
+    flex: 1,
+    letterSpacing: 0.25,
   },
   value: {
     fontSize: 14,
-    color: '#333333',
+    color: '#263238',
+    flex: 2,
+    textAlign: 'right',
     fontWeight: '500',
   },
   balanceValue: {
     fontSize: 16,
-    color: '#333333',
-    fontWeight: '600',
+    color: '#1B5E20',
+    flex: 2,
+    textAlign: 'right',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  totalValue: {
-    fontSize: 16,
-    color: '#0066AE',
+  statusText: {
+    textAlign: 'right',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+    overflow: 'hidden',
+    fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.4,
   },
   dendaText: {
-    color: '#FF0000',
-    fontWeight: 'bold'
+    color: '#D32F2F',
+    fontWeight: '700',
   },
-  deadlineText: {
-    color: '#FFC107',
+  badge: {
+    maxWidth: 120,
+    alignSelf: 'flex-end',
+  },
+  historyButton: {
+    marginTop: 16,
+    overflow: 'hidden',
+    borderRadius: 8,
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  historyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
+  },
+  loanNumber: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
   },
   emptyStateContainer: {
     flex: 1,
@@ -508,25 +553,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666666',
     textAlign: 'center',
-  },
-  historyButton: {
-    backgroundColor: '#008AF0',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  historyButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  loanNumber: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 8,
-  },
-  statusText: {
-    color: '#0066AE',
-    fontWeight: 'bold',
   },
 });

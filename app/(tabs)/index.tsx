@@ -30,6 +30,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import Skeleton from '../../components/Skeleton';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface MenuItem {
   id: number;
@@ -627,9 +628,16 @@ export default function HomeScreen() {
           style={styles.loginButton}
           onPress={handleLoginPress}
         >
-          <Text style={styles.loginButtonText}>
-            Login
-          </Text>
+          <LinearGradient
+            colors={['#0066AE', '#0095FF']}
+            style={styles.gradientButton}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.loginButtonText}>
+              Login
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       )}
 
@@ -882,35 +890,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   loginButton: {
-    backgroundColor: '#0066AE',
-    paddingVertical: 15,
-    marginHorizontal: 20,
-    marginVertical: 10,
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 3.84,
+    overflow: 'hidden',
+    width: '90%', 
   },
   logoutButton: {
-    backgroundColor: '#F4F4F4',
-    borderWidth: 1,
-    borderColor: '#FF3B30',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#FF0000',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loginButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   logoutButtonText: {
-    color: '#FF3B30',
+    color: '#000000',
   },
   overlay: {
     position: 'absolute',
@@ -1056,5 +1060,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: '100%', 
   },
 });

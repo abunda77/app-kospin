@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Share, ScrollVi
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ThankYou() {
   const params = useLocalSearchParams();
@@ -144,10 +145,19 @@ export default function ThankYou() {
             onPress={handleDownloadInvoice}
             disabled={isDownloading}
           >
-            <Ionicons name="download-outline" size={24} color="#FFFFFF" />
-            <Text style={styles.downloadButtonText}>
-              {isDownloading ? 'Mengunduh...' : 'Unduh Invoice'}
-            </Text>
+            <LinearGradient
+              colors={['#0066AE', '#0095FF']}
+              style={styles.gradientButton}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons name="download-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.downloadButtonText}>
+                  {isDownloading ? 'Mengunduh...' : 'Unduh Invoice'}
+                </Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -261,15 +271,27 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   downloadButton: {
+    width: '100%',
+    marginVertical: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  backButton: {
+    width: '100%',
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 8,
-    width: '100%',
-    marginTop: 16,
-    backgroundColor: '#0066AE',
-    backgroundImage: 'linear-gradient(to bottom, #0066AE, #ff9900)',
   },
   downloadButtonText: {
     color: '#FFFFFF',
@@ -277,18 +299,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  backButton: {
-    marginTop: 16,
-    padding: 16,
-    width: '100%',
-    alignItems: 'center',
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
-  },
   backButtonText: {
-    color: '#666666',
+    color: '#0066AE',
     fontSize: 16,
     fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   whatsappContainer: {
     flexDirection: 'row',
