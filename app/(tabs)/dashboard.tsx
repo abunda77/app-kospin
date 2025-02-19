@@ -228,6 +228,13 @@ export default function Dashboard() {
     router.push(route);
   };
 
+  const handleBannerPress = (note: string | null) => {
+    router.push({
+      pathname: '/(menu)/banner-detail',
+      params: { note: note || '' }
+    });
+  };
+
   const visibleMenuItems = showAllMenu 
     ? secondaryMenuItems 
     : secondaryMenuItems.slice(0, 8);
@@ -472,13 +479,17 @@ export default function Dashboard() {
               style={styles.scrollView}
             >
               {banners.map((banner) => (
-                <View key={banner.id} style={[styles.bannerItem, { width: windowWidth - 32 }]}>
+                <TouchableOpacity
+                  key={banner.id}
+                  style={[styles.bannerItem, { width: windowWidth - 32 }]}
+                  onPress={() => handleBannerPress(banner.note)}
+                >
                   <Image
                     source={{ uri: banner.url }}
                     style={styles.bannerImage}
                     resizeMode="cover"
                   />
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
@@ -815,14 +826,27 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 1,
     height: 150,
+    marginBottom: 16,
   },
   bannerItem: {
     marginRight: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
+    backgroundColor: '#fff',
+    // Shadow untuk Android
+    elevation: 5,
+    // Shadow untuk iOS
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.7,
+    shadowRadius: 3.84,
   },
   bannerImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 15,
   },
 });
