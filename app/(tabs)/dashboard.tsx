@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, RefreshControl, ScrollView, Dimensions, Image, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Modal, RefreshControl, ScrollView, Dimensions, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import type { Route } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Skeleton from '../../components/Skeleton';
 import React from 'react';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface MenuItem {
   id: number;
@@ -103,6 +104,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState<string>('0');
   const [banners, setBanners] = useState<BannerData[]>([]);
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -228,10 +230,13 @@ export default function Dashboard() {
     router.push(route);
   };
 
-  const handleBannerPress = (note: string | null) => {
+  const handleBannerPress = (banner: BannerData) => {
     router.push({
       pathname: '/(menu)/banner-detail',
-      params: { note: note || '' }
+      params: { 
+        note: banner.note || '',
+        imageUrl: banner.url
+      }
     });
   };
 
@@ -304,6 +309,7 @@ export default function Dashboard() {
       const data = await response.json();
       if (data.status === 'success') {
         setBanners(data.data.slice(-3)); // Mengambil 3 banner terakhir
+        setBannerLoading(false);
       }
     } catch (error) {
       console.error('Error fetching banners:', error);
@@ -322,6 +328,12 @@ export default function Dashboard() {
     );
   };
 
+  const renderBannerSkeleton = () => (
+    <View style={[styles.bannerItem, { width: windowWidth - 32 }]}>
+      <Skeleton width="100%" height={150} />
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -330,94 +342,114 @@ export default function Dashboard() {
         }
       >
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.userInfo}>
-              <Text style={styles.greeting}>Hai,</Text>
-              {loading ? (
-                <Skeleton width={120} height={24} />
-              ) : (
-                <Text style={styles.userName}>
-                  {userName || 'Pengguna'}
-                </Text>
-              )}
+          <LinearGradient
+            colors={['#0077CC', '#0066AE', '#004992']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0.8 }}
+            style={styles.headerGradient}
+          >
+            <View style={styles.headerTop}>
+              <View style={styles.userInfo}>
+                <Text style={styles.greeting}>Hai,</Text>
+                {loading ? (
+                  <Skeleton width={120} height={24} />
+                ) : (
+                  <Text style={styles.userName}>
+                    {userName || 'Pengguna'}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.headerIcons}>
+                <Pressable 
+                  style={styles.iconButton}
+                  android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                >
+                  <Ionicons name="notifications-outline" size={24} color="#FFF" />
+                </Pressable>
+                <Pressable 
+                  style={styles.iconButton}
+                  android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                >
+                  <Ionicons name="headset-outline" size={24} color="#FFF" />
+                </Pressable>
+              </View>
             </View>
-            <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={24} color="#FFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="headset-outline" size={24} color="#FFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          </LinearGradient>
         </View>
 
         <View style={styles.mainContent}>
           {/* Combined Card */}
           <View style={styles.combinedCard}>
-            <View style={styles.balanceSection}>
-              <View style={styles.balanceContainer}>
-                <View>
-                  <Text style={styles.balanceLabel}>Saldo Rekening Utama</Text>
-                  <View style={styles.balanceWrapper}>
-                    {loading ? (
-                      <Skeleton width={150} height={32} />
-                    ) : (
-                      <Text style={styles.balanceAmount}>
-                        {showBalance 
-                          ? new Intl.NumberFormat('id-ID', {
-                              style: 'currency',
-                              currency: 'IDR',
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0
-                            }).format(Number(balance))
-                          : '••••••••••'}
-                      </Text>
-                    )}
-                    <TouchableOpacity
-                      onPress={() => setShowBalance(!showBalance)}
-                      style={styles.eyeIconContainer}
-                    >
-                      <Ionicons
-                        name={showBalance ? 'eye-outline' : 'eye-off-outline'}
-                        size={20}
-                        color="#BBBBBB"
-                      />
-                    </TouchableOpacity>
+            <LinearGradient
+              colors={['#0077CC', '#0066AE', '#004992']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0.8 }}
+              style={styles.gradientBackground}
+            >
+              <View style={styles.balanceSection}>
+                <View style={styles.balanceContainer}>
+                  <View>
+                    <Text style={[styles.balanceLabel, { color: '#E8F1F8' }]}>Saldo Rekening Utama</Text>
+                    <View style={styles.balanceWrapper}>
+                      {loading ? (
+                        <Skeleton width={150} height={32} />
+                      ) : (
+                        <Text style={[styles.balanceAmount, { color: '#FFFFFF' }]}>
+                          {showBalance 
+                            ? new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                              }).format(Number(balance))
+                            : '••••••••••'}
+                        </Text>
+                      )}
+                      <TouchableOpacity
+                        onPress={() => setShowBalance(!showBalance)}
+                        style={styles.eyeIconContainer}
+                      >
+                        <Ionicons
+                          name={showBalance ? 'eye-outline' : 'eye-off-outline'}
+                          size={20}
+                          color="#E8F1F8"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
 
-            <View style={styles.menuGrid}>
-              {loading ? (
-                // Skeleton untuk menu items
-                Array(4).fill(0).map((_, index) => (
-                  <View key={index} style={styles.menuItem}>
-                    <Skeleton width={48} height={48} borderRadius={24} />
-                    <View style={{ marginTop: 8 }}>
-                      <Skeleton width={60} height={16} />
+              <View style={styles.menuGrid}>
+                {loading ? (
+                  // Skeleton untuk menu items
+                  Array(4).fill(0).map((_, index) => (
+                    <View key={index} style={styles.menuItem}>
+                      <Skeleton width={48} height={48} borderRadius={24} />
+                      <View style={{ marginTop: 8 }}>
+                        <Skeleton width={60} height={16} />
+                      </View>
                     </View>
-                  </View>
-                ))
-              ) : (
-                menuItems.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.menuItem}
-                    onPress={() => handleMenuPress(item.route)}
-                  >
-                    <View style={styles.menuIconContainer}>
-                      <Image 
-                        source={item.icon}
-                        style={styles.menuIcon}
-                      />
-                    </View>
-                    <Text style={styles.menuText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))
-              )}
-            </View>
+                  ))
+                ) : (
+                  menuItems.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.menuItem}
+                      onPress={() => handleMenuPress(item.route)}
+                    >
+                      <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.95)' }]}>
+                        <Image 
+                          source={item.icon}
+                          style={[styles.menuIcon, { tintColor: undefined }]}
+                        />
+                      </View>
+                      <Text style={[styles.menuText, { color: '#FFFFFF' }]}>{item.title}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            </LinearGradient>
           </View>
 
           {/* Secondary Menu */}
@@ -478,19 +510,28 @@ export default function Dashboard() {
               showsHorizontalScrollIndicator={false}
               style={styles.scrollView}
             >
-              {banners.map((banner) => (
-                <TouchableOpacity
-                  key={banner.id}
-                  style={[styles.bannerItem, { width: windowWidth - 32 }]}
-                  onPress={() => handleBannerPress(banner.note)}
-                >
-                  <Image
-                    source={{ uri: banner.url }}
-                    style={styles.bannerImage}
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              ))}
+              {bannerLoading ? (
+                // Tampilkan 3 skeleton saat loading
+                Array(3).fill(null).map((_, index) => (
+                  <View key={`skeleton-${index}`} style={[styles.bannerItem, { width: windowWidth - 32 }]}>
+                    <Skeleton width="100%" height={150} />
+                  </View>
+                ))
+              ) : (
+                banners.map((banner) => (
+                  <TouchableOpacity
+                    key={banner.id}
+                    style={[styles.bannerItem, { width: windowWidth - 32 }]}
+                    onPress={() => handleBannerPress(banner)}
+                  >
+                    <Image
+                      source={{ uri: banner.url }}
+                      style={styles.bannerImage}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                ))
+              )}
             </ScrollView>
           </View>
 
@@ -564,13 +605,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: '#0066AE',
-    paddingTop: 50,
+    width: '100%',
+    // padding: -10,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  headerGradient: {
+    paddingTop: 48,
     paddingBottom: 100,
     paddingHorizontal: 16,
-  },
-  mainContent: {
-    marginTop: -50,
   },
   headerTop: {
     flexDirection: 'row',
@@ -578,104 +625,96 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   userInfo: {
-    flexDirection: 'column',
+    flex: 1,
   },
   greeting: {
-    fontSize: 16,
-    color: '#FFF',
-    opacity: 0.9,
+    fontSize: 14,
+    color: '#E8F1F8',
+    marginBottom: 4,
+    fontWeight: '400',
   },
   userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontSize: 20,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   headerIcons: {
     flexDirection: 'row',
-    gap: 25,
-    backgroundColor: '#005488',
-    padding: 10,
-    borderRadius: 8,
+    gap: 12,
   },
   iconButton: {
-    padding: 4,
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  mainContent: {
+    marginTop: -50,
   },
   combinedCard: {
-    backgroundColor: '#005488',
+    marginHorizontal: 16,
+    marginVertical: -10,
     borderRadius: 16,
     overflow: 'hidden',
-    marginHorizontal: 16,
-    marginTop: -15, 
-    zIndex: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  gradientBackground: {
+    padding: 16,
+    borderRadius: 16,
   },
   balanceSection: {
-    padding: 16,
-    backgroundColor: '#00549C',
+    marginBottom: 24,
   },
-  menuSection: {
-    backgroundColor: '#003C6C',
-    padding: 16,
-    paddingTop: 24,
+  balanceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
   },
   balanceLabel: {
     fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.8,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   balanceAmount: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 12,
-  },
-  seeAllAccounts: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  seeAllAccountsText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  chevronForwardIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#BBBBBB',
   },
   menuGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    marginHorizontal: -8,
   },
   menuItem: {
-    width: '23%',
+    width: '25%',
     alignItems: 'center',
+    padding: 8,
   },
   menuIconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
   },
   menuIcon: {
-    width: 36,
-    height: 36,
-    // tintColor: '#FFFFFF',
+    width: 24,
+    height: 24,
   },
   menuText: {
     fontSize: 12,
-    color: '#FFFFFF',
     textAlign: 'center',
   },
   secondaryMenuGrid: {
@@ -803,11 +842,6 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  balanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   balanceWrapper: {
     flexDirection: 'row',
