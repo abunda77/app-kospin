@@ -59,14 +59,31 @@ export function PaymentHistory() {
     }
   };
 
+  const getStatusBackgroundColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'lunas':
+      case 'approved':
+        return '#dcfce7';
+      case 'belum lunas':
+        return '#fef9c3';
+      case 'terlambat':
+      case 'reject':
+        return '#fee2e2';
+      default:
+        return '#f3f4f6';
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'lunas':
-        return '#28A745';
+      case 'approved':
+        return '#22c55e';
       case 'belum lunas':
-        return '#FFC107';
+        return '#ca8a04';
       case 'terlambat':
-        return '#DC3545';
+      case 'reject':
+        return '#ef4444';
       default:
         return '#6C757D';
     }
@@ -126,7 +143,11 @@ export function PaymentHistory() {
                 <Text style={styles.label}>Status</Text>
                 <Text style={[
                   styles.value,
-                  { color: getStatusColor(historyData.info_pinjaman.status_pinjaman) }
+                  styles.badge,
+                  { 
+                    color: getStatusColor(historyData.info_pinjaman.status_pinjaman),
+                    backgroundColor: getStatusBackgroundColor(historyData.info_pinjaman.status_pinjaman)
+                  }
                 ]}>
                   {historyData.info_pinjaman.status_pinjaman.toUpperCase()}
                 </Text>
@@ -276,6 +297,13 @@ const styles = StyleSheet.create({
   valueHighlight: {
     fontSize: 16,
     color: '#0066AE',
+    fontWeight: '600',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    overflow: 'hidden',
     fontWeight: '600',
   },
   paymentItem: {

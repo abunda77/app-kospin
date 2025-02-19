@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   setorButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#008AF0',
     padding: 12,
     borderRadius: 8,
     flexDirection: 'row',

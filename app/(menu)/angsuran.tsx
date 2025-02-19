@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   historyButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#008AF0',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,

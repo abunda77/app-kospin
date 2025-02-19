@@ -94,6 +94,28 @@ export default function Kredit() {
     });
   };
 
+  const getStatusBackgroundColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return '#ffffff';
+      case 'reject':
+        return '#fee2e2';
+      default:
+        return '#f3f4f6';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return '#22c55e';
+      case 'reject':
+        return '#ef4444';
+      default:
+        return '#6C757D';
+    }
+  };
+
   const fetchPinjamanData = async (token: string) => {
     try {
       // First API call - Profile
@@ -363,7 +385,15 @@ export default function Kredit() {
                   </View>
                   <View style={styles.infoRow}>
                     <Text style={styles.label}>Status</Text>
-                    <Text style={[styles.value, styles.statusText]}>
+                    <Text style={[
+                      styles.value, 
+                      styles.statusText,
+                      styles.badge,
+                      {
+                        color: getStatusColor(item.status_pinjaman),
+                        backgroundColor: getStatusBackgroundColor(item.status_pinjaman)
+                      }
+                    ]}>
                       {item.status_pinjaman.toUpperCase()}
                     </Text>
                   </View>
@@ -457,7 +487,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   value: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333333',
     fontWeight: '500',
     flex: 2,
@@ -473,6 +503,13 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#0066AE',
     fontWeight: 'bold',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    overflow: 'hidden',
+    fontWeight: '600',
   },
   emptyStateContainer: {
     padding: 24,
@@ -496,7 +533,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   historyButton: {
-    backgroundColor: '#28a745',  // Changed to green color
+    backgroundColor: '#008AF0',  // Changed to green color
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 20,
