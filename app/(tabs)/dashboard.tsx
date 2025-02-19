@@ -438,7 +438,7 @@ export default function Dashboard() {
                       style={styles.menuItem}
                       onPress={() => handleMenuPress(item.route)}
                     >
-                      <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.95)' }]}>
+                      <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}>
                         <Image 
                           source={item.icon}
                           style={[styles.menuIcon, { tintColor: undefined }]}
@@ -697,9 +697,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   menuIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
