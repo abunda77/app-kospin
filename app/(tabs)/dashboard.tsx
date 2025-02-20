@@ -10,6 +10,7 @@ import Skeleton from '../../components/Skeleton';
 import React from 'react';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getRandomGreeting } from '../config/greetings';
 
 interface MenuItem {
   id: number;
@@ -105,11 +106,13 @@ export default function Dashboard() {
   const [balance, setBalance] = useState<string>('0');
   const [banners, setBanners] = useState<BannerData[]>([]);
   const [bannerLoading, setBannerLoading] = useState(true);
+  const [randomGreeting, setRandomGreeting] = useState('');
 
   useEffect(() => {
     checkAuthAndFetchData();
     fetchBalance();
     fetchBanners();
+    setRandomGreeting(getRandomGreeting());
     // Simulasi loading
     setTimeout(() => {
       setLoading(false);
@@ -354,24 +357,31 @@ export default function Dashboard() {
                 {loading ? (
                   <Skeleton width={120} height={24} />
                 ) : (
-                  <Text style={styles.userName}>
-                    {userName || 'Pengguna'}
-                  </Text>
+                  <>
+                    <Text style={styles.userName}>
+                      {userName || 'Pengguna'}
+                    </Text>
+                    <Text style={styles.randomGreeting}>
+                      {randomGreeting}
+                    </Text>
+                  </>
                 )}
               </View>
               <View style={styles.headerIcons}>
-                <Pressable 
-                  style={styles.iconButton}
-                  android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
-                >
-                  <Ionicons name="notifications-outline" size={24} color="#FFF" />
-                </Pressable>
-                <Pressable 
-                  style={styles.iconButton}
-                  android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
-                >
-                  <Ionicons name="headset-outline" size={24} color="#FFF" />
-                </Pressable>
+                <View style={styles.iconGroup}>
+                  <Pressable 
+                    style={[styles.iconButton, styles.iconButtonLeft]}
+                    android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                  >
+                    <Ionicons name="notifications-outline" size={24} color="#FFF" />
+                  </Pressable>
+                  <Pressable 
+                    style={[styles.iconButton, styles.iconButtonRight]}
+                    android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                  >
+                    <Ionicons name="headset-outline" size={24} color="#FFF" />
+                  </Pressable>
+                </View>
               </View>
             </View>
           </LinearGradient>
@@ -606,7 +616,7 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    // padding: -10,
+    marginTop: 0,
     overflow: 'hidden',
     elevation: 4,
     shadowColor: '#000',
@@ -638,24 +648,44 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
   },
+  randomGreeting: {
+    fontSize: 11,
+    fontStyle: 'italic',
+    color: '#f5f5f5',
+    marginTop: 8,
+  },
   headerIcons: {
     flexDirection: 'row',
-    gap: 12,
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    overflow: 'hidden',
+    marginRight: -12,
   },
   iconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'transparent',
+  },
+  iconButtonLeft: {
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  iconButtonRight: {
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   mainContent: {
     marginTop: -50,
   },
   combinedCard: {
     marginHorizontal: 16,
-    marginVertical: -10,
+    marginVertical: -20,
     borderRadius: 16,
     overflow: 'hidden',
     elevation: 4,
