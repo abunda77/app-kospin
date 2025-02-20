@@ -619,9 +619,10 @@ export default function HomeScreen() {
           style={[styles.loginButton, styles.logoutButton]}
           onPress={handleLogoutConfirmation}
         >
-          <Text style={[styles.loginButtonText, styles.logoutButtonText]}>
-            Logout
-          </Text>
+          <View style={styles.logoutButtonContent}>
+            <Ionicons name="log-out-outline" size={20} color="#DC3545" />
+            <Text style={styles.logoutButtonText}>Keluar</Text>
+          </View>
         </TouchableOpacity>
       ) : showLoginButton && (
         <TouchableOpacity
@@ -899,22 +900,24 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#FF0000',
     borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: '#DC3545',
+    overflow: 'hidden',
+    padding: 0,
+  },
+  logoutButtonContent: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   logoutButtonText: {
-    color: '#000000',
+    color: '#DC3545',
+    fontSize: 14,
+    fontWeight: '600',
   },
   overlay: {
     position: 'absolute',
@@ -1076,5 +1079,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     width: '100%', 
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
