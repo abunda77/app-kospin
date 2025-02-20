@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, StyleProp, ViewStyle } from 'react-native';
 import { useEffect, useRef } from 'react';
 
 interface SkeletonProps {
   width: number | "auto" | `${number}%`;
   height: number | "auto" | `${number}%`;
   borderRadius?: number;
+  style?: StyleProp<ViewStyle>;
 }
 
-const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius = 4 }) => {
+const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius = 4, style }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -43,6 +44,7 @@ const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius = 4 }) 
           borderRadius,
           opacity,
         },
+        style,
       ]}
     />
   );

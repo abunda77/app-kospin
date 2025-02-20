@@ -155,44 +155,59 @@ export default function WithdrawalMethod() {
                 {selectedMethod === 'bank' ? 'Data Transfer Bank' : 'Data E-Wallet'}
               </Text>
 
-              <TextInput
-                style={styles.input}
-                placeholder="Nama Penerima"
-                value={formData.nama}
-                onChangeText={(text) => setFormData({...formData, nama: text})}
-              />
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Nama Penerima</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Masukkan nama penerima"
+                  value={formData.nama}
+                  onChangeText={(text) => setFormData({...formData, nama: text})}
+                />
+              </View>
 
               {selectedMethod === 'bank' ? (
                 <>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nama Bank"
-                    value={formData.bank}
-                    onChangeText={(text) => setFormData({...formData, bank: text})}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nomor Rekening"
-                    value={formData.noRekening}
-                    onChangeText={(text) => setFormData({...formData, noRekening: text})}
-                    keyboardType="numeric"
-                  />
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Nama Bank</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Masukkan nama bank"
+                      value={formData.bank}
+                      onChangeText={(text) => setFormData({...formData, bank: text})}
+                    />
+                  </View>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Nomor Rekening</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Masukkan nomor rekening"
+                      value={formData.noRekening}
+                      onChangeText={(text) => setFormData({...formData, noRekening: text})}
+                      keyboardType="numeric"
+                    />
+                  </View>
                 </>
               ) : (
                 <>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nama E-Wallet"
-                    value={formData.eWallet}
-                    onChangeText={(text) => setFormData({...formData, eWallet: text})}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nomor E-Wallet"
-                    value={formData.noWallet}
-                    onChangeText={(text) => setFormData({...formData, noWallet: text})}
-                    keyboardType="numeric"
-                  />
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Nama E-Wallet</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Masukkan nama e-wallet"
+                      value={formData.eWallet}
+                      onChangeText={(text) => setFormData({...formData, eWallet: text})}
+                    />
+                  </View>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Nomor E-Wallet</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Masukkan nomor e-wallet"
+                      value={formData.noWallet}
+                      onChangeText={(text) => setFormData({...formData, noWallet: text})}
+                      keyboardType="numeric"
+                    />
+                  </View>
                 </>
               )}
             </View>
@@ -203,15 +218,15 @@ export default function WithdrawalMethod() {
               <Text style={styles.feeInfoTitle}>Rincian Biaya:</Text>
               <View style={styles.feeInfoRow}>
                 <Text style={styles.feeLabel}>Nominal Penarikan</Text>
-                <Text style={styles.feeValue}>{formatCurrency(calculatedAmount.originalAmount)}</Text>
+                <Text style={[styles.feeValue, styles.feeAmount]}>{formatCurrency(calculatedAmount.originalAmount)}</Text>
               </View>
               <View style={styles.feeInfoRow}>
                 <Text style={styles.feeLabel}>Biaya Transfer</Text>
-                <Text style={styles.feeValue}>{formatCurrency(calculatedAmount.fee)}</Text>
+                <Text style={[styles.feeValue, styles.feeCost]}>{formatCurrency(calculatedAmount.fee)}</Text>
               </View>
               <View style={[styles.feeInfoRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Jumlah Diterima</Text>
-                <Text style={styles.totalValue}>{formatCurrency(calculatedAmount.finalAmount)}</Text>
+                <Text style={[styles.totalValue, styles.finalAmount]}>{formatCurrency(calculatedAmount.finalAmount)}</Text>
               </View>
             </View>
           )}
@@ -357,5 +372,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#0066AE',
+  },
+  feeAmount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  feeCost: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#DC3545',
+  },
+  finalAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#28a745',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 6,
+    fontWeight: '500',
   },
 });

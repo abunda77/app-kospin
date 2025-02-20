@@ -44,6 +44,10 @@ export default function SetoranTabungan() {
       Alert.alert('Error', 'Masukkan nominal setoran yang valid');
       return;
     }
+    if (parseFloat(nominal) < 50000) {
+      Alert.alert('Error', 'Minimal setoran adalah Rp50.000');
+      return;
+    }
     setIsConfirmModalVisible(true);
   };
 
@@ -167,6 +171,7 @@ export default function SetoranTabungan() {
                   placeholderTextColor="#999"
                 />
               </View>
+              <Text style={styles.minimumNote}>*Minimal setoran Rp50.000</Text>
 
               <Text style={styles.quickAmountLabel}>Pilih Nominal Cepat</Text>
               <View style={styles.quickAmountContainer}>
@@ -538,5 +543,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     fontWeight: '600',
     overflow: 'hidden',
+  },
+  minimumNote: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#FF0000',
+    marginTop: 4,
   },
 });

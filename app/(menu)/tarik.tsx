@@ -52,27 +52,28 @@ interface SaldoBerjalanResponse {
   };
 }
 
-export default function TarikScreen() {
+export default function TarikTunai() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tabunganData, setTabunganData] = useState<TabunganResponse['data'] | null>(null);
-  const [nominal, setNominal] = useState('');
   const [mainAccount, setMainAccount] = useState<TabunganResponse['data']['tabungan'][0] | null>(null);
   const [saldoBerjalan, setSaldoBerjalan] = useState<number | null>(null);
   const [isAccountSelectorVisible, setIsAccountSelectorVisible] = useState(false);
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [nominal, setNominal] = useState('');
   const [isExceedLimit, setIsExceedLimit] = useState(false);
   const SALDO_MINIMAL = 50000; // Tambahkan konstanta saldo minimal
   const router = useRouter();
 
   const checkLoginStatus = async () => {
+    setIsLoading(true);
     try {
       const token = await SecureStore.getItemAsync('secure_token');
+      setIsLoggedIn(!!token);
       if (token) {
-        setIsLoggedIn(true);
         await fetchTabunganData(token);
-      } else {
-        setIsLoggedIn(false);
       }
     } catch (error) {
       console.error('Error checking login status:', error);
@@ -222,7 +223,17 @@ export default function TarikScreen() {
   }, []);
 
   useEffect(() => {
-    checkLoginStatus();
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        // Proses fetch data Anda
+        await checkLoginStatus();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   useFocusEffect(
@@ -248,6 +259,36 @@ export default function TarikScreen() {
       await fetchSaldoBerjalan(token, account.no_tabungan);
     }
   };
+
+  const renderSkeletonCards = () => (
+    <View style={styles.card}>
+      <View style={[styles.cardHeader, { backgroundColor: '#0066AE' }]}>
+        <View style={styles.cardHeaderContent}>
+          <Skeleton width={150} height={24} />
+          <Skeleton width={100} height={24} />
+        </View>
+      </View>
+      <View style={styles.cardBody}>
+        <View style={styles.infoRow}>
+          <Skeleton width={100} height={16} />
+          <Skeleton width={120} height={16} />
+        </View>
+        <View style={styles.infoRow}>
+          <Skeleton width={80} height={16} />
+          <Skeleton width={150} height={20} />
+        </View>
+        <View style={styles.infoRow}>
+          <Skeleton width={120} height={16} />
+          <Skeleton width={140} height={20} />
+        </View>
+        <View style={styles.withdrawalSection}>
+          <Skeleton width={120} height={16} />
+          <Skeleton width="100%" height={48} style={{ marginTop: 8 }} />
+        </View>
+        <Skeleton width="100%" height={48} style={{ marginTop: 24 }} />
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -275,7 +316,15 @@ export default function TarikScreen() {
         </View>
 
         <View style={styles.content}>
-          {mainAccount && (
+          {isLoading ? (
+            renderSkeletonCards()
+          ) : !mainAccount ? (
+            <View style={styles.emptyStateContainer}>
+              <Text style={styles.emptyStateText}>
+                Pilih rekening untuk melakukan penarikan
+              </Text>
+            </View>
+          ) : (
             <View style={styles.card}>
               <LinearGradient
                 colors={['#0066AE', '#0095FF']}
@@ -474,13 +523,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    paddingRight: 24,
   },
   cardHeaderContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginRight: 4,
   },
   changeAccountButton: {
     flexDirection: 'row',
@@ -663,5 +710,25 @@ const styles = StyleSheet.create({
   accountNumber: {
     fontSize: 14,
     color: '#666666',
+  },
+  emptyStateContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  skeletonContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    overflow: 'hidden',
+    zIndex: 1,
   },
 });
