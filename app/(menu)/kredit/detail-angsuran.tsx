@@ -145,16 +145,16 @@ export default function DetailAngsuran() {
               </View>
               
               <View style={styles.angsuranDetails}>
-                <View style={styles.infoRow}>
+                {/* <View style={styles.infoRow}>
                   <Text style={styles.label}>Pokok</Text>
                   <Text style={styles.value}>{formatCurrency(angsuran.pokok.toString())}</Text>
                 </View>
                 <View style={styles.infoRow}>
                   <Text style={styles.label}>Bunga</Text>
                   <Text style={styles.value}>{formatCurrency(angsuran.bunga.toString())}</Text>
-                </View>
+                </View> */}
                 <View style={styles.infoRow}>
-                  <Text style={styles.label}>Total Angsuran</Text>
+                  <Text style={styles.label}>Jumlah Angsuran</Text>
                   <Text style={styles.value}>{formatCurrency(angsuran.total_angsuran.toString())}</Text>
                 </View>
                 <View style={styles.infoRow}>

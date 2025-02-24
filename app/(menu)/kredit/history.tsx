@@ -169,12 +169,10 @@ export function PaymentHistory() {
                   </View>
                   <View style={styles.paymentDetails}>
                     <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Pokok</Text>
-                      <Text style={styles.detailValue}>{formatCurrency(payment.angsuran_pokok)}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Bunga</Text>
-                      <Text style={styles.detailValue}>{formatCurrency(payment.angsuran_bunga)}</Text>
+                      <Text style={styles.detailLabel}>Angsuran</Text>
+                      <Text style={styles.detailValue}>
+                        {formatCurrency(Number(payment.angsuran_pokok) + Number(payment.angsuran_bunga))}
+                      </Text>
                     </View>
                     {Number(payment.denda) > 0 && (
                       <View style={styles.detailRow}>

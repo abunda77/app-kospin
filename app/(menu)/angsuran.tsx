@@ -369,8 +369,8 @@ export default function Angsuran() {
                       <Text style={styles.value}>{formatCurrency(item.pokok.toString())}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                      <Text style={styles.label}>Bunga</Text>
-                      <Text style={styles.value}>{formatCurrency(item.bunga.toString())}</Text>
+                      {/* <Text style={styles.label}>Bunga</Text>
+                      <Text style={styles.value}>{formatCurrency(item.bunga.toString())}</Text> */}
                     </View>
                     <View style={styles.infoRow}>
                       <Text style={styles.label}>Total Angsuran</Text>
