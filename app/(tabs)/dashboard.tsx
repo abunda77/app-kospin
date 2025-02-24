@@ -107,11 +107,14 @@ export default function Dashboard() {
   const [banners, setBanners] = useState<BannerData[]>([]);
   const [bannerLoading, setBannerLoading] = useState(true);
   const [randomGreeting, setRandomGreeting] = useState('');
+  const [transactionHistory, setTransactionHistory] = useState([]);
+  const [isTransactionExpanded, setIsTransactionExpanded] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();
     fetchBalance();
     fetchBanners();
+    fetchTransactionHistory();
     setRandomGreeting(getRandomGreeting());
     // Simulasi loading
     setTimeout(() => {
@@ -337,6 +340,97 @@ export default function Dashboard() {
     </View>
   );
 
+  const fetchTransactionHistory = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) return;
+
+      // Dapatkan ID profil
+      const profileResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.PROFILES}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!profileResponse.ok) throw new Error('Failed to fetch profile');
+      const profileData = await profileResponse.json();
+      const profileId = profileData.data.id;
+
+      // Dapatkan data tabungan
+      const tabunganResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_BY_PROFILE}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ id_profile: profileId })
+      });
+
+      if (!tabunganResponse.ok) throw new Error('Failed to fetch tabungan data');
+      const tabunganData = await tabunganResponse.json();
+
+      if (tabunganData.data.tabungan.length > 0) {
+        const noTabungan = tabunganData.data.tabungan[0].no_tabungan;
+
+        // Dapatkan mutasi (10 transaksi terakhir)
+        const mutasiResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.MUTASI_BY_PERIODE(noTabungan, '10_terakhir')}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!mutasiResponse.ok) throw new Error('Failed to fetch mutasi data');
+        const mutasiData = await mutasiResponse.json();
+
+        // Ambil 5 transaksi terakhir
+        const lastFiveTransactions = mutasiData.transaksi ? mutasiData.transaksi.slice(-5) : [];
+        setTransactionHistory(lastFiveTransactions);
+      }
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Gagal mengambil riwayat transaksi'
+      });
+    }
+  };
+
+  const formatCurrency = (amount: string) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(Number(amount));
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    
+    // Format date as dd/mm/yyyy
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    // Format time as HH:mm
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    };
+    const formattedTime = date.toLocaleTimeString('id-ID', timeOptions) + ' WIB';
+    
+    return {
+      date: `${day}/${month}/${year}`,
+      time: formattedTime
+    };
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -556,8 +650,13 @@ export default function Dashboard() {
               ) : (
                 <>
                   <Text style={styles.financialReportTitle}>Catatan Keuangan</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.viewMoreText}>Tampilkan</Text>
+                  <TouchableOpacity 
+                    onPress={() => setIsTransactionExpanded(!isTransactionExpanded)}
+                    style={styles.viewMoreButton}
+                  >
+                    <Text style={styles.viewMoreText}>
+                      {isTransactionExpanded ? 'Tutup' : 'Tampilkan'}
+                    </Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -567,7 +666,33 @@ export default function Dashboard() {
                 <Skeleton width={140} height={16} />
               </View>
             ) : (
-              <Text style={styles.financialReportDate}>1 Feb 2025 - 28 Feb 2025</Text>
+              <>
+                <Text style={styles.financialReportDate}>5 Transaksi Terakhir</Text>
+                {isTransactionExpanded && transactionHistory.length > 0 ? (
+                  transactionHistory.map((transaksi: any, index) => (
+                    <View 
+                      key={transaksi.id} 
+                      style={[
+                        styles.transactionItem,
+                        index % 2 === 0 ? styles.transactionItemEven : styles.transactionItemOdd
+                      ]}
+                    >
+                      <View style={styles.transactionInfo}>
+                        {/* <Text style={styles.transactionDescription}>{transaksi.keterangan}</Text> */}
+                        <Text style={styles.transactionDate}>{formatDate(transaksi.tanggal_transaksi).date}</Text>
+                      </View>
+                      <Text style={[
+                        styles.transactionAmount,
+                        transaksi.jenis_transaksi === 'kredit' ? styles.creditAmount : styles.debitAmount
+                      ]}>
+                        {transaksi.jenis_transaksi === 'kredit' ? '-' : '+'} {formatCurrency(transaksi.jumlah)}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  null
+                )}
+              </>
             )}
           </View>
         </View>
@@ -782,17 +907,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   showMoreButton: {
-    paddingVertical: 10,    
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 1,
-    alignSelf: 'center',
-    gap: 4,
+    backgroundColor: '#E8F3FF',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    color: '#0066AE',
   },
   showMoreText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#0066AE',
     fontWeight: '500',
   },
@@ -822,9 +944,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  viewMoreText: {
-    fontSize: 14,
+  viewMoreButton: {
+    backgroundColor: '#E8F3FF',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     color: '#0066AE',
+  },
+  viewMoreText: {
+    fontSize: 12,
+    color: '#0066AE',
+    fontWeight: '500',
   },
   financialReportDate: {
     fontSize: 14,
@@ -912,5 +1042,43 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 15,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  transactionItemEven: {
+    backgroundColor: '#F9F9F9',
+  },
+  transactionItemOdd: {
+    backgroundColor: '#FFFFFF',
+  },
+  transactionInfo: {
+    flex: 1,
+  },
+  transactionDescription: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  transactionDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  transactionAmount: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#0066AE',
+  },
+  creditAmount: {
+    color: '#DC3545',
+  },
+  debitAmount: {
+    color: '#28A745',
   },
 });

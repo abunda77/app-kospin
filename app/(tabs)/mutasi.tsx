@@ -567,6 +567,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+    
   },
   creditAmount: {
     color: '#DC3545',
@@ -691,6 +692,7 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: 12,
     fontWeight: '500',
+    textAlign: 'right',
   },
 
   
