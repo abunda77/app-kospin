@@ -26,6 +26,8 @@ export const API_ENDPOINTS = {
   PINJAMAN_HISTORY_PEMBAYARAN: '/api/pinjaman/history-pembayaran',
   PINJAMAN_TAGIHAN: '/api/pinjaman/tagihan',
   ANGSURAN_DETAILS: '/api/angsuran/details',
+  // Tambahan endpoint untuk mutasi
+  MUTASI_BY_PERIODE: (noTabungan: string, periode: string) => `/api/mutasi/${noTabungan}/${periode}`,
 };
 
 export default {
