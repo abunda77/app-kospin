@@ -210,22 +210,22 @@ export default function MutasiScreen() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    };
+    
+    // Format date as dd/mm/yyyy
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    // Format time as HH:mm
     const timeOptions: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     };
-    
-    const formattedDate = date.toLocaleDateString('id-ID', dateOptions);
     const formattedTime = date.toLocaleTimeString('id-ID', timeOptions) + ' WIB';
     
     return {
-      date: formattedDate,
+      date: `${day}/${month}/${year}`,
       time: formattedTime
     };
   };
@@ -345,36 +345,41 @@ export default function MutasiScreen() {
               </Text>
             </View>
           ) : (
-            mutasiData.transaksi.map((transaksi) => (
-              <View key={transaksi.id} style={styles.transactionCard}>
-                {/* Row 1: Transaction Date Header */}
-                <View style={styles.dateHeader}>
-                  <Text style={styles.transactionDate}>
-                    {formatDate(transaksi.tanggal_transaksi).date}
-                  </Text>
-                </View>
-
-                {/* Row 2: Description and Amount */}
-                <View style={styles.transactionContent}>
-                  <View style={styles.descriptionColumn}>
-                    <Text style={styles.transactionDescription}>
-                      {transaksi.keterangan}
+            <View style={styles.tableContainer}>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderText, styles.dateColumn]}>Tanggal</Text>
+                <Text style={[styles.tableHeaderText, styles.descColumn]}>Keterangan</Text>
+                <Text style={[styles.tableHeaderText, styles.amountColumn]}>Jumlah</Text>
+              </View>
+              {mutasiData.transaksi.map((transaksi, index) => (
+                <View 
+                  key={transaksi.id} 
+                  style={[
+                    styles.tableRow,
+                    index % 2 === 0 ? styles.evenRow : styles.oddRow
+                  ]}
+                >
+                  <View style={styles.dateColumn}>
+                    <Text style={styles.dateText}>
+                      {formatDate(transaksi.tanggal_transaksi).date}
                     </Text>
-                  </View>
-                  <View style={styles.amountColumn}>
-                    <Text style={[
-                      styles.transactionAmount,
-                      transaksi.jenis_transaksi === 'kredit' ? styles.creditAmount : styles.debitAmount
-                    ]}>
-                      {transaksi.jenis_transaksi === 'kredit' ? '+' : '-'} {formatCurrency(transaksi.jumlah)}
-                    </Text>
-                    <Text style={styles.transactionTime}>
+                    <Text style={styles.timeText}>
                       {formatDate(transaksi.tanggal_transaksi).time}
                     </Text>
                   </View>
+                  <Text style={[styles.descColumn, styles.descriptionText]}>
+                    {transaksi.keterangan}
+                  </Text>
+                  <Text style={[
+                    styles.amountColumn,
+                    styles.amountText,
+                    transaksi.jenis_transaksi === 'kredit' ? styles.creditAmount : styles.debitAmount
+                  ]}>
+                    {transaksi.jenis_transaksi === 'kredit' ? '-' : '+'} {formatCurrency(transaksi.jumlah)}
+                  </Text>
                 </View>
-              </View>
-            ))
+              ))}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -534,7 +539,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   transactionDate: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#666666',
   },
@@ -545,15 +550,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   descriptionColumn: {
-    flex: 1,
+    flex:21,
     paddingRight: 16,
   },
   amountColumn: {
-    flex: 1,
+    flex: 3,
     alignItems: 'flex-end',
   },
   transactionDescription: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#333333',
     flexWrap: 'wrap',
     marginBottom: 4,
@@ -626,5 +631,67 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
+  tableContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#F8F9FF',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  tableHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  dateColumn: {
+    flex: 2,
+    paddingRight: 8,
+  },
+  descColumn: {
+    flex: 4,
+    paddingHorizontal: 8,
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  evenRow: {
+    backgroundColor: '#FFFFFF',
+  },
+  oddRow: {
+    backgroundColor: '#FAFAFA',
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#333333',
+    marginBottom: 2,
+  },
+  timeText: {
+    fontSize: 10,
+    color: '#666666',
+  },
+  descriptionText: {
+    fontSize: 12,
+    color: '#333333',
+  },
+  amountText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
   
 });
