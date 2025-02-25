@@ -1,6 +1,28 @@
 import { Platform } from 'react-native';
 
-const API_BASE_URL = 'https://app.kospinsinaraartha.co.id';
+const fetchApiBaseUrl = async () => {
+  try {
+    const response = await fetch('http://app.kospinsinaraartha.co.id/api/config/api-base-url');
+    const data = await response.json(); // Mengambil data JSON dari response
+    if (data.status) {
+      return data.data.api_base_url; // Ambil api_base_url dari response
+    }
+  } catch (error) {
+    console.error('Error fetching API base URL:', error);
+  }
+  return 'https://app.kospinsinaraartha.co.id'; // Default value jika gagal
+};
+
+// Ubah untuk menggunakan fungsi async
+const initializeApiBaseUrl = async () => {
+  return await fetchApiBaseUrl();
+};
+
+let API_BASE_URL: string;
+
+initializeApiBaseUrl().then(url => {
+  API_BASE_URL = url;
+});
 
 export const getApiBaseUrl = () => {
   return API_BASE_URL;
