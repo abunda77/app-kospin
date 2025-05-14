@@ -1,50 +1,62 @@
-# Welcome to your Expo app 👋
+# Selamat Datang di Aplikasi Kospin 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Ini adalah aplikasi [Expo](https://expo.dev) yang dibuat menggunakan [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+## Teknologi yang Digunakan
 
-1. Install dependencies
+- **Expo**: versi 52.0.30
+- **React**: versi 18.3.1
+- **React Native**: versi 0.76.6
+- **Expo Router**: versi 4.0.17 untuk navigasi berbasis file
+- **React Navigation**: Bottom Tabs (versi 7.2.0) dan Stack (versi 7.1.1)
+- **NativeWind**: versi 2.0.11 untuk styling dengan Tailwind CSS
+- **Penyimpanan Data**: AsyncStorage dan SecureStore
+- **UI/UX**: Expo Blur, Expo Linear Gradient, React Native Reanimated
+- **Notifikasi**: React Native Toast Message
+
+## Memulai
+
+1. Pasang dependensi
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Jalankan aplikasi
 
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+Di output, Anda akan menemukan opsi untuk membuka aplikasi di:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Emulator Android](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [Simulator iOS](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), sandbox terbatas untuk mencoba pengembangan aplikasi dengan Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Anda dapat mulai mengembangkan dengan mengedit file di dalam direktori **app**. Proyek ini menggunakan [routing berbasis file](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Proyek Baru
 
-When you're ready, run:
+Jika ingin memulai dari awal, jalankan:
 
 ```bash
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Perintah ini akan memindahkan kode awal ke direktori **app-example** dan membuat direktori **app** kosong di mana Anda bisa mulai mengembangkan.
 
-## Learn more
+## Pelajari Lebih Lanjut
 
-To learn more about developing your project with Expo, look at the following resources:
+Untuk mempelajari lebih lanjut tentang pengembangan proyek dengan Expo, lihat sumber daya berikut:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- [Dokumentasi Expo](https://docs.expo.dev/): Pelajari dasar-dasar atau lanjut ke topik lanjutan dengan [panduan kami](https://docs.expo.dev/guides).
+- [Tutorial Belajar Expo](https://docs.expo.dev/tutorial/introduction/): Ikuti tutorial langkah demi langkah di mana Anda akan membuat proyek yang berjalan di Android, iOS, dan web.
 
-## Join the community
+## Bergabung dengan Komunitas
 
-Join our community of developers creating universal apps.
+Bergabunglah dengan komunitas pengembang kami yang membuat aplikasi universal.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo di GitHub](https://github.com/expo/expo): Lihat platform open source kami dan berkontribusi.
+- [Komunitas Discord](https://chat.expo.dev): Mengobrol dengan pengguna Expo dan ajukan pertanyaan.
