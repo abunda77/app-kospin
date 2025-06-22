@@ -2,6 +2,15 @@
 
 Ini adalah aplikasi [Expo](https://expo.dev) yang dibuat menggunakan [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Persyaratan Sistem
+
+- Node.js versi 16.0.0 atau lebih baru
+- npm versi 7.0.0 atau lebih baru
+- Git
+- Android Studio (untuk pengembangan Android)
+- Xcode (untuk pengembangan iOS, hanya di macOS)
+- Expo Go di perangkat fisik (opsional)
+
 ## Teknologi yang Digunakan
 
 - **Expo**: versi 52.0.30
@@ -54,9 +63,66 @@ Untuk mempelajari lebih lanjut tentang pengembangan proyek dengan Expo, lihat su
 - [Dokumentasi Expo](https://docs.expo.dev/): Pelajari dasar-dasar atau lanjut ke topik lanjutan dengan [panduan kami](https://docs.expo.dev/guides).
 - [Tutorial Belajar Expo](https://docs.expo.dev/tutorial/introduction/): Ikuti tutorial langkah demi langkah di mana Anda akan membuat proyek yang berjalan di Android, iOS, dan web.
 
+## Struktur Aplikasi
+
+Aplikasi ini menggunakan struktur berbasis folder yang mengikuti konvensi Expo Router:
+
+- `app/`: Berisi routes dan komponen utama aplikasi
+  - `(menu)/`: Menu-menu utama aplikasi
+  - `(tabs)/`: Tab navigasi utama
+  - `components/`: Komponen yang digunakan di routes
+- `assets/`: Gambar, ikon, dan font
+- `components/`: Komponen yang dapat digunakan ulang
+- `config/`: Konfigurasi aplikasi
+- `constants/`: Konstanta dan tema
+- `hooks/`: Custom React hooks
+- `types/`: TypeScript type definitions
+
+## Pengujian
+
+Untuk menjalankan pengujian:
+
+```bash
+npm test
+```
+
+Unit testing menggunakan Jest dan React Native Testing Library.
+
+## Troubleshooting
+
+### Masalah Umum
+
+1. **Metro Bundler Error**
+   - Jalankan `npx expo start --clear`
+   - Hapus folder node_modules dan jalankan `npm install`
+
+2. **Expo Go Connection Issues**
+   - Pastikan ponsel dan komputer dalam jaringan yang sama
+   - Coba gunakan mode tunnel dengan `--tunnel`
+
+3. **Build Errors**
+   - Periksa versi Node.js dan npm
+   - Pastikan semua dependensi terinstal dengan benar
+
+## Deployment
+
+### Development Build
+```bash
+eas build --profile development
+```
+
+### Production Build
+```bash
+eas build --platform all
+```
+
 ## Bergabung dengan Komunitas
 
 Bergabunglah dengan komunitas pengembang kami yang membuat aplikasi universal.
 
 - [Expo di GitHub](https://github.com/expo/expo): Lihat platform open source kami dan berkontribusi.
 - [Komunitas Discord](https://chat.expo.dev): Mengobrol dengan pengguna Expo dan ajukan pertanyaan.
+
+## Lisensi
+
+Proyek ini dilindungi oleh lisensi MIT. Lihat file `LICENSE` untuk detail lebih lanjut.
