@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 const fetchApiBaseUrl = async () => {
   try {
-    const response = await fetch('http://app.kospinsinaraartha.co.id/api/config/api-base-url');
+    const response = await fetch('https://app.kospinsinaraartha.co.id/api/config/api-base-url');
     const data = await response.json(); // Mengambil data JSON dari response
     if (data.status) {
       return data.data.api_base_url; // Ambil api_base_url dari response
