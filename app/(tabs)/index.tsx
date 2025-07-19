@@ -696,83 +696,81 @@ export default function HomeScreen() {
             { height: formHeight }
           ]}
         >
-          <TouchableOpacity 
-            style={styles.overlay} 
-            onPress={handleLoginCancel}
-            activeOpacity={1}
-          >
+          {/* Overlay tanpa transparansi */}
+          <View style={styles.overlayWrapperNoTransparent}>
             <TouchableOpacity 
-              style={styles.loginForm} 
+              style={styles.overlayNoTransparent} 
+              onPress={handleLoginCancel}
               activeOpacity={1}
-              onPress={(e) => e.stopPropagation()}
             >
-              <TouchableOpacity 
-                style={styles.closeButton} 
-                onPress={handleLoginCancel}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons name="close" size={24} color="#666" />
-              </TouchableOpacity>
-              <Text style={styles.loginHeader}>Silakan Login</Text>
-              
-              <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="Username"
-                  style={[styles.input, validationErrors.username ? styles.inputError : null]}
-                  placeholderTextColor="#999"
-                  value={username}
-                  onChangeText={(text) => {
-                    setUsername(text);
-                    setValidationErrors(prev => ({ ...prev, username: '' }));
-                  }}
-                />
-              </View>
-              {validationErrors.username ? (
-                <Text style={styles.errorText}>{validationErrors.username}</Text>
-              ) : null}
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="Password"
-                  secureTextEntry={!showPassword}
-                  style={[styles.input, validationErrors.password ? styles.inputError : null]}
-                  placeholderTextColor="#999"
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    setValidationErrors(prev => ({ ...prev, password: '' }));
-                  }}
-                />
+              {/* Login Form */}
+              <View style={styles.loginFormWrapper}>
                 <TouchableOpacity 
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.passwordToggle}
+                  style={styles.closeButton} 
+                  onPress={handleLoginCancel}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Ionicons 
-                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                    size={20} 
-                    color="#666" 
+                  <Ionicons name="close" size={24} color="#666" />
+                </TouchableOpacity>
+                <Text style={styles.loginHeader}>Silakan Login</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput 
+                    placeholder="Username"
+                    style={[styles.input, validationErrors.username ? styles.inputError : null]}
+                    placeholderTextColor="#999"
+                    value={username}
+                    onChangeText={(text) => {
+                      setUsername(text);
+                      setValidationErrors(prev => ({ ...prev, username: '' }));
+                    }}
                   />
+                </View>
+                {validationErrors.username ? (
+                  <Text style={styles.errorText}>{validationErrors.username}</Text>
+                ) : null}
+                <View style={styles.inputContainer}>
+                  <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                  <TextInput 
+                    placeholder="Password"
+                    secureTextEntry={!showPassword}
+                    style={[styles.input, validationErrors.password ? styles.inputError : null]}
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      setValidationErrors(prev => ({ ...prev, password: '' }));
+                    }}
+                  />
+                  <TouchableOpacity 
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.passwordToggle}
+                  >
+                    <Ionicons 
+                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                      size={20} 
+                      color="#666" 
+                    />
+                  </TouchableOpacity>
+                </View>
+                {validationErrors.password ? (
+                  <Text style={styles.errorText}>{validationErrors.password}</Text>
+                ) : null}
+                <TouchableOpacity style={styles.forgotPassword}>
+                  <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.submitButtonText}>
+                    {isLoading ? 'Memproses...' : 'Masuk'}
+                  </Text>
                 </TouchableOpacity>
               </View>
-              {validationErrors.password ? (
-                <Text style={styles.errorText}>{validationErrors.password}</Text>
-              ) : null}
-              <TouchableOpacity style={styles.forgotPassword}>
-                <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                <Text style={styles.submitButtonText}>
-                  {isLoading ? 'Memproses...' : 'Masuk'}
-                </Text>
-              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
+          </View>
         </Animated.View>
       )}
       <Toast />
@@ -919,15 +917,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  overlay: {
+  overlayWrapper: {
+    flex: 1,
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(245,245,245,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 100,
+  },
+  overlayNoTransparent: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ffff', // solid putih
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginFormWrapper: {
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    padding: 28,
+    borderRadius: 20,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 8,
+    alignItems: 'stretch',
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    zIndex: 1,
   },
   loginForm: {
     backgroundColor: '#f5f5f5',
@@ -985,13 +1013,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 8,
-    zIndex: 1,
   },
   passwordToggle: {
     position: 'absolute',
@@ -1084,5 +1105,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  overlayWrapperNoTransparent: {
+    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });
