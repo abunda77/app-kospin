@@ -423,6 +423,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingBottom: 140, // Add padding to prevent content from being hidden by tab bar
   },
   headerContainer: {
     backgroundColor: '#0066AE',

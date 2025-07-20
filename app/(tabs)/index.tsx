@@ -787,6 +787,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    paddingBottom: 140, // Add padding to prevent content from being hidden by tab bar
   },
   header: {
     backgroundColor: '#0066Ae',
@@ -881,18 +882,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     color: '#333',
-  },
-  loginContainer: {
+  },  loginContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 120, // Adjusted to be above the tab bar
     left: 0,
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 16,
-  },
-  loginButton: {
+  },loginButton: {
     position: 'absolute',
-    bottom: 150,
+    bottom: 120, // Increased to ensure it's above the tab bar
     alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
@@ -1023,10 +1022,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: 200,
     elevation: 5,
-  },
-  formContainer: {
+  },  formContainer: {
     position: 'absolute',
-    bottom: 150,
+    bottom: 120, // Adjusted to be above the tab bar
     left: 0,
     right: 0,
     backgroundColor: '#fff',

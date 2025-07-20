@@ -74,18 +74,17 @@ export default function TabLayout() {
       setIsLoggedIn(false);
     }
   };
-
   // Calculate bottom offset to ensure tab bar stays above device navigation
   const getBottomOffset = () => {
     if (Platform.OS === 'ios') {
       // iOS with home indicator (iPhone X and newer)
-      return insets.bottom > 0 ? 30 : 15;
+      return insets.bottom > 0 ? insets.bottom + 10 : 25;
     } else {
       // Android devices
       if (hasHardwareButtons()) {
-        return 15; // For devices with hardware buttons
+        return 25; // For devices with hardware buttons
       } else {
-        return 65; // For devices with virtual/gesture navigation
+        return insets.bottom > 0 ? insets.bottom + 15 : 30; // For devices with virtual/gesture navigation
       }
     }
   };
@@ -94,21 +93,21 @@ export default function TabLayout() {
   const tabBarStyle = {
     position: 'absolute' as 'absolute',
     bottom: getBottomOffset(),
-    left: 10,
-    right: 10,
-    height: 65,
+    left: 16,
+    right: 16,
+    height: 60,
     backgroundColor: '#fff',
-    borderRadius: 5,
+    borderRadius: 4,
     borderTopWidth: 0,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 8,
-    elevation: 10, // Android shadow
+    paddingHorizontal: 8,
+    paddingTop: 6,
+    paddingBottom: 6,
+    elevation: 15, // Android shadow
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 10,
-    zIndex: 999,
+    shadowRadius: 12,
+    zIndex: 1000,
   };
 
   const screenOptions = {
@@ -117,9 +116,9 @@ export default function TabLayout() {
     tabBarStyle: tabBarStyle,
     tabBarItemStyle: styles.tabBarItem,
     tabBarLabelStyle: styles.tabBarLabel,
-  // Add bottom padding to content to prevent tab bar overlap and allow space for logout button
+    // Add bottom padding to content to prevent tab bar overlap
     contentStyle: { 
-      paddingBottom: 130 + getBottomOffset(), // Increased padding to accommodate the logout button
+      paddingBottom: 60 + getBottomOffset() + 20, // Tab bar height + offset + extra space
     },
   };
 
