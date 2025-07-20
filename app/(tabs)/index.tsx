@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 150,
     alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
@@ -1026,7 +1026,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 150,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
