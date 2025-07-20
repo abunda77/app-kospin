@@ -121,15 +121,18 @@ export default function Dashboard() {
       setLoading(false);
     }, 2000);
   }, []);
-
   useFocusEffect(
     useCallback(() => {
       checkAuthAndFetchData();
+      fetchBalance();
+      fetchTransactionHistory();
     }, [])
   );
-
   const checkAuthAndFetchData = async () => {
     setIsLoading(true);
+    // Reset balance state to avoid showing previous account's data
+    setBalance('0');
+    setShowBalance(true);
     try {
       const token = await SecureStore.getItemAsync('secure_token');
       if (!token) {
@@ -178,6 +181,11 @@ export default function Dashboard() {
       const token = await SecureStore.getItemAsync('secure_token');
       console.log('Attempting logout with token:', token);
       
+      // Reset all states first to ensure UI is clean
+      setBalance('0');
+      setUserName('');
+      setTransactionHistory([]);
+      
       const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
         method: 'POST',
         headers: {
@@ -191,6 +199,7 @@ export default function Dashboard() {
       console.log('Logout response:', data);
       
       if (data.status === 'success' || response.ok) {
+        // Clear all secure storage
         await SecureStore.deleteItemAsync('secure_token');
         await SecureStore.deleteItemAsync('userData');
         Toast.show({
@@ -211,10 +220,13 @@ export default function Dashboard() {
       });
     }
   };
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Di sini Anda bisa menambahkan fungsi untuk memuat ulang data
+    // Reload all data
+    checkAuthAndFetchData();
+    fetchBalance();
+    fetchBanners();
+    fetchTransactionHistory();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -245,15 +257,19 @@ export default function Dashboard() {
       }
     });
   };
-
   const visibleMenuItems = showAllMenu 
     ? secondaryMenuItems 
     : secondaryMenuItems.slice(0, 8);
-
+    
   const fetchBalance = async () => {
+    // Set loading state for balance
+    setLoading(true);
     try {
       const token = await SecureStore.getItemAsync('secure_token');
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       // First get the profile ID
       const profileResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.PROFILES}`, {
@@ -261,7 +277,9 @@ export default function Dashboard() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        // Add cache control to prevent caching
+        cache: 'no-store'
       });
 
       if (!profileResponse.ok) throw new Error('Failed to fetch profile');
@@ -276,7 +294,9 @@ export default function Dashboard() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ id_profile: profileId })
+        body: JSON.stringify({ id_profile: profileId }),
+        // Add cache control to prevent caching
+        cache: 'no-store'
       });
 
       if (!tabunganResponse.ok) throw new Error('Failed to fetch balance');
@@ -291,27 +311,40 @@ export default function Dashboard() {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          body: JSON.stringify({ no_tabungan: tabunganData.data.tabungan[0].no_tabungan })
+          body: JSON.stringify({ no_tabungan: tabunganData.data.tabungan[0].no_tabungan }),
+          // Add cache control to prevent caching
+          cache: 'no-store'
         });
 
         if (!saldoBerjalanResponse.ok) throw new Error('Failed to fetch saldo berjalan');
         const saldoBerjalanData: SaldoBerjalanResponse = await saldoBerjalanResponse.json();
         setBalance(saldoBerjalanData.data.info_rekening.saldo_berjalan.toString());
+      } else {
+        // Reset balance if no tabungan found
+        setBalance('0');
       }
     } catch (error) {
       console.error('Error fetching balance:', error);
+      // Reset balance on error
+      setBalance('0');
       Toast.show({
         type: 'error',
         text1: 'Error',
         text2: 'Gagal mengambil data saldo'
       });
+    } finally {
+      // Always turn off loading state when done
+      setLoading(false);
     }
   };
 
   const fetchBanners = async () => {
     try {
       const baseUrl = await getApiBaseUrl();
-      const response = await fetch(`${baseUrl}${API_ENDPOINTS.BANNER_MOBILE_DASHBOARD}`);
+      const response = await fetch(`${baseUrl}${API_ENDPOINTS.BANNER_MOBILE_DASHBOARD}`, {
+        // Add cache control to prevent caching
+        cache: 'no-store'
+      });
       const data = await response.json();
       if (data.status === 'success') {
         setBanners(data.data.slice(-3)); // Mengambil 3 banner terakhir
@@ -319,6 +352,9 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching banners:', error);
+      // Reset banners on error
+      setBanners([]);
+      setBannerLoading(false);
     }
   };
 
@@ -339,8 +375,10 @@ export default function Dashboard() {
       <Skeleton width="100%" height={150} />
     </View>
   );
-
   const fetchTransactionHistory = async () => {
+    // Reset transaction history
+    setTransactionHistory([]);
+    
     try {
       const token = await SecureStore.getItemAsync('secure_token');
       if (!token) return;
@@ -351,7 +389,8 @@ export default function Dashboard() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        cache: 'no-store'
       });
 
       if (!profileResponse.ok) throw new Error('Failed to fetch profile');
@@ -366,7 +405,8 @@ export default function Dashboard() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ id_profile: profileId })
+        body: JSON.stringify({ id_profile: profileId }),
+        cache: 'no-store'
       });
 
       if (!tabunganResponse.ok) throw new Error('Failed to fetch tabungan data');
@@ -381,7 +421,8 @@ export default function Dashboard() {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
-          }
+          },
+          cache: 'no-store'
         });
 
         if (!mutasiResponse.ok) throw new Error('Failed to fetch mutasi data');
