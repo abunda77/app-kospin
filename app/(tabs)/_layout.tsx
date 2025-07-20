@@ -1,12 +1,12 @@
 import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Image, View, Text } from 'react-native';
+import { Platform, StyleSheet, Image, View, Text, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type RouteNames = 'index' | 'dashboard' | 'mutasi' | 'aktivitas' | 'akun';
 
 const getIconSource = (routeName: RouteNames) => {
-  console.log('Getting icon for route:', routeName);
   const iconPath = {
     index: require('../../assets/tab-icons/home.png'),
     dashboard: require('../../assets/tab-icons/menu.png'),
@@ -24,11 +24,9 @@ const getIconSource = (routeName: RouteNames) => {
 };
 
 const TabBarIcon = ({ routeName, color }: { routeName: RouteNames; color: string }) => {
-  console.log('Rendering TabBarIcon for route:', routeName);
   const source = getIconSource(routeName);
   
   if (!source) {
-    console.error('No icon source found for route:', routeName);
     return (
       <View style={styles.iconContainer}>
         <Text style={[{ color }, styles.fallbackIcon]}>•</Text>
@@ -49,8 +47,19 @@ const TabBarIcon = ({ routeName, color }: { routeName: RouteNames; color: string
   );
 };
 
+// Get device dimensions and calculate proper offsets
+const { width: screenWidth, height: screenHeight } = Dimensions.get('screen');
+
+// Determine if device has hardware navigation buttons (e.g., Samsung)
+const hasHardwareButtons = () => {
+  // Check screen ratio - most modern full-screen phones have ratio around 2:1
+  const ratio = screenHeight / screenWidth;
+  return Platform.OS === 'android' && ratio < 1.8;
+};
+
 export default function TabLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     checkLoginStatus();
@@ -59,7 +68,6 @@ export default function TabLayout() {
   const checkLoginStatus = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      console.log('Current auth token:', token);
       setIsLoggedIn(!!token);
     } catch (error) {
       console.error('Error checking login status:', error);
@@ -67,12 +75,52 @@ export default function TabLayout() {
     }
   };
 
+  // Calculate bottom offset to ensure tab bar stays above device navigation
+  const getBottomOffset = () => {
+    if (Platform.OS === 'ios') {
+      // iOS with home indicator (iPhone X and newer)
+      return insets.bottom > 0 ? 30 : 15;
+    } else {
+      // Android devices
+      if (hasHardwareButtons()) {
+        return 15; // For devices with hardware buttons
+      } else {
+        return 30; // For devices with virtual/gesture navigation
+      }
+    }
+  };
+
+  // Create floating tab bar style
+  const tabBarStyle = {
+    position: 'absolute' as 'absolute',
+    bottom: getBottomOffset(),
+    left: 10,
+    right: 10,
+    height: 65,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    borderTopWidth: 0,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
+    elevation: 10, // Android shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    zIndex: 999,
+  };
+
   const screenOptions = {
     tabBarActiveTintColor: '#0066AE',
     headerShown: false,
-    tabBarStyle: styles.tabBar,
+    tabBarStyle: tabBarStyle,
     tabBarItemStyle: styles.tabBarItem,
     tabBarLabelStyle: styles.tabBarLabel,
+  // Add bottom padding to content to prevent tab bar overlap and allow space for logout button
+    contentStyle: { 
+      paddingBottom: 130 + getBottomOffset(), // Increased padding to accommodate the logout button
+    },
   };
 
   return (
@@ -117,27 +165,20 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    height: Platform.OS === 'ios' ? 75 : 55,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 5,
-  },
   tabBarItem: {
-    paddingVertical: 3,
+    paddingVertical: 5,
   },
   tabBarLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
-    marginTop: -2,
+    marginTop: 0,
+    marginBottom: 3,
   },
   iconContainer: {
     width: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
   },
   icon: {
     width: 20,

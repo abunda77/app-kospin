@@ -471,12 +471,10 @@ export default function HomeScreen() {
     formOpacity.value = withSpring(0);
     loginContainerOpacity.value = withSpring(1);
   };
-
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      height: formHeight.value,
       opacity: formOpacity.value,
-      overflow: 'hidden',
+      transform: [{ scale: formOpacity.value * 0.2 + 0.8 }],
     };
   });
 
@@ -642,13 +640,11 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Form Lupa Password */}
-      {showForgotPassword && (
+      {/* Form Lupa Password */}      {showForgotPassword && (
         <Animated.View
           style={[
             styles.formContainer,
-            animatedStyle,
-            { height: formHeight }
+            animatedStyle
           ]}
         >
           <View style={styles.formHeader}>
@@ -687,13 +683,11 @@ export default function HomeScreen() {
         </Animated.View>
       )}
 
-      {/* Form Login */}
-      {showLogin && (
+      {/* Form Login */}      {showLogin && (
         <Animated.View
           style={[
             styles.formContainer,
-            animatedStyle,
-            { height: formHeight }
+            animatedStyle
           ]}
         >
           {/* Overlay tanpa transparansi */}
@@ -887,22 +881,27 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 16,
-  },
-  loginButton: {
+  },  loginButton: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 100, // Increased to position above the floating tab menu
     alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
-    width: '90%', 
+    width: '90%',
+    zIndex: 10, // Ensure it's above other elements
   },
   logoutButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: 'white', // Changed to white for better visibility
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#DC3545',
     overflow: 'hidden',
     padding: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3, // Add elevation for Android shadow
   },
   logoutButtonContent: {
     flexDirection: 'row',
@@ -927,28 +926,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100,
-  },
-  overlayNoTransparent: {
+  },  overlayNoTransparent: {
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#ffff', // solid putih
+    backgroundColor: 'transparent', // Changed to transparent
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loginFormWrapper: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
+  },loginFormWrapper: {
+    backgroundColor: '#FFFFFF',
     padding: 28,
     borderRadius: 20,
     width: '90%',
     maxWidth: 400,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 12,
     alignItems: 'stretch',
     position: 'relative',
+    marginBottom: 80, // Add margin to ensure form doesn't get too close to tab bar
   },
   closeButton: {
     position: 'absolute',
@@ -965,13 +963,13 @@ const styles = StyleSheet.create({
     // elevation: ,
     width: '100%',
     maxWidth: 400,
-  },
-  loginHeader: {
-    fontSize: 18,
+  },  loginHeader: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 24,
     textAlign: 'center',
+    marginTop: 8,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -1044,16 +1042,16 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: 200,
     elevation: 5,
-  },
-  formContainer: {
+  },  formContainer: {
     position: 'absolute',
+    top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 24,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
   formHeader: {
     flexDirection: 'row',
@@ -1105,9 +1103,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  overlayWrapperNoTransparent: {
-    flex: 1,
+  },  overlayWrapperNoTransparent: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -1115,6 +1111,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 100,
+    zIndex: 1100, // Higher z-index to ensure it's above everything
   },
 });
