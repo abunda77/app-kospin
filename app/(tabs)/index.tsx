@@ -471,10 +471,12 @@ export default function HomeScreen() {
     formOpacity.value = withSpring(0);
     loginContainerOpacity.value = withSpring(1);
   };
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
+      height: formHeight.value,
       opacity: formOpacity.value,
-      transform: [{ scale: formOpacity.value * 0.2 + 0.8 }],
+      overflow: 'hidden',
     };
   });
 
@@ -640,11 +642,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Form Lupa Password */}      {showForgotPassword && (
+      {/* Form Lupa Password */}
+      {showForgotPassword && (
         <Animated.View
           style={[
             styles.formContainer,
-            animatedStyle
+            animatedStyle,
+            { height: formHeight }
           ]}
         >
           <View style={styles.formHeader}>
@@ -683,88 +687,92 @@ export default function HomeScreen() {
         </Animated.View>
       )}
 
-      {/* Form Login */}      {showLogin && (
+      {/* Form Login */}
+      {showLogin && (
         <Animated.View
           style={[
             styles.formContainer,
-            animatedStyle
+            animatedStyle,
+            { height: formHeight }
           ]}
         >
-          {/* Overlay tanpa transparansi */}
-          <View style={styles.overlayWrapperNoTransparent}>
+          <TouchableOpacity 
+            style={styles.overlay} 
+            onPress={handleLoginCancel}
+            activeOpacity={1}
+          >
             <TouchableOpacity 
-              style={styles.overlayNoTransparent} 
-              onPress={handleLoginCancel}
+              style={styles.loginForm} 
               activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
             >
-              {/* Login Form */}
-              <View style={styles.loginFormWrapper}>
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={handleLoginCancel}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+              <Text style={styles.loginHeader}>Silakan Login</Text>
+              
+              <View style={styles.inputContainer}>
+                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput 
+                  placeholder="Username"
+                  style={[styles.input, validationErrors.username ? styles.inputError : null]}
+                  placeholderTextColor="#999"
+                  value={username}
+                  onChangeText={(text) => {
+                    setUsername(text);
+                    setValidationErrors(prev => ({ ...prev, username: '' }));
+                  }}
+                />
+              </View>
+              {validationErrors.username ? (
+                <Text style={styles.errorText}>{validationErrors.username}</Text>
+              ) : null}
+
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput 
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  style={[styles.input, validationErrors.password ? styles.inputError : null]}
+                  placeholderTextColor="#999"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setValidationErrors(prev => ({ ...prev, password: '' }));
+                  }}
+                />
                 <TouchableOpacity 
-                  style={styles.closeButton} 
-                  onPress={handleLoginCancel}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.passwordToggle}
                 >
-                  <Ionicons name="close" size={24} color="#666" />
-                </TouchableOpacity>
-                <Text style={styles.loginHeader}>Silakan Login</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-                  <TextInput 
-                    placeholder="Username"
-                    style={[styles.input, validationErrors.username ? styles.inputError : null]}
-                    placeholderTextColor="#999"
-                    value={username}
-                    onChangeText={(text) => {
-                      setUsername(text);
-                      setValidationErrors(prev => ({ ...prev, username: '' }));
-                    }}
+                  <Ionicons 
+                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                    size={20} 
+                    color="#666" 
                   />
-                </View>
-                {validationErrors.username ? (
-                  <Text style={styles.errorText}>{validationErrors.username}</Text>
-                ) : null}
-                <View style={styles.inputContainer}>
-                  <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-                  <TextInput 
-                    placeholder="Password"
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, validationErrors.password ? styles.inputError : null]}
-                    placeholderTextColor="#999"
-                    value={password}
-                    onChangeText={(text) => {
-                      setPassword(text);
-                      setValidationErrors(prev => ({ ...prev, password: '' }));
-                    }}
-                  />
-                  <TouchableOpacity 
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.passwordToggle}
-                  >
-                    <Ionicons 
-                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                      size={20} 
-                      color="#666" 
-                    />
-                  </TouchableOpacity>
-                </View>
-                {validationErrors.password ? (
-                  <Text style={styles.errorText}>{validationErrors.password}</Text>
-                ) : null}
-                <TouchableOpacity style={styles.forgotPassword}>
-                  <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
-                  onPress={handleLogin}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.submitButtonText}>
-                    {isLoading ? 'Memproses...' : 'Masuk'}
-                  </Text>
                 </TouchableOpacity>
               </View>
+              {validationErrors.password ? (
+                <Text style={styles.errorText}>{validationErrors.password}</Text>
+              ) : null}
+              <TouchableOpacity style={styles.forgotPassword}>
+                <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? 'Memproses...' : 'Masuk'}
+                </Text>
+              </TouchableOpacity>
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </Animated.View>
       )}
       <Toast />
@@ -881,27 +889,22 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 16,
-  },  loginButton: {
+  },
+  loginButton: {
     position: 'absolute',
-    bottom: 100, // Increased to position above the floating tab menu
+    bottom: 100,
     alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
-    width: '90%',
-    zIndex: 10, // Ensure it's above other elements
+    width: '90%', 
   },
   logoutButton: {
-    backgroundColor: 'white', // Changed to white for better visibility
+    backgroundColor: 'transparent',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#DC3545',
     overflow: 'hidden',
     padding: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3, // Add elevation for Android shadow
   },
   logoutButtonContent: {
     flexDirection: 'row',
@@ -916,44 +919,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  overlayWrapper: {
-    flex: 1,
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(245,245,245,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 100,
-  },  overlayNoTransparent: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'transparent', // Changed to transparent
-    justifyContent: 'center',
-    alignItems: 'center',
-  },loginFormWrapper: {
-    backgroundColor: '#FFFFFF',
-    padding: 28,
-    borderRadius: 20,
-    width: '90%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 12,
-    alignItems: 'stretch',
-    position: 'relative',
-    marginBottom: 80, // Add margin to ensure form doesn't get too close to tab bar
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 8,
-    zIndex: 1,
   },
   loginForm: {
     backgroundColor: '#f5f5f5',
@@ -963,13 +937,13 @@ const styles = StyleSheet.create({
     // elevation: ,
     width: '100%',
     maxWidth: 400,
-  },  loginHeader: {
-    fontSize: 22,
+  },
+  loginHeader: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 24,
     textAlign: 'center',
-    marginTop: 8,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -1012,6 +986,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    zIndex: 1,
+  },
   passwordToggle: {
     position: 'absolute',
     right: 12,
@@ -1042,16 +1023,16 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: 200,
     elevation: 5,
-  },  formContainer: {
+  },
+  formContainer: {
     position: 'absolute',
-    top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 24,
   },
   formHeader: {
     flexDirection: 'row',
@@ -1103,14 +1084,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },  overlayWrapperNoTransparent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1100, // Higher z-index to ensure it's above everything
   },
 });

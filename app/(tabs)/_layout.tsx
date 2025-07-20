@@ -85,7 +85,7 @@ export default function TabLayout() {
       if (hasHardwareButtons()) {
         return 15; // For devices with hardware buttons
       } else {
-        return 30; // For devices with virtual/gesture navigation
+        return 65; // For devices with virtual/gesture navigation
       }
     }
   };
@@ -98,7 +98,7 @@ export default function TabLayout() {
     right: 10,
     height: 65,
     backgroundColor: '#fff',
-    borderRadius: 15,
+    borderRadius: 5,
     borderTopWidth: 0,
     paddingHorizontal: 10,
     paddingTop: 8,
