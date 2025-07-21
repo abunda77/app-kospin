@@ -55,6 +55,115 @@ npx expo start --no-dev --minify
 npx expo start --dev-client --offline
 ```
 
+## Building Android App Bundle (AAB)
+
+Android App Bundle (AAB) adalah format publikasi resmi untuk Google Play Store yang menggantikan APK. Dengan AAB, ukuran unduhan aplikasi menjadi lebih kecil karena Google Play hanya mengirimkan kode dan resource yang dibutuhkan oleh perangkat spesifik pengguna.
+
+### Persiapan untuk Building AAB
+
+1. **Install EAS CLI**:
+   ```bash
+   npm install -g eas-cli
+   ```
+
+2. **Login ke Expo Account**:
+   ```bash
+   eas login
+   ```
+
+3. **Konfigurasi Proyek**:
+   ```bash
+   eas build:configure
+   ```
+   Command ini akan membuat file `eas.json` di root project
+
+### Konfigurasi Build Profile
+
+Edit file `eas.json` untuk menyesuaikan konfigurasi build:
+
+```json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+```
+
+### Memulai Build AAB
+
+Untuk membangun Android App Bundle (AAB):
+
+```bash
+eas build --platform android --profile production
+```
+
+Ini akan memulai proses build di server Expo dan akan menghasilkan file AAB yang siap diupload ke Google Play Store.
+
+### Opsi Tambahan Build AAB
+
+1. **Build dan Submit Otomatis**:
+   ```bash
+   eas build --platform android --profile production --auto-submit
+   ```
+   Perintah ini akan melakukan build AAB dan langsung mengirimnya ke Google Play Store (memerlukan konfigurasi service account Google).
+
+2. **Konfigurasi Track Rilis**:
+   Untuk mengatur track rilis (internal, alpha, beta, production) pada Google Play Store, edit bagian `submit` di `eas.json`:
+   
+   ```json
+   {
+     "submit": {
+       "production": {
+         "android": {
+           "serviceAccountKeyPath": "./path-to-service-account.json",
+           "track": "internal"  // bisa internal, alpha, beta, production
+         }
+       }
+     }
+   }
+   ```
+
+3. **Submit AAB yang Sudah Ada**:
+   ```bash
+   eas submit --platform android
+   ```
+   Perintah ini akan menanyakan apakah ingin menggunakan build yang sudah ada atau membuat yang baru.
+
+### Proses Build AAB
+
+Saat menjalankan perintah build, proses berikut terjadi:
+1. Kode aplikasi diunggah ke server build Expo
+2. Server melakukan:
+   - Instalasi dependencies
+   - Konfigurasi kredensial signing aplikasi
+   - Menjalankan perintah build (bundle)
+   - Menghasilkan file AAB
+3. File AAB siap diunduh atau disubmit ke Google Play Store
+
+### Keuntungan AAB vs APK
+
+1. **Ukuran download lebih kecil**: Pengguna hanya mengunduh komponen yang dibutuhkan perangkat mereka
+2. **Dukungan Dynamic Features**: Memungkinkan fitur on-demand yang diunduh saat dibutuhkan
+3. **Optimasi otomatis**: Google Play mengoptimalkan APK untuk setiap konfigurasi perangkat
+4. **Kemudahan pengelolaan**: Satu AAB mencakup semua konfigurasi perangkat
+
 ## Best Practice Penggunaan
 
 - Gunakan mode LAN untuk kecepatan maksimal saat perangkat dan komputer dalam satu jaringan Wi-Fi.
@@ -73,6 +182,10 @@ npx expo start --dev-client --offline
 - **Aplikasi tidak update di perangkat:**
   - Tutup aplikasi Expo Go, buka ulang, dan scan QR lagi
   - Pastikan tidak ada error di Metro bundler
+- **Error saat build AAB:**
+  - Pastikan `app.json` dan `eas.json` terkonfigurasi dengan benar
+  - Periksa error log di EAS Dashboard
+  - Jika ada error signing, pastikan keystore dikonfigurasi dengan benar
 
 ## Lingkungan Pengembangan
 
@@ -86,3 +199,6 @@ npx expo start --dev-client --offline
 - [Expo CLI Documentation](https://docs.expo.dev/workflow/expo-cli/)
 - [Troubleshooting Expo](https://docs.expo.dev/troubleshooting/common-issues/)
 - [Expo Go](https://expo.dev/client)
+- [EAS Build Documentation](https://docs.expo.dev/build/introduction/)
+- [Android App Bundle](https://developer.android.com/guide/app-bundle)
+- [EAS Submit](https://docs.expo.dev/submit/introduction/)

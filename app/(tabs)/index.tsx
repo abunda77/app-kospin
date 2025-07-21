@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Image, 
   StyleSheet, 
@@ -22,7 +22,12 @@ import Animated, {
   useAnimatedStyle, 
   withTiming, 
   withSpring,
-  useSharedValue
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withDelay,
+  Easing,
+  interpolateColor
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -69,6 +74,115 @@ interface BannerResponse {
   status: string;
   data: BannerData[];
 }
+
+interface AnimatedTextProps {
+  text: string;
+}
+
+const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
+  const words = text.split(' ');
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const translateY = useSharedValue(0);
+  const { width: screenWidth } = useWindowDimensions();
+  useEffect(() => {
+    // Start the animations
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1, 
+      // Infinite repeat
+      true 
+      // Reverse animation
+    );
+
+    // Fade in the container
+    opacity.value = withTiming(1, { duration: 800 });
+    
+    // Slight bounce effect for the container
+    translateY.value = withSequence(
+      withTiming(10, { duration: 100 }),
+      withTiming(0, { duration: 800, easing: Easing.bounce })
+    );
+  }, []);
+
+  // Generate different animation delays for each word
+  const wordAnimations = words.map((_, index) => {
+    const delay = index * 200;
+    const wordOpacity = useSharedValue(0);
+    const wordTranslateY = useSharedValue(20);    useEffect(() => {
+      // Fade in with delay based on word position
+      wordOpacity.value = withDelay(
+        delay,
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+      );
+      
+      // Bounce effect for each word with delay
+      wordTranslateY.value = withDelay(
+        delay,
+        withSequence(
+          withTiming(-10, { duration: 200 }),
+          withTiming(0, { duration: 600, easing: Easing.bounce })
+        )
+      );
+      
+      // Add subtle pulsating effect that repeats forever after the initial animation
+      const pulseDelay = delay + 1400;
+      
+      setTimeout(() => {
+        wordOpacity.value = withRepeat(
+          withSequence(
+            withTiming(1, { duration: 1000 }),
+            withTiming(0.8, { duration: 1000 })
+          ),
+          -1,
+          true
+        );
+      }, pulseDelay);
+    }, []);
+
+    const wordStyle = useAnimatedStyle(() => {
+      return {
+        opacity: wordOpacity.value,
+        transform: [{ translateY: wordTranslateY.value }],
+      };
+    });
+
+    return { word: words[index], style: wordStyle };
+  });
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [
+        { scale: scale.value },
+      ],
+    };
+  });
+
+  return (    <Animated.View style={[styles.animatedTextContainer, containerStyle]}>
+      <LinearGradient
+        colors={['#004C8B', '#0066AE', '#0095FF', '#0066AE', '#004C8B']}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 1, y: 0.7 }}
+      >
+        <View style={styles.animatedTextWrapper}>
+          {wordAnimations.map((item, index) => (
+            <Animated.Text
+              key={index}
+              style={[styles.animatedText, item.style]}
+            >
+              {item.word}{index < words.length - 1 ? ' ' : ''}
+            </Animated.Text>
+          ))}
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+};
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text, position }) => {
   const [tooltipWidth, setTooltipWidth] = useState(0);
@@ -148,6 +262,7 @@ export default function HomeScreen() {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [banners, setBanners] = useState<BannerData[]>([]);
   const [bannerLoading, setBannerLoading] = useState(true);
+  const [bannerError, setBannerError] = useState(false);
 
   const router = useRouter();
   const formHeight = useSharedValue(0);
@@ -214,9 +329,11 @@ export default function HomeScreen() {
         setBanners(shuffledBanners);
       } else {
         console.log('No banners found or invalid response');
+        setBannerError(true);
       }
     } catch (error) {
       console.error('Error fetching banner:', error);
+      setBannerError(true);
     } finally {
       setBannerLoading(false);
     }
@@ -524,12 +641,13 @@ export default function HomeScreen() {
               <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
               <Text style={styles.securityText}>Lingkungan Aman</Text>
             </View>
-          </View>
-
+          </View>          
           {/* Banner Section */}
           <View style={styles.bannerContainer}>
             {bannerLoading ? (
               <Skeleton width="100%" height={200} borderRadius={8} />
+            ) : bannerError ? (
+              <AnimatedFallbackText text="Connecting People Profit Together" />
             ) : (
               banners.length > 0 ? (
                 <ScrollView 
@@ -546,7 +664,9 @@ export default function HomeScreen() {
                     />
                   ))}
                 </ScrollView>
-              ) : null
+              ) : (
+                <AnimatedFallbackText text="Connecting People Profit Together" />
+              )
             )}
           </View>
         </View>
@@ -845,6 +965,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 350,
   },
+  bannerErrorContainer: {
+    width: '100%',
+    height: 350,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8d7da',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  bannerErrorText: {
+    color: '#721c24',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   fastMenuSection: {
     padding: 16,
   },
@@ -1022,7 +1156,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     maxWidth: 200,
     elevation: 5,
-  },  formContainer: {
+  },
+  formContainer: {
     position: 'absolute',
     bottom: 120, // Adjusted to be above the tab bar
     left: 0,
@@ -1077,10 +1212,53 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     width: '100%', 
-  },
-  loginButtonText: {
+  },  loginButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },  animatedTextContainer: {
+    width: '100%',
+    height: 350,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    overflow: 'hidden',
+    // Shadow for depth effect
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+  },
+  animatedTextWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  animatedText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    // Enhanced text shadow for better readability
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
+    marginHorizontal: 5,
+    marginVertical: 3,
+    letterSpacing: 0.5,
+  },
+  gradientBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    // Add slight pattern overlay
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
 });
