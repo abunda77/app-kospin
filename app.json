@@ -23,7 +23,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo_mobile_1024.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0066AE"
       },
       "package": "com.abunda.poskospin"
     },

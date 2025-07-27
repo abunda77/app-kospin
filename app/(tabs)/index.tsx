@@ -308,13 +308,32 @@ export default function HomeScreen() {
   };
 
   const fetchBanner = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
+
     try {
       setBannerLoading(true);
+      setBannerError(false); // Reset error state
       const baseUrl = getApiBaseUrl();
       const url = `${baseUrl}${API_ENDPOINTS.BANNER_MOBILE}`;
       console.log('Fetching banner from URL:', url);
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache', // Prevent caching issues
+        },
+        // Add timeout and retry logic
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data: BannerResponse = await response.json();
       console.log('Banner API Response:', {
         status: data.status,
@@ -327,15 +346,99 @@ export default function HomeScreen() {
         const shuffledBanners = shuffleArray(data.data);
         console.log('Shuffled Banners:', shuffledBanners);
         setBanners(shuffledBanners);
+        setBannerError(false);
       } else {
         console.log('No banners found or invalid response');
         setBannerError(true);
       }
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Error fetching banner:', error);
+      
+      if (error.name === 'AbortError') {
+        console.log('Banner fetch timed out');
+      }
+      
       setBannerError(true);
+      
+      // Retry logic - retry once after 2 seconds if it's a network error
+      if (error.name === 'AbortError' || error.message.includes('network') || error.message.includes('fetch')) {
+        console.log('Retrying banner fetch in 2 seconds...');
+        setTimeout(() => {
+          fetchBannerWithRetry();
+        }, 2000);
+      }
     } finally {
       setBannerLoading(false);
+    }
+  };
+
+  // Add retry function
+  const fetchBannerWithRetry = async (retryCount = 0) => {
+    const maxRetries = 2;
+    
+    if (retryCount >= maxRetries) {
+      console.log('Max retries reached for banner fetch');
+      setBannerError(true);
+      setBannerLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // Longer timeout for retry
+
+    try {
+      if (retryCount === 0) {
+        setBannerLoading(true);
+      }
+      
+      const baseUrl = getApiBaseUrl();
+      const url = `${baseUrl}${API_ENDPOINTS.BANNER_MOBILE}`;
+      console.log(`Retry ${retryCount + 1}: Fetching banner from URL:`, url);
+      
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: BannerResponse = await response.json();
+      
+      if (data.status === 'success' && data.data.length > 0) {
+        const shuffledBanners = shuffleArray(data.data);
+        setBanners(shuffledBanners);
+        setBannerError(false);
+        console.log(`Banner fetch successful on retry ${retryCount + 1}`);
+      } else {
+        throw new Error('Invalid response data');
+      }
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      console.error(`Retry ${retryCount + 1} failed:`, error);
+      
+      if (retryCount < maxRetries - 1) {
+        // Wait longer between retries
+        const delay = (retryCount + 1) * 3000; // 3s, 6s
+        console.log(`Retrying again in ${delay/1000} seconds...`);
+        setTimeout(() => {
+          fetchBannerWithRetry(retryCount + 1);
+        }, delay);
+      } else {
+        setBannerError(true);
+      }
+    } finally {
+      if (retryCount === maxRetries - 1) {
+        setBannerLoading(false);
+      }
     }
   };
 
@@ -438,7 +541,7 @@ export default function HomeScreen() {
           text1: 'Login Gagal',
           text2: errorMessage,
           visibilityTime: 4000,
-          position: 'bottom'
+          position: 'top'
         });
       }
     } catch (error: any) {
@@ -607,7 +710,10 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    checkLoginStatus().finally(() => {
+    Promise.all([
+      checkLoginStatus(),
+      fetchBanner()
+    ]).finally(() => {
       setRefreshing(false);
       setShowLogin(false);
     });
@@ -838,7 +944,7 @@ export default function HomeScreen() {
               <View style={styles.inputContainer}>
                 <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
                 <TextInput 
-                  placeholder="Username"
+                  placeholder="Your Email or Username"
                   style={[styles.input, validationErrors.username ? styles.inputError : null]}
                   placeholderTextColor="#999"
                   value={username}

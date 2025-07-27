@@ -59,6 +59,20 @@ dan proyek ini mengikuti [Pemversian Semantik](https://semver.org/lang/id/spec/v
 ### Dihapus
 - Tidak ada
 
+## [0.0.3] - 2025-07-23
+
+### Ditambahkan
+
+### Diubah
+- Tidak ada
+
+### Perbaikan
+- Fix fetch banner timeout
+- fix posisi toast login failed
+
+### Dihapus
+- Tidak ada
+
 ---
 
 ## Catatan Format
