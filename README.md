@@ -1,6 +1,6 @@
-# Selamat Datang di Aplikasi Kospin 👋
+# Sinara Soon - Aplikasi Kospin 👋
 
-Ini adalah aplikasi [Expo](https://expo.dev) yang dibuat menggunakan [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikasi mobile banking untuk Kospin Sinara Artha yang menyediakan akses digital ke layanan keuangan koperasi.
 
 ## Persyaratan Sistem
 
@@ -13,14 +13,15 @@ Ini adalah aplikasi [Expo](https://expo.dev) yang dibuat menggunakan [`create-ex
 
 ## Teknologi yang Digunakan
 
-- **Expo**: versi 52.0.30
-- **React**: versi 18.3.1
-- **React Native**: versi 0.76.6
-- **Expo Router**: versi 4.0.17 untuk navigasi berbasis file
-- **React Navigation**: Bottom Tabs (versi 7.2.0) dan Stack (versi 7.1.1)
-- **NativeWind**: versi 2.0.11 untuk styling dengan Tailwind CSS
-- **Penyimpanan Data**: AsyncStorage dan SecureStore
-- **UI/UX**: Expo Blur, Expo Linear Gradient, React Native Reanimated
+- **Expo SDK**: 53.0.20 (new architecture enabled)
+- **React**: 19.0.0
+- **React Native**: 0.79.5
+- **TypeScript**: 5.3.3 (strict mode)
+- **Expo Router**: 5.1.4 untuk navigasi berbasis file
+- **React Navigation**: Bottom Tabs (7.2.0) dan Stack (7.1.1)
+- **NativeWind**: 2.0.11 untuk styling dengan Tailwind CSS
+- **Penyimpanan Data**: AsyncStorage dan Expo SecureStore
+- **UI/UX**: Expo Blur, Expo Linear Gradient, React Native Reanimated 3.17.4
 - **Notifikasi**: React Native Toast Message
 
 ## Memulai
@@ -68,15 +69,24 @@ Untuk mempelajari lebih lanjut tentang pengembangan proyek dengan Expo, lihat su
 Aplikasi ini menggunakan struktur berbasis folder yang mengikuti konvensi Expo Router:
 
 - `app/`: Berisi routes dan komponen utama aplikasi
-  - `(menu)/`: Menu-menu utama aplikasi
-  - `(tabs)/`: Tab navigasi utama
+  - `(tabs)/`: Tab navigasi utama (grouped route)
+  - `(menu)/`: Menu-menu utama aplikasi (grouped route dengan header)
   - `components/`: Komponen yang digunakan di routes
+  - `config/`: Konfigurasi aplikasi (API endpoints, dll)
+  - `_layout.tsx`: Root layout dengan theme provider
+  - `+not-found.tsx`: 404 error screen
 - `assets/`: Gambar, ikon, dan font
+  - `fonts/`: Custom fonts (SpaceMono)
+  - `images/`: Logo dan gambar aplikasi
+  - `tab-icons/`: Icon untuk bottom tab navigation
+  - Feature-specific: `e-wallet/`, `tagihan/`, dll
 - `components/`: Komponen yang dapat digunakan ulang
-- `config/`: Konfigurasi aplikasi
+  - `ui/`: UI primitives dan design system components
+  - `__tests__/`: Component tests
 - `constants/`: Konstanta dan tema
 - `hooks/`: Custom React hooks
 - `types/`: TypeScript type definitions
+- `scripts/`: Build dan utility scripts
 
 ## Pengujian
 
@@ -104,6 +114,14 @@ Unit testing menggunakan Jest dan React Native Testing Library.
    - Periksa versi Node.js dan npm
    - Pastikan semua dependensi terinstal dengan benar
 
+## Fitur Utama
+
+- Manajemen akun (tabungan, deposito, pinjaman)
+- Riwayat transaksi dan cek saldo
+- Layanan pembayaran dan tagihan
+- Autentikasi dan manajemen profil pengguna
+- Dukungan multi-platform (iOS, Android, Web)
+
 ## Deployment
 
 ### Development Build
@@ -115,6 +133,13 @@ eas build --profile development
 ```bash
 eas build --platform all
 ```
+
+## Informasi Proyek
+
+- **Package**: com.abunda.poskospin
+- **Owner**: Abunda
+- **EAS Project ID**: 0cfb8075-db1d-4a85-a096-b29d6d2f4aca
+- **Primary Color**: #0066AE
 
 ## Bergabung dengan Komunitas
 
