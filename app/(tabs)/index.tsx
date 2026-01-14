@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  Image, 
-  StyleSheet, 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  ScrollView, 
-  SafeAreaView, 
-  TextInput, 
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  TextInput,
   Platform,
   RefreshControl,
   Modal,
@@ -18,9 +18,9 @@ import {
 import { Link } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import "../globals.css";
-import Animated, { 
-  useAnimatedStyle, 
-  withTiming, 
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
   withSpring,
   useSharedValue,
   withRepeat,
@@ -92,15 +92,15 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
         withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
         withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.ease) })
       ),
-      -1, 
+      -1,
       // Infinite repeat
-      true 
+      true
       // Reverse animation
     );
 
     // Fade in the container
     opacity.value = withTiming(1, { duration: 800 });
-    
+
     // Slight bounce effect for the container
     translateY.value = withSequence(
       withTiming(10, { duration: 100 }),
@@ -112,13 +112,13 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
   const wordAnimations = words.map((_, index) => {
     const delay = index * 200;
     const wordOpacity = useSharedValue(0);
-    const wordTranslateY = useSharedValue(20);    useEffect(() => {
+    const wordTranslateY = useSharedValue(20); useEffect(() => {
       // Fade in with delay based on word position
       wordOpacity.value = withDelay(
         delay,
         withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
       );
-      
+
       // Bounce effect for each word with delay
       wordTranslateY.value = withDelay(
         delay,
@@ -127,10 +127,10 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
           withTiming(0, { duration: 600, easing: Easing.bounce })
         )
       );
-      
+
       // Add subtle pulsating effect that repeats forever after the initial animation
       const pulseDelay = delay + 1400;
-      
+
       setTimeout(() => {
         wordOpacity.value = withRepeat(
           withSequence(
@@ -162,25 +162,25 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
     };
   });
 
-  return (    <Animated.View style={[styles.animatedTextContainer, containerStyle]}>
-      <LinearGradient
-        colors={['#004C8B', '#0066AE', '#0095FF', '#0066AE', '#004C8B']}
-        style={styles.gradientBackground}
-        start={{ x: 0, y: 0.3 }}
-        end={{ x: 1, y: 0.7 }}
-      >
-        <View style={styles.animatedTextWrapper}>
-          {wordAnimations.map((item, index) => (
-            <Animated.Text
-              key={index}
-              style={[styles.animatedText, item.style]}
-            >
-              {item.word}{index < words.length - 1 ? ' ' : ''}
-            </Animated.Text>
-          ))}
-        </View>
-      </LinearGradient>
-    </Animated.View>
+  return (<Animated.View style={[styles.animatedTextContainer, containerStyle]}>
+    <LinearGradient
+      colors={['#004C8B', '#0066AE', '#0095FF', '#0066AE', '#004C8B']}
+      style={styles.gradientBackground}
+      start={{ x: 0, y: 0.3 }}
+      end={{ x: 1, y: 0.7 }}
+    >
+      <View style={styles.animatedTextWrapper}>
+        {wordAnimations.map((item, index) => (
+          <Animated.Text
+            key={index}
+            style={[styles.animatedText, item.style]}
+          >
+            {item.word}{index < words.length - 1 ? ' ' : ''}
+          </Animated.Text>
+        ))}
+      </View>
+    </LinearGradient>
+  </Animated.View>
   );
 };
 
@@ -317,7 +317,7 @@ export default function HomeScreen() {
       const baseUrl = getApiBaseUrl();
       const url = `${baseUrl}${API_ENDPOINTS.BANNER_MOBILE}`;
       console.log('Fetching banner from URL:', url);
-      
+
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
@@ -341,7 +341,7 @@ export default function HomeScreen() {
         firstBanner: data.data?.[0],
         allData: data
       });
-      
+
       if (data.status === 'success' && data.data.length > 0) {
         const shuffledBanners = shuffleArray(data.data);
         console.log('Shuffled Banners:', shuffledBanners);
@@ -354,13 +354,13 @@ export default function HomeScreen() {
     } catch (error: any) {
       clearTimeout(timeoutId);
       console.error('Error fetching banner:', error);
-      
+
       if (error.name === 'AbortError') {
         console.log('Banner fetch timed out');
       }
-      
+
       setBannerError(true);
-      
+
       // Retry logic - retry once after 2 seconds if it's a network error
       if (error.name === 'AbortError' || error.message.includes('network') || error.message.includes('fetch')) {
         console.log('Retrying banner fetch in 2 seconds...');
@@ -376,7 +376,7 @@ export default function HomeScreen() {
   // Add retry function
   const fetchBannerWithRetry = async (retryCount = 0) => {
     const maxRetries = 2;
-    
+
     if (retryCount >= maxRetries) {
       console.log('Max retries reached for banner fetch');
       setBannerError(true);
@@ -391,11 +391,11 @@ export default function HomeScreen() {
       if (retryCount === 0) {
         setBannerLoading(true);
       }
-      
+
       const baseUrl = getApiBaseUrl();
       const url = `${baseUrl}${API_ENDPOINTS.BANNER_MOBILE}`;
       console.log(`Retry ${retryCount + 1}: Fetching banner from URL:`, url);
-      
+
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
@@ -412,7 +412,7 @@ export default function HomeScreen() {
       }
 
       const data: BannerResponse = await response.json();
-      
+
       if (data.status === 'success' && data.data.length > 0) {
         const shuffledBanners = shuffleArray(data.data);
         setBanners(shuffledBanners);
@@ -424,11 +424,11 @@ export default function HomeScreen() {
     } catch (error: any) {
       clearTimeout(timeoutId);
       console.error(`Retry ${retryCount + 1} failed:`, error);
-      
+
       if (retryCount < maxRetries - 1) {
         // Wait longer between retries
         const delay = (retryCount + 1) * 3000; // 3s, 6s
-        console.log(`Retrying again in ${delay/1000} seconds...`);
+        console.log(`Retrying again in ${delay / 1000} seconds...`);
         setTimeout(() => {
           fetchBannerWithRetry(retryCount + 1);
         }, delay);
@@ -509,16 +509,16 @@ export default function HomeScreen() {
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
       console.log('Response data:', data);
-      
+
       if (response.ok) {
         if (!data.data?.token) {
           throw new Error('Token tidak ditemukan dalam response');
         }
-        
+
         const { token, user } = data.data;
         await SecureStore.setItemAsync('secure_token', token);
         await AsyncStorage.setItem('userData', JSON.stringify(user));
-        
+
         Toast.show({
           type: 'success',
           text1: 'Login Berhasil',
@@ -532,7 +532,7 @@ export default function HomeScreen() {
           router.replace('/dashboard');
         }, 1000); // delay 1 detik
       } else {
-        const errorMessage = Platform.OS !== 'web' 
+        const errorMessage = Platform.OS !== 'web'
           ? `Error: ${response.status}\nURL: ${API_URL}\nMessage: ${data.message || 'Unknown error'}`
           : data.message || 'Silakan cek kembali username dan password Anda';
 
@@ -549,24 +549,24 @@ export default function HomeScreen() {
         ? `Network Error\nURL: ${getApiBaseUrl()}${API_ENDPOINTS.LOGIN}\nDetails: ${error.message}`
         : 'Terjadi kesalahan pada server';
 
-        console.error('Login error:', error);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: errorMessage,
-          visibilityTime: 4000,
-          position: 'bottom'
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      console.error('Login error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        visibilityTime: 4000,
+        position: 'bottom'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       const token = await SecureStore.getItemAsync('secure_token');
       console.log('Attempting logout with token:', token);
-      
+
       const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.LOGOUT}`, {
         method: 'POST',
         headers: {
@@ -644,7 +644,7 @@ export default function HomeScreen() {
       const data = await response.json();
       console.log('[FORGOT PASSWORD] Response Status:', response.status);
       console.log('[FORGOT PASSWORD] Response Data:', data);
-      
+
       if (response.ok) {
         console.log('[FORGOT PASSWORD] Success: Link reset password akan dikirim');
         Toast.show({
@@ -721,7 +721,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl
@@ -736,28 +736,28 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.languageSelector}>
-              <Image 
-                source={require("@/assets/images/id-flag.png")} 
+              <Image
+                source={require("@/assets/images/id-flag.png")}
                 style={styles.flagIcon}
               />
               <Text style={styles.languageText}>ID</Text>
             </View>
-            
+
             <View style={styles.securityBadge}>
               <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
               <Text style={styles.securityText}>Lingkungan Aman</Text>
             </View>
-          </View>          
+          </View>
           {/* Banner Section */}
           <View style={styles.bannerContainer}>
             {bannerLoading ? (
               <Skeleton width="100%" height={200} borderRadius={8} />
             ) : bannerError ? (
-              <AnimatedFallbackText text="Connecting People Profit Together" />
+              <AnimatedFallbackText text="Connecting People Prosperity Together" />
             ) : (
               banners.length > 0 ? (
-                <ScrollView 
-                  horizontal 
+                <ScrollView
+                  horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.bannerContainer}
                 >
@@ -771,7 +771,7 @@ export default function HomeScreen() {
                   ))}
                 </ScrollView>
               ) : (
-                <AnimatedFallbackText text="Connecting People Profit Together" />
+                <AnimatedFallbackText text="Connecting People Prosperity Together" />
               )
             )}
           </View>
@@ -787,9 +787,9 @@ export default function HomeScreen() {
               <Ionicons name="information-circle-outline" size={20} color="#666" />
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.menuGrid}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.menuItem}
               onPress={(e) => showTooltip('Simpan dana Anda dengan aman dan dapatkan bagi hasil yang menarik', e)}
             >
@@ -799,7 +799,7 @@ export default function HomeScreen() {
               <Text style={styles.menuLabel}>Tabungan</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.menuItem}
               onPress={(e) => showTooltip('Pinjaman dengan bunga rendah dan proses cepat', e)}
             >
@@ -809,7 +809,7 @@ export default function HomeScreen() {
               <Text style={styles.menuLabel}>Pinjaman</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.menuItem}
               onPress={(e) => showTooltip('Investasikan dana Anda dengan imbal hasil yang kompetitif', e)}
             >
@@ -819,7 +819,7 @@ export default function HomeScreen() {
               <Text style={styles.menuLabel}>Deposito</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.menuItem}
               onPress={(e) => showTooltip('Gadai barang berharga Anda dengan nilai taksir tinggi', e)}
             >
@@ -838,7 +838,7 @@ export default function HomeScreen() {
           position={tooltipPosition}
         />
       </ScrollView>
-      
+
       {/* Login/Logout Button */}
       {isLoggedIn ? (
         <TouchableOpacity
@@ -922,28 +922,28 @@ export default function HomeScreen() {
             { height: formHeight }
           ]}
         >
-          <TouchableOpacity 
-            style={styles.overlay} 
+          <TouchableOpacity
+            style={styles.overlay}
             onPress={handleLoginCancel}
             activeOpacity={1}
           >
-            <TouchableOpacity 
-              style={styles.loginForm} 
+            <TouchableOpacity
+              style={styles.loginForm}
               activeOpacity={1}
               onPress={(e) => e.stopPropagation()}
             >
-              <TouchableOpacity 
-                style={styles.closeButton} 
+              <TouchableOpacity
+                style={styles.closeButton}
                 onPress={handleLoginCancel}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
               <Text style={styles.loginHeader}>Silakan Login</Text>
-              
+
               <View style={styles.inputContainer}>
                 <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-                <TextInput 
+                <TextInput
                   placeholder="Your Email or Username"
                   style={[styles.input, validationErrors.username ? styles.inputError : null]}
                   placeholderTextColor="#999"
@@ -960,7 +960,7 @@ export default function HomeScreen() {
 
               <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-                <TextInput 
+                <TextInput
                   placeholder="Password"
                   secureTextEntry={!showPassword}
                   style={[styles.input, validationErrors.password ? styles.inputError : null]}
@@ -971,14 +971,14 @@ export default function HomeScreen() {
                     setValidationErrors(prev => ({ ...prev, password: '' }));
                   }}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.passwordToggle}
                 >
-                  <Ionicons 
-                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                    size={20} 
-                    color="#666" 
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#666"
                   />
                 </TouchableOpacity>
               </View>
@@ -988,7 +988,7 @@ export default function HomeScreen() {
               <TouchableOpacity style={styles.forgotPassword}>
                 <Text style={styles.forgotPasswordText} onPress={handleShowForgotPassword}>Lupa Password?</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
                 onPress={handleLogin}
                 disabled={isLoading}
@@ -1064,7 +1064,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: '110%',
     height: 'auto',
-    marginHorizontal: -16,
+    marginHorizontal: -15,
     marginBottom: -17,
   },
   bannerImage: {
@@ -1122,20 +1122,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     color: '#333',
-  },  loginContainer: {
+  }, loginContainer: {
     position: 'absolute',
     bottom: 120, // Adjusted to be above the tab bar
     left: 0,
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 16,
-  },loginButton: {
+  }, loginButton: {
     position: 'absolute',
     bottom: 120, // Increased to ensure it's above the tab bar
     alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
-    width: '90%', 
+    width: '90%',
   },
   logoutButton: {
     backgroundColor: 'transparent',
@@ -1317,12 +1317,12 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: '100%', 
-  },  loginButtonText: {
+    width: '100%',
+  }, loginButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },  animatedTextContainer: {
+  }, animatedTextContainer: {
     width: '100%',
     height: 350,
     justifyContent: 'center',

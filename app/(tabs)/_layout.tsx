@@ -25,7 +25,7 @@ const getIconSource = (routeName: RouteNames) => {
 
 const TabBarIcon = ({ routeName, color }: { routeName: RouteNames; color: string }) => {
   const source = getIconSource(routeName);
-  
+
   if (!source) {
     return (
       <View style={styles.iconContainer}>
@@ -59,19 +59,26 @@ const hasHardwareButtons = () => {
 
 export default function TabLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
+    console.log('TabLayout mounted');
     checkLoginStatus();
   }, []);
 
   const checkLoginStatus = async () => {
     try {
+      console.log('Checking login status...');
       const token = await AsyncStorage.getItem('userToken');
+      console.log('Token found:', !!token);
       setIsLoggedIn(!!token);
+      setIsReady(true);
+      console.log('TabLayout ready');
     } catch (error) {
       console.error('Error checking login status:', error);
       setIsLoggedIn(false);
+      setIsReady(true);
     }
   };
   // Calculate bottom offset to ensure tab bar stays above device navigation
@@ -117,7 +124,7 @@ export default function TabLayout() {
     tabBarItemStyle: styles.tabBarItem,
     tabBarLabelStyle: styles.tabBarLabel,
     // Add bottom padding to content to prevent tab bar overlap
-    contentStyle: { 
+    contentStyle: {
       paddingBottom: 60 + getBottomOffset() + 20, // Tab bar height + offset + extra space
     },
   };

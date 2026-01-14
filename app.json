@@ -2,8 +2,8 @@
   "expo": {
     "name": "Sinara Soon",
     "slug": "pos-kospin",
-    "version": "0.0.2",
-    "sdkVersion": "53.0.0",
+    "version": "1.0.1",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo_icon_mobile_300.png",
     "scheme": "myapp",
