@@ -13,6 +13,7 @@ import {
   Modal,
   Pressable,
   useWindowDimensions,
+  Dimensions,
   Alert
 } from "react-native";
 import { Link } from "expo-router";
@@ -184,6 +185,145 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
   );
 };
 
+const AnimatedBannerLoading: React.FC = () => {
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
+  const shimmerTranslate = useSharedValue(-1);
+
+  useEffect(() => {
+    // Fade in animation
+    opacity.value = withTiming(1, { duration: 600 });
+
+    // Breathing scale animation
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.98, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+
+    // Shimmer effect
+    shimmerTranslate.value = withRepeat(
+      withTiming(1, { duration: 1800, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, []);
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const shimmerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: shimmerTranslate.value * 400 }
+      ],
+    };
+  });
+
+  return (
+    <Animated.View style={[styles.bannerLoadingContainer, containerStyle]}>
+      <LinearGradient
+        colors={['#E8F4F8', '#D1E9F6', '#B8DFF0', '#D1E9F6', '#E8F4F8']}
+        style={styles.bannerLoadingGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Shimmer overlay */}
+        <Animated.View style={[styles.shimmerOverlay, shimmerStyle]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(255,255,255,0.6)', 'transparent']}
+            style={styles.shimmerGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          />
+        </Animated.View>
+
+        {/* Loading content */}
+        <View style={styles.bannerLoadingContent}>
+          <View style={styles.loadingIconContainer}>
+            <Ionicons name="images-outline" size={48} color="#0066AE" />
+          </View>
+          <Text style={styles.bannerLoadingText}>Memuat Banner...</Text>
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+};
+
+
+
+interface AnimatedBannerImageProps {
+  uri: string;
+  index: number;
+}
+
+const AnimatedBannerImage: React.FC<AnimatedBannerImageProps> = ({ uri, index }) => {
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.9);
+  const imageScale = useSharedValue(1);
+
+  useEffect(() => {
+    // Staggered fade in based on index
+    const delay = index * 150;
+
+    // Fade in with delay
+    opacity.value = withDelay(
+      delay,
+      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) })
+    );
+
+    // Scale up entrance animation
+    scale.value = withDelay(
+      delay,
+      withSpring(1, {
+        damping: 12,
+        stiffness: 100,
+      })
+    );
+
+    // Continuous subtle zoom animation (Ken Burns effect)
+    setTimeout(() => {
+      imageScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    }, delay + 1000);
+  }, [index]);
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const imageStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: imageScale.value }],
+    };
+  });
+
+  return (
+    <Animated.View style={[styles.animatedBannerWrapper, containerStyle]}>
+      <Animated.Image
+        source={{ uri }}
+        style={[styles.bannerImage, imageStyle]}
+        resizeMode="cover"
+      />
+    </Animated.View>
+  );
+};
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text, position }) => {
   const [tooltipWidth, setTooltipWidth] = useState(0);
   const [tooltipHeight, setTooltipHeight] = useState(0);
@@ -737,7 +877,7 @@ export default function HomeScreen() {
           <View style={styles.headerTop}>
             <View style={styles.languageSelector}>
               <Image
-                source={require("@/assets/images/id-flag.png")}
+                source={require('@/assets/images/id-flag.png')}
                 style={styles.flagIcon}
               />
               <Text style={styles.languageText}>ID</Text>
@@ -748,33 +888,34 @@ export default function HomeScreen() {
               <Text style={styles.securityText}>Lingkungan Aman</Text>
             </View>
           </View>
-          {/* Banner Section */}
-          <View style={styles.bannerContainer}>
-            {bannerLoading ? (
-              <Skeleton width="100%" height={200} borderRadius={8} />
-            ) : bannerError ? (
-              <AnimatedFallbackText text="Connecting People Prosperity Together" />
+        </View>
+
+        {/* Banner Section - Outside header to avoid padding */}
+        <View style={styles.bannerContainer}>
+          {bannerLoading ? (
+            <AnimatedBannerLoading />
+          ) : bannerError ? (
+            <AnimatedFallbackText text="Connecting People Prosperity Together" />
+          ) : (
+            banners.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                style={styles.bannerScrollView}
+              >
+                {banners.map((banner, index) => (
+                  <AnimatedBannerImage
+                    key={banner.id}
+                    uri={banner.url}
+                    index={index}
+                  />
+                ))}
+              </ScrollView>
             ) : (
-              banners.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.bannerContainer}
-                >
-                  {banners.map((banner) => (
-                    <Image
-                      key={banner.id}
-                      source={{ uri: banner.url }}
-                      style={styles.bannerImage}
-                      resizeMode="cover"
-                    />
-                  ))}
-                </ScrollView>
-              ) : (
-                <AnimatedFallbackText text="Connecting People Prosperity Together" />
-              )
-            )}
-          </View>
+              <AnimatedFallbackText text="Connecting People Prosperity Together" />
+            )
+          )}
         </View>
 
         {/* Fast Menu Section */}
@@ -1006,6 +1147,8 @@ export default function HomeScreen() {
   );
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1062,10 +1205,14 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   bannerContainer: {
-    width: '110%',
-    height: 'auto',
-    marginHorizontal: -15,
-    marginBottom: -17,
+    width: '100%',
+    height: 350,
+    backgroundColor: '#0066Ae',
+    marginTop: -1,
+  },
+  bannerScrollView: {
+    width: '100%',
+    height: 350,
   },
   bannerImage: {
     width: '100%',
@@ -1366,5 +1513,60 @@ const styles = StyleSheet.create({
     padding: 16,
     // Add slight pattern overlay
     backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  animatedBannerWrapper: {
+    width: SCREEN_WIDTH,
+    height: 350,
+    overflow: 'hidden',
+    borderRadius: 0,
+    marginRight: 0,
+  },
+  bannerLoadingContainer: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+  },
+  bannerLoadingGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: -100,
+    width: 100,
+    height: '100%',
+    zIndex: 1,
+  },
+  shimmerGradient: {
+    width: '100%',
+    height: '100%',
+  },
+  bannerLoadingContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 0,
+  },
+  loadingIconContainer: {
+    marginBottom: 12,
+    opacity: 0.7,
+  },
+  bannerLoadingText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0066AE',
+    letterSpacing: 0.5,
   },
 });
