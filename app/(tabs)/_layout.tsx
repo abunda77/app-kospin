@@ -118,7 +118,7 @@ export default function TabLayout() {
   };
 
   const screenOptions = {
-    tabBarActiveTintColor: '#0066AE',
+    tabBarActiveTintColor: '#1F7900',
     headerShown: false,
     tabBarStyle: tabBarStyle,
     tabBarItemStyle: styles.tabBarItem,

@@ -895,7 +895,7 @@ export default function HomeScreen() {
           {bannerLoading ? (
             <AnimatedBannerLoading />
           ) : bannerError ? (
-            <AnimatedFallbackText text="Connecting People Prosperity Together" />
+            <AnimatedFallbackText text="Sinergi Untuk Sejahtera" />
           ) : (
             banners.length > 0 ? (
               <ScrollView
@@ -913,7 +913,7 @@ export default function HomeScreen() {
                 ))}
               </ScrollView>
             ) : (
-              <AnimatedFallbackText text="Connecting People Prosperity Together" />
+              <AnimatedFallbackText text="Sinergi Untuk Sejahtera" />
             )
           )}
         </View>

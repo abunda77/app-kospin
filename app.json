@@ -15,7 +15,7 @@
     "splash": {
       "image": "./assets/images/logo_mobile_300.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0066AE"
+      "backgroundColor": "#1F7900"
     },
     "ios": {
       "supportsTablet": true
@@ -23,7 +23,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo_mobile_1024.png",
-        "backgroundColor": "#0066AE"
+        "backgroundColor": "#1F7900"
       },
       "package": "com.abunda.poskospin"
     },
@@ -39,7 +39,7 @@
         {
           "image": "./assets/images/logo_mobile_300.png",
           "imageWidth": 100,
-          "backgroundColor": "#0066AE",
+          "backgroundColor": "#1F7900",
           "resizeMode": "contain"
         }
       ],
