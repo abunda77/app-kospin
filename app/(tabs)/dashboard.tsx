@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable, Modal, RefreshControl, ScrollView, Dimensions, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Modal, RefreshControl, ScrollView, Dimensions, Image, useWindowDimensions, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import type { Route } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -104,11 +104,32 @@ export default function Dashboard() {
   const [showAllMenu, setShowAllMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState<string>('0');
+  const [tabunganAccounts, setTabunganAccounts] = useState<Array<{
+    no_tabungan: string;
+    nama_produk: string;
+    saldo: string;
+  }>>([]);
+  const [selectedTabunganIndex, setSelectedTabunganIndex] = useState(-1); // -1 = Semua Rekening
+  const [showDropdown, setShowDropdown] = useState(false);
   const [banners, setBanners] = useState<BannerData[]>([]);
   const [bannerLoading, setBannerLoading] = useState(true);
   const [randomGreeting, setRandomGreeting] = useState('');
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [isTransactionExpanded, setIsTransactionExpanded] = useState(false);
+
+  // Compute balance whenever tabunganAccounts or selectedTabunganIndex changes
+  useEffect(() => {
+    if (selectedTabunganIndex === -1) {
+      const total = tabunganAccounts.reduce((sum, acc) => sum + Number(acc.saldo), 0);
+      setBalance(total.toString());
+    } else if (tabunganAccounts[selectedTabunganIndex]) {
+      setBalance(tabunganAccounts[selectedTabunganIndex].saldo);
+    }
+  }, [tabunganAccounts, selectedTabunganIndex]);
+
+  const balanceLabel = selectedTabunganIndex === -1
+    ? 'Total Saldo'
+    : tabunganAccounts[selectedTabunganIndex]?.nama_produk || 'Saldo';
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -303,24 +324,48 @@ export default function Dashboard() {
       const tabunganData: TabunganResponse = await tabunganResponse.json();
 
       if (tabunganData.data.tabungan.length > 0) {
-        // Get saldo berjalan for the first tabungan
-        const saldoBerjalanResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_SALDO_BERJALAN}`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ no_tabungan: tabunganData.data.tabungan[0].no_tabungan }),
-          // Add cache control to prevent caching
-          cache: 'no-store'
-        });
+        // Fetch saldo berjalan for ALL tabungan accounts in parallel
+        const accountsWithSaldo = await Promise.all(
+          tabunganData.data.tabungan.map(async (acc) => {
+            try {
+              const saldoBerjalanResponse = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.TABUNGAN_SALDO_BERJALAN}`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({ no_tabungan: acc.no_tabungan }),
+                cache: 'no-store'
+              });
 
-        if (!saldoBerjalanResponse.ok) throw new Error('Failed to fetch saldo berjalan');
-        const saldoBerjalanData: SaldoBerjalanResponse = await saldoBerjalanResponse.json();
-        setBalance(saldoBerjalanData.data.info_rekening.saldo_berjalan.toString());
+              if (saldoBerjalanResponse.ok) {
+                const saldoBerjalanData: SaldoBerjalanResponse = await saldoBerjalanResponse.json();
+                return {
+                  no_tabungan: acc.no_tabungan,
+                  nama_produk: acc.produk_tabungan.nama_produk,
+                  saldo: saldoBerjalanData.data.info_rekening.saldo_berjalan
+                };
+              }
+            } catch (e) {
+              console.error(`Error fetching saldo for ${acc.no_tabungan}:`, e);
+            }
+            // Fallback to saldo from tabungan list if saldo berjalan fails
+            return {
+              no_tabungan: acc.no_tabungan,
+              nama_produk: acc.produk_tabungan.nama_produk,
+              saldo: acc.saldo
+            };
+          })
+        );
+
+        setTabunganAccounts(accountsWithSaldo);
+        // Reset to "Semua Rekening" on fresh fetch
+        setSelectedTabunganIndex(-1);
       } else {
         // Reset balance if no tabungan found
+        setTabunganAccounts([]);
+        setSelectedTabunganIndex(-1);
         setBalance('0');
       }
     } catch (error) {
@@ -533,8 +578,20 @@ export default function Dashboard() {
             >
               <View style={styles.balanceSection}>
                 <View style={styles.balanceContainer}>
-                  <View>
-                    <Text style={[styles.balanceLabel, { color: '#E8F1F8' }]}>Saldo Rekening Utama</Text>
+                  <View style={{ flex: 1 }}>
+                    {/* Dropdown trigger for account selection */}
+                    <TouchableOpacity
+                      style={styles.dropdownTrigger}
+                      onPress={() => tabunganAccounts.length > 1 && setShowDropdown(true)}
+                      activeOpacity={tabunganAccounts.length > 1 ? 0.7 : 1}
+                    >
+                      <Text style={[styles.balanceLabel, { color: '#E8F1F8' }]}>
+                        {balanceLabel}
+                      </Text>
+                      {tabunganAccounts.length > 1 && (
+                        <Ionicons name="chevron-down" size={16} color="#E8F1F8" style={{ marginLeft: 4 }} />
+                      )}
+                    </TouchableOpacity>
                     <View style={styles.balanceWrapper}>
                       {loading ? (
                         <Skeleton width={150} height={32} />
@@ -767,6 +824,100 @@ export default function Dashboard() {
           </View>
         </View>
       </Modal>
+
+      {/* Dropdown Modal for account selection */}
+      <Modal
+        visible={showDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDropdown(false)}
+      >
+        <Pressable
+          style={styles.dropdownOverlay}
+          onPress={() => setShowDropdown(false)}
+        >
+          <Pressable style={styles.dropdownContent} onPress={() => {}}>
+            <Text style={styles.dropdownTitle}>Pilih Rekening</Text>
+
+            {/* "Semua Rekening" option */}
+            <TouchableOpacity
+              style={[
+                styles.dropdownItem,
+                selectedTabunganIndex === -1 && styles.dropdownItemActive
+              ]}
+              onPress={() => {
+                setSelectedTabunganIndex(-1);
+                setShowDropdown(false);
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[
+                  styles.dropdownItemText,
+                  selectedTabunganIndex === -1 && styles.dropdownItemTextActive
+                ]}>
+                  Semua Rekening
+                </Text>
+                <Text style={styles.dropdownItemSaldo}>
+                  {new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(
+                    tabunganAccounts.reduce((sum, acc) => sum + Number(acc.saldo), 0)
+                  )}
+                </Text>
+              </View>
+              {selectedTabunganIndex === -1 && (
+                <Ionicons name="checkmark" size={20} color="#1F7900" />
+              )}
+            </TouchableOpacity>
+
+            {/* Individual account options */}
+            <FlatList
+              data={tabunganAccounts}
+              keyExtractor={(item) => item.no_tabungan}
+              style={styles.dropdownList}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    selectedTabunganIndex === index && styles.dropdownItemActive
+                  ]}
+                  onPress={() => {
+                    setSelectedTabunganIndex(index);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[
+                      styles.dropdownItemText,
+                      selectedTabunganIndex === index && styles.dropdownItemTextActive
+                    ]}>
+                      {item.nama_produk}
+                    </Text>
+                    <Text style={styles.dropdownItemNoRek}>
+                      {item.no_tabungan}
+                    </Text>
+                    <Text style={styles.dropdownItemSaldo}>
+                      {new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                      }).format(Number(item.saldo))}
+                    </Text>
+                  </View>
+                  {selectedTabunganIndex === index && (
+                    <Ionicons name="checkmark" size={20} color="#1F7900" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <Toast />
     </SafeAreaView>
   );
@@ -1122,5 +1273,67 @@ const styles = StyleSheet.create({
   },
   debitAmount: {
     color: '#28A745',
+  },
+  dropdownTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  dropdownContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxHeight: '70%',
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F7900',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  dropdownList: {
+    maxHeight: 300,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  dropdownItemActive: {
+    borderColor: '#1F7900',
+    backgroundColor: '#F0FFF0',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+  },
+  dropdownItemTextActive: {
+    color: '#1F7900',
+  },
+  dropdownItemNoRek: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
+  dropdownItemSaldo: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    marginTop: 4,
   },
 });
