@@ -33,7 +33,7 @@ dan proyek ini mengikuti [Pemversian Semantik](https://semver.org/lang/id/spec/v
 - Halaman profil dan pengaturan akun
 
 ### Diubah
-- Tidak ada perubahan pada versi awal
+- Menyesuaikan tema warna aplikasi dari nuansa biru ke hijau tua (`#1F7900`) pada tombol, ikon, teks, gradient, dan latar di folder `app` serta komponen pendukung.
 
 ### Perbaikan
 - Tidak ada perbaikan pada versi awal

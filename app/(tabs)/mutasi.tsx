@@ -256,8 +256,8 @@ export default function MutasiScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
+            colors={['#1F7900']}
+            tintColor="#1F7900"
           />
         }
       >
@@ -278,7 +278,7 @@ export default function MutasiScreen() {
           {mainAccount && (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#0066AE', '#0095FF']}
+                colors={['#1F7900', '#4CAF50']}
                 style={styles.cardHeader}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140, // Add padding to prevent content from being hidden by tab bar
   },
   headerContainer: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     paddingTop: 60,
     paddingBottom: 20,
   },
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
-    color: '#0066AE',
+    color: '#1F7900',
   },
   periodeSelector: {
     flexDirection: 'row',
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   periodeOptionSelected: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   periodeOptionText: {
     fontSize: 12,

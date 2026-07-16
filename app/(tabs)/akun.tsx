@@ -206,7 +206,7 @@ export default function AccountScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0066AE" />
+        <ActivityIndicator size="large" color="#1F7900" />
       </View>
     );
   }
@@ -264,7 +264,7 @@ export default function AccountScreen() {
           <Ionicons 
             name="person-outline" 
             size={20} 
-            color={activeTab === 'profile' ? '#0066AE' : '#666'} 
+            color={activeTab === 'profile' ? '#1F7900' : '#666'} 
           />
           <Text style={[
             styles.tabText,
@@ -278,7 +278,7 @@ export default function AccountScreen() {
           <Ionicons 
             name="key-outline" 
             size={20} 
-            color={activeTab === 'password' ? '#0066AE' : '#666'} 
+            color={activeTab === 'password' ? '#1F7900' : '#666'} 
           />
           <Text style={[
             styles.tabText,
@@ -291,7 +291,7 @@ export default function AccountScreen() {
       {activeTab === 'profile' ? (
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
-            <Ionicons name="person-outline" size={24} color="#0066AE" />
+            <Ionicons name="person-outline" size={24} color="#1F7900" />
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>NIK</Text>
               <Text style={styles.infoValue}>{profile?.no_identity}</Text>
@@ -315,7 +315,7 @@ export default function AccountScreen() {
           </View>
 
           <View style={styles.infoCard}>
-            <Ionicons name="call-outline" size={24} color="#0066AE" />
+            <Ionicons name="call-outline" size={24} color="#1F7900" />
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Email</Text>
               <Text style={styles.infoValue}>{profile?.email}</Text>
@@ -331,7 +331,7 @@ export default function AccountScreen() {
           </View>
 
           <View style={styles.infoCard}>
-            <Ionicons name="home-outline" size={24} color="#0066AE" />
+            <Ionicons name="home-outline" size={24} color="#1F7900" />
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Alamat</Text>
               <Text style={styles.infoValue}>{profile?.address}</Text>
@@ -363,7 +363,7 @@ export default function AccountScreen() {
           </View>
 
           <View style={styles.infoCard}>
-            <Ionicons name="wallet-outline" size={24} color="#0066AE" />
+            <Ionicons name="wallet-outline" size={24} color="#1F7900" />
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Pendapatan Bulanan</Text>
               <Text style={styles.infoValue}>{formatCurrency(profile?.monthly_income || '0')}</Text>
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   header: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     padding: 25,
     paddingTop: 50,
     flexDirection: 'row',
@@ -433,14 +433,14 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#0066AE',
+    borderBottomColor: '#1F7900',
   },
   tabText: {
     fontSize: 14,
     color: '#666',
   },
   activeTabText: {
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: 'bold',
   },
   infoSection: {

@@ -129,7 +129,7 @@ export default function WithdrawalMethod() {
             style={[styles.methodCard, selectedMethod === 'cash' && styles.selectedCard]}
             onPress={() => handleMethodSelect('cash')}
           >
-            <Ionicons name="cash-outline" size={24} color={selectedMethod === 'cash' ? '#0066AE' : '#666'} />
+            <Ionicons name="cash-outline" size={24} color={selectedMethod === 'cash' ? '#1F7900' : '#666'} />
             <Text style={[styles.methodText, selectedMethod === 'cash' && styles.selectedText]}>Ambil Tunai</Text>
           </TouchableOpacity>
 
@@ -137,7 +137,7 @@ export default function WithdrawalMethod() {
             style={[styles.methodCard, selectedMethod === 'bank' && styles.selectedCard]}
             onPress={() => handleMethodSelect('bank')}
           >
-            <Ionicons name="business-outline" size={24} color={selectedMethod === 'bank' ? '#0066AE' : '#666'} />
+            <Ionicons name="business-outline" size={24} color={selectedMethod === 'bank' ? '#1F7900' : '#666'} />
             <Text style={[styles.methodText, selectedMethod === 'bank' && styles.selectedText]}>Transfer Bank</Text>
           </TouchableOpacity>
 
@@ -145,7 +145,7 @@ export default function WithdrawalMethod() {
             style={[styles.methodCard, selectedMethod === 'ewallet' && styles.selectedCard]}
             onPress={() => handleMethodSelect('ewallet')}
           >
-            <Ionicons name="wallet-outline" size={24} color={selectedMethod === 'ewallet' ? '#0066AE' : '#666'} />
+            <Ionicons name="wallet-outline" size={24} color={selectedMethod === 'ewallet' ? '#1F7900' : '#666'} />
             <Text style={[styles.methodText, selectedMethod === 'ewallet' && styles.selectedText]}>E-Wallet</Text>
           </TouchableOpacity>
 
@@ -237,7 +237,7 @@ export default function WithdrawalMethod() {
               onPress={handleFormSubmit}
             >
               <LinearGradient
-                colors={['#0066AE', '#0095FF']}
+                colors={['#1F7900', '#4CAF50']}
                 style={styles.gradientButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -283,8 +283,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedCard: {
-    backgroundColor: '#E8F0FE',
-    borderColor: '#0066AE',
+    backgroundColor: '#E8F5E9',
+    borderColor: '#1F7900',
     borderWidth: 1,
   },
   methodText: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   selectedText: {
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: 'bold',
   },
   formContainer: {
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   feeAmount: {
     fontSize: 16,

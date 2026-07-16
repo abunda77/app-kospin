@@ -208,8 +208,8 @@ export default function Deposito() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
+            colors={['#1F7900']}
+            tintColor="#1F7900"
             progressViewOffset={16}
           />
         }
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   cardBody: {
     padding: 16,
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   nominalValue: {
-    color: '#0066AE',
+    color: '#1F7900',
   },
   bungaValue: {
     color: '#34A853',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F3F4',
   },
   autoBadge: {
-    backgroundColor: '#E8F0FE',
+    backgroundColor: '#E8F5E9',
   },
   manualBadge: {
     backgroundColor: '#FEF3C7',
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     color: '#5F6368',
   },
   autoText: {
-    color: '#1A73E8',
+    color: '#2E7D32',
   },
   manualText: {
     color: '#D97706',

@@ -165,7 +165,7 @@ const AnimatedFallbackText: React.FC<AnimatedTextProps> = ({ text }) => {
 
   return (<Animated.View style={[styles.animatedTextContainer, containerStyle]}>
     <LinearGradient
-      colors={['#004C8B', '#0066AE', '#0095FF', '#0066AE', '#004C8B']}
+      colors={['#0D4A00', '#1F7900', '#4CAF50', '#1F7900', '#0D4A00']}
       style={styles.gradientBackground}
       start={{ x: 0, y: 0.3 }}
       end={{ x: 1, y: 0.7 }}
@@ -248,7 +248,7 @@ const AnimatedBannerLoading: React.FC = () => {
         {/* Loading content */}
         <View style={styles.bannerLoadingContent}>
           <View style={styles.loadingIconContainer}>
-            <Ionicons name="images-outline" size={48} color="#0066AE" />
+            <Ionicons name="images-outline" size={48} color="#1F7900" />
           </View>
           <Text style={styles.bannerLoadingText}>Memuat Banner...</Text>
         </View>
@@ -867,8 +867,8 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#2563eb"]}
-            tintColor="#2563eb"
+            colors={["#1F7900"]}
+            tintColor="#1F7900"
           />
         }
       >
@@ -935,7 +935,7 @@ export default function HomeScreen() {
               onPress={(e) => showTooltip('Simpan dana Anda dengan aman dan dapatkan bagi hasil yang menarik', e)}
             >
               <View style={styles.menuIconContainer}>
-                <Ionicons name="wallet-outline" size={24} color="#0066AE" />
+                <Ionicons name="wallet-outline" size={24} color="#1F7900" />
               </View>
               <Text style={styles.menuLabel}>Tabungan</Text>
             </TouchableOpacity>
@@ -945,7 +945,7 @@ export default function HomeScreen() {
               onPress={(e) => showTooltip('Pinjaman dengan bunga rendah dan proses cepat', e)}
             >
               <View style={styles.menuIconContainer}>
-                <Ionicons name="cash-outline" size={24} color="#0066AE" />
+                <Ionicons name="cash-outline" size={24} color="#1F7900" />
               </View>
               <Text style={styles.menuLabel}>Pinjaman</Text>
             </TouchableOpacity>
@@ -955,7 +955,7 @@ export default function HomeScreen() {
               onPress={(e) => showTooltip('Investasikan dana Anda dengan imbal hasil yang kompetitif', e)}
             >
               <View style={styles.menuIconContainer}>
-                <Ionicons name="trending-up-outline" size={24} color="#0066AE" />
+                <Ionicons name="trending-up-outline" size={24} color="#1F7900" />
               </View>
               <Text style={styles.menuLabel}>Deposito</Text>
             </TouchableOpacity>
@@ -965,7 +965,7 @@ export default function HomeScreen() {
               onPress={(e) => showTooltip('Gadai barang berharga Anda dengan nilai taksir tinggi', e)}
             >
               <View style={styles.menuIconContainer}>
-                <Ionicons name="diamond-outline" size={24} color="#0066AE" />
+                <Ionicons name="diamond-outline" size={24} color="#1F7900" />
               </View>
               <Text style={styles.menuLabel}>Gadai</Text>
             </TouchableOpacity>
@@ -997,7 +997,7 @@ export default function HomeScreen() {
           onPress={handleLoginPress}
         >
           <LinearGradient
-            colors={['#0066AE', '#0095FF']}
+            colors={['#1F7900', '#4CAF50']}
             style={styles.gradientButton}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -1159,7 +1159,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140, // Add padding to prevent content from being hidden by tab bar
   },
   header: {
-    backgroundColor: '#0066Ae',
+    backgroundColor: '#1F7900',
     //backgroundColor: '#ff9900',
     padding: 16,
     paddingTop: 40,
@@ -1207,7 +1207,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: '100%',
     height: 350,
-    backgroundColor: '#0066Ae',
+    backgroundColor: '#1F7900',
     marginTop: -1,
   },
   bannerScrollView: {
@@ -1355,11 +1355,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   forgotPasswordText: {
-    color: '#0066AE',
+    color: '#1F7900',
     fontSize: 14,
   },
   submitButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -1437,7 +1437,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   button: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -1566,7 +1566,7 @@ const styles = StyleSheet.create({
   bannerLoadingText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0066AE',
+    color: '#1F7900',
     letterSpacing: 0.5,
   },
 });

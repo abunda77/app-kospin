@@ -328,8 +328,8 @@ export default function Kredit() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
+            colors={['#1F7900']}
+            tintColor="#1F7900"
           />
         }
       >
@@ -403,7 +403,7 @@ export default function Kredit() {
                     onPress={() => fetchPaymentHistory(item.no_pinjaman)}
                   >
                     <LinearGradient
-                      colors={['#0066AE', '#0095FF']}
+                       colors={['#1F7900', '#4CAF50']}
                       style={styles.gradientButton}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   cardBody: {
     padding: 16,
@@ -503,13 +503,13 @@ const styles = StyleSheet.create({
   },
   balanceValue: {
     fontSize: 16,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: 'bold',
     flex: 2,
     textAlign: 'right',
   },
   statusText: {
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: 'bold',
   },
   badge: {

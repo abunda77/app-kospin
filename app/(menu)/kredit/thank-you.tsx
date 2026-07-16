@@ -150,7 +150,7 @@ export default function ThankYou() {
             disabled={isDownloading}
           >
             <LinearGradient
-              colors={['#0066AE', '#0095FF']}
+              colors={['#1F7900', '#4CAF50']}
               style={styles.gradientButton}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   instructions: {
     marginTop: 16,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   backButtonText: {
-    color: '#0066AE',
+    color: '#1F7900',
     fontSize: 16,
     fontWeight: '500',
     textDecorationLine: 'underline',
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   scheduleText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#2980B9',
+    color: '#388E3C',
     marginTop: 4,
   },
   importantText: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   fieldValue: {
-    color: '#2980B9',
+    color: '#388E3C',
     fontWeight: '500',
     fontSize: 15,
   },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   phoneNumber: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#2980B9',
+    color: '#388E3C',
     marginTop: 32,
   },
   whatsappContainer: {

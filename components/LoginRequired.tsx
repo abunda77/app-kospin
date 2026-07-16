@@ -18,7 +18,7 @@ export default function LoginRequired({ message = 'Silakan login untuk mengakses
         <Text style={styles.loginMessage}>{message}</Text>
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={() => router.push('/index')}
+          onPress={() => router.push('/(tabs)')}
         >
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   headerLoggedOut: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     padding: 40,
     marginTop: 0,
   },
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,

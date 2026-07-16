@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   payButton: {
-    backgroundColor: '#008AF0',
+    backgroundColor: '#00A86B',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   confirmButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   modalButtonText: {
     color: '#FFFFFF',

@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   valueHighlight: {
     fontSize: 16,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '600',
   },
   badge: {
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     fontSize: 16,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '600',
   },
   statusContainer: {
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   grandTotal: {
     fontSize: 18,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '600',
   },
   emptyStateContainer: {

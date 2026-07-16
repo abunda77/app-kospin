@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 40,
     marginTop: 0,
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   title: {
     fontSize: 20,

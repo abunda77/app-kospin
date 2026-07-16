@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   cardBody: {
     padding: 16,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   submitButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   confirmButton: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   modalButtonText: {
     color: '#FFFFFF',
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   summaryAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   sectionTitle: {
     fontSize: 16,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   channelCardSelected: {
-    borderColor: '#0066AE',
+    borderColor: '#1F7900',
     borderWidth: 2,
   },
   channelName: {
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#0066AE',
+    borderColor: '#1F7900',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   footer: {
     padding: 16,
@@ -518,18 +518,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#0066AE',
+    borderColor: '#1F7900',
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   quickAmountButtonActive: {
-    backgroundColor: '#0066AE',
-    borderColor: '#0066AE',
+    backgroundColor: '#1F7900',
+    borderColor: '#1F7900',
   },
   quickAmountText: {
     fontSize: 14,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '500',
   },
   quickAmountTextActive: {

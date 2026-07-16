@@ -322,8 +322,8 @@ export default function Angsuran() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#0066AE']}
-              tintColor="#0066AE"
+              colors={['#1F7900']}
+              tintColor="#1F7900"
             />
           }
         >
@@ -405,7 +405,7 @@ export default function Angsuran() {
                       onPress={() => fetchAngsuranDetails(item.no_pinjaman)}
                     >
                       <LinearGradient
-                        colors={['#0066AE', '#0095FF']}
+                        colors={['#1F7900', '#4CAF50']}
                         style={styles.gradientButton}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A237E',
+    color: '#1B5E20',
     marginBottom: 8,
     letterSpacing: 0.5,
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0066AE',
+    color: '#1F7900',
     letterSpacing: 0.15,
   },
   cardBody: {

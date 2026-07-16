@@ -152,8 +152,8 @@ export default function SetorTunai() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
+            colors={['#1F7900']}
+            tintColor="#1F7900"
           />
         }
       >
@@ -182,7 +182,7 @@ export default function SetorTunai() {
           ) : (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#0066AE', '#0095FF']}
+                colors={['#1F7900', '#4CAF50']}
                 style={styles.cardHeader}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -220,7 +220,7 @@ export default function SetorTunai() {
                   })}
                 >
                   <LinearGradient
-                    colors={['#0066AE', '#0095FF']}
+                    colors={['#1F7900', '#4CAF50']}
                     style={styles.gradientButton}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
@@ -279,7 +279,7 @@ export default function SetorTunai() {
                         </Text>
                       </View>
                       {mainAccount?.id === account.id && (
-                        <Ionicons name="checkmark-circle" size={24} color="#0066AE" />
+                        <Ionicons name="checkmark-circle" size={24} color="#1F7900" />
                       )}
                     </TouchableOpacity>
                   ))}

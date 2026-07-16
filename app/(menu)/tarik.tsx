@@ -262,7 +262,7 @@ export default function TarikTunai() {
 
   const renderSkeletonCards = () => (
     <View style={styles.card}>
-      <View style={[styles.cardHeader, { backgroundColor: '#0066AE' }]}>
+      <View style={[styles.cardHeader, { backgroundColor: '#1F7900' }]}>
         <View style={styles.cardHeaderContent}>
           <Skeleton width={150} height={24} />
           <Skeleton width={100} height={24} />
@@ -297,8 +297,8 @@ export default function TarikTunai() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#0066AE']}
-            tintColor="#0066AE"
+            colors={['#1F7900']}
+            tintColor="#1F7900"
           />
         }
       >
@@ -327,7 +327,7 @@ export default function TarikTunai() {
           ) : (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#0066AE', '#0095FF']}
+                colors={['#1F7900', '#4CAF50']}
                 style={styles.cardHeader}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -413,7 +413,7 @@ export default function TarikTunai() {
                   disabled={!nominal}
                 >
                   <LinearGradient
-                    colors={['#0066AE', '#0095FF']}
+                    colors={['#1F7900', '#4CAF50']}
                     style={styles.gradientButton}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
@@ -467,7 +467,7 @@ export default function TarikTunai() {
                         </Text>
                       </View>
                       {mainAccount?.id === account.id && (
-                        <Ionicons name="checkmark-circle" size={24} color="#0066AE" />
+                        <Ionicons name="checkmark-circle" size={24} color="#1F7900" />
                       )}
                     </TouchableOpacity>
                   ))}
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   headerContainer: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
     paddingTop: 25,
     paddingBottom: 25,
   },
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   balanceValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   maxWithdrawalValue: {
     fontSize: 16,
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   accountItemSelected: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#E8F5E9',
   },
   accountInfo: {
     flex: 1,

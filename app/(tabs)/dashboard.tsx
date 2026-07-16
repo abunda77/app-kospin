@@ -76,21 +76,21 @@ interface BannerData {
 
 // Fix route
 const menuItems: MenuItem[] = [
-  { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#0066AE' },
-  { id: 2, title: 'Tarik Tunai', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/tarik', color: '#0066AE' },
-  { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/angsuran', color: '#0066AE' },
-  { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/belanja', color: '#0066AE' },
+  { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#1F7900' },
+  { id: 2, title: 'Tarik Tunai', icon: require('../../assets/primary-menu/cash-withdrawal.png'), route: '/(menu)/tarik', color: '#1F7900' },
+  { id: 3, title: 'Angsuran', icon: require('../../assets/primary-menu/installment.png'), route: '/(menu)/angsuran', color: '#1F7900' },
+  { id: 4, title: 'Belanja', icon: require('../../assets/primary-menu/purchase.png'), route: '/(menu)/belanja', color: '#1F7900' },
 ];
 
 const secondaryMenuItems: MenuItem[] = [
-  { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/tabungan', color: '#0066AE' },
-  { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/deposito', color: '#0066AE' },
-  { id: 7, title: 'Pinjaman', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/pinjaman', color: '#0066AE' },
-  { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/gadai', color: '#0066AE' },
-  { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/e-wallet', color: '#0066AE' },
-  { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/qris', color: '#0066AE' },
-  { id: 11, title: 'Pulsa/Paket Data', icon: require('../../assets/secondary-menu/pulsa.png'), route: '/(menu)/top-up', color: '#0066AE' },
-  { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/tagihan', color: '#0066AE' },
+  { id: 5, title: 'Tabungan', icon: require('../../assets/secondary-menu/saving.png'), route: '/(menu)/tabungan', color: '#1F7900' },
+  { id: 6, title: 'Deposito', icon: require('../../assets/secondary-menu/deposito.png'), route: '/(menu)/deposito', color: '#1F7900' },
+  { id: 7, title: 'Pinjaman', icon: require('../../assets/secondary-menu/loan.png'), route: '/(menu)/pinjaman', color: '#1F7900' },
+  { id: 8, title: 'Gadai', icon: require('../../assets/secondary-menu/pawn.png'), route: '/(menu)/gadai', color: '#1F7900' },
+  { id: 9, title: 'E-Wallet', icon: require('../../assets/secondary-menu/ewallet.png'), route: '/(menu)/e-wallet', color: '#1F7900' },
+  { id: 10, title: 'QRIS', icon: require('../../assets/secondary-menu/qris.png'), route: '/(menu)/qris', color: '#1F7900' },
+  { id: 11, title: 'Pulsa/Paket Data', icon: require('../../assets/secondary-menu/pulsa.png'), route: '/(menu)/top-up', color: '#1F7900' },
+  { id: 12, title: 'Tagihan', icon: require('../../assets/secondary-menu/bill.png'), route: '/(menu)/tagihan', color: '#1F7900' },
 ];
 
 export default function Dashboard() {
@@ -481,7 +481,7 @@ export default function Dashboard() {
       >
         <View style={styles.header}>
           <LinearGradient
-            colors={['#0077CC', '#0066AE', '#004992']}
+            colors={['#155D00', '#1F7900', '#0D4A00']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0.8 }}
             style={styles.headerGradient}
@@ -526,7 +526,7 @@ export default function Dashboard() {
           {/* Combined Card */}
           <View style={styles.combinedCard}>
             <LinearGradient
-              colors={['#0077CC', '#0066AE', '#004992']}
+              colors={['#155D00', '#1F7900', '#0D4A00']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0.8 }}
               style={styles.gradientBackground}
@@ -949,21 +949,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   showMoreButton: {
-    backgroundColor: '#E8F3FF',
+    backgroundColor: '#E8F5E9',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
-    color: '#0066AE',
+    color: '#1F7900',
   },
   showMoreText: {
     fontSize: 12,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '500',
   },
   chevronIcon: {
     width: 24,
     height: 24,
-    tintColor: '#0066AE',
+    tintColor: '#1F7900',
   },
   chevronIconRotated: {
     transform: [{ rotate: '180deg' }],
@@ -987,15 +987,15 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   viewMoreButton: {
-    backgroundColor: '#E8F3FF',
+    backgroundColor: '#E8F5E9',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
-    color: '#0066AE',
+    color: '#1F7900',
   },
   viewMoreText: {
     fontSize: 12,
-    color: '#0066AE',
+    color: '#1F7900',
     fontWeight: '500',
   },
   financialReportDate: {
@@ -1039,7 +1039,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   modalButtonConfirm: {
-    backgroundColor: '#0066AE',
+    backgroundColor: '#1F7900',
   },
   modalButtonText: {
     color: '#fff',
@@ -1115,7 +1115,7 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#0066AE',
+    color: '#1F7900',
   },
   creditAmount: {
     color: '#DC3545',
