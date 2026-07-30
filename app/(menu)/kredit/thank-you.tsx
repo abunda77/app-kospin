@@ -83,7 +83,7 @@ export default function ThankYou() {
                 <Text style={styles.instructionTitle}>Petunjuk Pembayaran:</Text>
                 <Text style={styles.instructionText}>
                   <Text style={styles.highlight}>Silakan datang ke kantor</Text>
-                  <Text style={styles.normalText}> Koperasi Sinara Artha pada jam kerja yaitu:</Text>
+                  <Text style={styles.normalText}> Koperasi Sinara Artha Naya  pada jam kerja yaitu:</Text>
                   {'\n'}
                   <Text style={styles.scheduleText}>Senin-Sabtu, pk 08.00 s/d 16.00</Text>
                   {'\n\n'}
@@ -103,7 +103,7 @@ export default function ThankYou() {
                   <Text style={styles.fieldValue}> 0889333288</Text>
                   {'\n'}
                   <Text style={styles.fieldLabel}>Nama:</Text>
-                  <Text style={styles.fieldValue}> KOPERASI SINARA ARTHA</Text>
+                  <Text style={styles.fieldValue}> KOPERASI SINARA ARTHA NAYA</Text>
                   {'\n\n'}
                   <Text style={styles.confirmationText}>Setelah melakukan pembayaran, mohon konfirmasi melalui WhatsApp di nomor berikut ini.  
                    {'\n\n'}Atau tekan tombol WA di samping.</Text>

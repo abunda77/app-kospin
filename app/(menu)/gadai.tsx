@@ -32,7 +32,7 @@ export default function Gadai() {
 
   const openWhatsApp = async () => {
     const phoneNumber = '6287778715788'; // format nomor dengan awalan 62
-    const message = 'Halo, saya tertarik dengan layanan gadai di Koperasi Sinara Artha.';
+    const message = 'Halo, saya tertarik dengan layanan gadai di Koperasi Sinara Artha Naya.';
     const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
 
     try {
@@ -81,9 +81,9 @@ export default function Gadai() {
 
           <View style={styles.contactContainer}>
             <Text style={styles.sectionTitle}>Hubungi Kami:</Text>
-            <Text style={styles.contactItem}>📍 Koperasi Sinara Artha</Text>
-            <Text style={styles.contactDetail}>Easten Park Residence Blok B7 No. 7,</Text>
-            <Text style={styles.contactDetail}>Sukolilo, Surabaya 60111</Text>
+            <Text style={styles.contactItem}>📍 Koperasi Sinara Artha Naya</Text>
+            <Text style={styles.contactDetail}>Jl. Komplek ruko Sesetan Agung No.16 S, Sesetan,</Text>
+            <Text style={styles.contactDetail}>Denpasar Selatan, Kota Denpasar, Bali 80223</Text>
             <TouchableOpacity onPress={openWhatsApp}>
               <Text style={[styles.contactItem, styles.whatsappLink]}>
                 📱 WhatsApp: +6287778715788

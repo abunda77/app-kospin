@@ -122,7 +122,7 @@ export default function WithdrawalThankYou() {
                 <Text style={styles.instructionTitle}>Petunjuk Penarikan:</Text>
                 <Text style={styles.instructionText}>
                   <Text style={styles.highlight}>Silakan datang ke kantor</Text>
-                  <Text style={styles.normalText}> Koperasi Sinara Artha pada jam kerja yaitu:</Text>
+                  <Text style={styles.normalText}> Koperasi Sinara Artha Naya  pada jam kerja yaitu:</Text>
                   {'\n'}
                   <Text style={styles.scheduleText}>Senin-Sabtu, pk 08.00 s/d 16.00</Text>
                   {'\n\n'}
