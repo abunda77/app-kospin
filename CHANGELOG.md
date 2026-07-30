@@ -73,6 +73,56 @@ dan proyek ini mengikuti [Pemversian Semantik](https://semver.org/lang/id/spec/v
 ### Dihapus
 - Tidak ada
 
+## [1.0.2] - 2026-06-16
+
+### Ditambahkan
+- Dokumentasi agen: `CLAUDE.md` (menyusul) dan kiro steering
+
+### Diubah
+- Upgrade Expo SDK 54
+- Pembaruan animasi banner
+- Ganti logo aplikasi dan naikkan versi ke 1.0.2
+
+### Perbaikan
+- Fix fetch banner dan toast login
+- Fix bug RVE
+
+### Dihapus
+- Tidak ada
+
+## [1.0.4] - 2026-07-16
+
+### Ditambahkan
+- Dokumentasi `CLAUDE.md`
+
+### Diubah
+- Warna dasar aplikasi diubah ke hijau `#1F7900`
+- Penyesuaian pola warna (colour pattern) di seluruh halaman
+
+### Perbaikan
+- Fix perhitungan saldo total di dashboard
+
+### Dihapus
+- Tidak ada
+
+## [1.0.5] - 2026-07-30
+
+### Ditambahkan
+- Fitur update password
+- Auto logout otomatis setelah tidak ada aktivitas (`AutoLogoutProvider`)
+
+### Diubah
+- Ganti data alamat lama dengan alamat baru pada profil
+- Sembunyikan status pernikahan pada halaman profil
+- Naikkan versi aplikasi ke 1.0.5
+
+### Perbaikan
+- Fix mekanisme auto logout
+- Fix banner tidak menampilkan gambar terbaru tanpa clear cache/data: ditambahkan cache busting `?v={updated_at}` pada URL gambar banner di halaman utama (`index.tsx`) dan dashboard (`dashboard.tsx`)
+
+### Dihapus
+- Tidak ada
+
 ---
 
 ## Catatan Format
