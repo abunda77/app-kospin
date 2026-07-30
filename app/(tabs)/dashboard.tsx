@@ -74,6 +74,11 @@ interface BannerData {
   updated_at: string;
 }
 
+// Cache busting: tambahkan versi (updated_at) ke URL agar cache image native
+// mengunduh ulang gambar ketika isi gambar di server berubah
+const withCacheBuster = (url: string, version: string) =>
+  `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}`;
+
 // Fix route
 const menuItems: MenuItem[] = [
   { id: 1, title: 'Setor', icon: require('../../assets/primary-menu/deposit.png'), route: '/(menu)/setor', color: '#1F7900' },
@@ -407,7 +412,7 @@ export default function Dashboard() {
     return (
       <View style={[styles.bannerItem, { width: windowWidth - 32 }]}>
         <Image
-          source={{ uri: item.url }}
+          source={{ uri: withCacheBuster(item.url, item.updated_at) }}
           style={styles.bannerImage}
           resizeMode="cover"
         />

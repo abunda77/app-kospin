@@ -8,6 +8,7 @@ import { Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import AutoLogoutProvider from '@/components/AutoLogoutProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -69,17 +70,19 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="(menu)"
-          options={{
-            headerShown: true,
-            headerTitle: ''
-          }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <AutoLogoutProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="(menu)"
+            options={{
+              headerShown: true,
+              headerTitle: ''
+            }}
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </AutoLogoutProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

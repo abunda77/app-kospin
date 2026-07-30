@@ -30,7 +30,7 @@ import Animated, {
   Easing,
   interpolateColor
 } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
@@ -259,6 +259,11 @@ const AnimatedBannerLoading: React.FC = () => {
 
 
 
+// Cache busting: tambahkan versi (updated_at) ke URL agar cache image native
+// mengunduh ulang gambar ketika isi gambar di server berubah
+const withCacheBuster = (url: string, version: string) =>
+  `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}`;
+
 interface AnimatedBannerImageProps {
   uri: string;
   index: number;
@@ -421,6 +426,14 @@ export default function HomeScreen() {
     checkLoginStatus();
     fetchBanner();
   }, []);
+
+  // Periksa ulang status login setiap kali screen ini kembali di-focus,
+  // misalnya setelah auto-logout karena tidak ada aktivitas
+  useFocusEffect(
+    useCallback(() => {
+      checkLoginStatus();
+    }, [])
+  );
 
   const checkLoginStatus = async () => {
     try {
@@ -907,7 +920,7 @@ export default function HomeScreen() {
                 {banners.map((banner, index) => (
                   <AnimatedBannerImage
                     key={banner.id}
-                    uri={banner.url}
+                    uri={withCacheBuster(banner.url, banner.updated_at)}
                     index={index}
                   />
                 ))}
