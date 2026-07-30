@@ -89,7 +89,7 @@ export default function Gadai() {
                 📱 WhatsApp: +6287778715788
               </Text>
             </TouchableOpacity>
-            <Text style={styles.contactItem}>✉️ Email: cs@kospinsinaraartha.com</Text>
+            <Text style={styles.contactItem}>✉️ Email: cs@kospinsinaraarthanaya.com</Text>
           </View>
         </View>
       </ScrollView>

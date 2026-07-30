@@ -305,10 +305,6 @@ export default function AccountScreen() {
               <Text style={styles.infoValue}>{formatDate(profile?.birthday || '')}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Status</Text>
-              <Text style={styles.infoValue}>{profile?.mariage}</Text>
-            </View>
-            <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Pekerjaan</Text>
               <Text style={styles.infoValue}>{profile?.job}</Text>
             </View>
