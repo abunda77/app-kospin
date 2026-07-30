@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -63,6 +64,13 @@ export default function AccountScreen() {
   const [city, setCity] = useState<string>('');
   const [district, setDistrict] = useState<string>('');
   const [province, setProvince] = useState<string>('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const fetchRegionDetails = useCallback(async (code: string): Promise<Region | null> => {
     try {
@@ -203,6 +211,97 @@ export default function AccountScreen() {
     loadProfile().finally(() => setRefreshing(false));
   }, [loadProfile]);
 
+  const handleUpdatePassword = async () => {
+    if (!oldPassword || !newPassword || !newPasswordConfirmation) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Semua kolom wajib diisi',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Password baru minimal 8 karakter',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirmation) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Konfirmasi password baru tidak sama',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Sesi Anda telah berakhir, silakan login kembali',
+          position: 'bottom'
+        });
+        return;
+      }
+
+      const response = await fetch(`${getApiBaseUrl()}${API_ENDPOINTS.UPDATE_PASSWORD}`, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword,
+          new_password_confirmation: newPasswordConfirmation,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status) {
+        Toast.show({
+          type: 'success',
+          text1: 'Berhasil',
+          text2: result.message || 'Password berhasil diperbarui',
+          position: 'bottom'
+        });
+        setOldPassword('');
+        setNewPassword('');
+        setNewPasswordConfirmation('');
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Gagal',
+          text2: result.message || 'Gagal memperbarui password',
+          position: 'bottom'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Terjadi kesalahan, silakan coba lagi',
+        position: 'bottom'
+      });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -233,12 +332,13 @@ export default function AccountScreen() {
   };
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
       {/* Header Profile */}
       <View style={styles.header}>
         <Image
@@ -369,14 +469,87 @@ export default function AccountScreen() {
       ) : (
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Ubah Password</Text>
-              <Text style={styles.infoValue}>Fitur ubah password akan segera hadir</Text>
+            <Ionicons name="key-outline" size={24} color="#1F7900" />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password Lama</Text>
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  value={oldPassword}
+                  onChangeText={setOldPassword}
+                  placeholder="Masukkan password lama"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showOldPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity onPress={() => setShowOldPassword(!showOldPassword)}>
+                  <Ionicons
+                    name={showOldPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password Baru</Text>
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="Masukkan password baru (min. 8 karakter)"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showNewPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+                  <Ionicons
+                    name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Konfirmasi Password Baru</Text>
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  value={newPasswordConfirmation}
+                  onChangeText={setNewPasswordConfirmation}
+                  placeholder="Ulangi password baru"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.submitButton, isUpdatingPassword && styles.submitButtonDisabled]}
+              onPress={handleUpdatePassword}
+              disabled={isUpdatingPassword}
+            >
+              {isUpdatingPassword ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Simpan Password</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+      <Toast />
+    </View>
   );
 }
 
@@ -485,5 +658,43 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
+  },
+  inputGroup: {
+    marginTop: 12,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 6,
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FAFAFA',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#333',
+  },
+  submitButton: {
+    backgroundColor: '#1F7900',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
