@@ -1289,12 +1289,15 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     paddingHorizontal: 16,
-  }, loginButton: {
+  },
+  loginButton: {
     position: 'absolute',
     bottom: 120, // Increased to ensure it's above the tab bar
-    alignSelf: 'center',
+    left: '5%',
+    right: '5%',
     borderRadius: 10,
-    overflow: 'hidden',
+    // overflow: 'hidden' dihapus — LinearGradient sudah punya borderRadius sendiri,
+    // dan overflow hidden pada induk sering membuat native view tidak tampil di Android
     width: '90%',
   },
   logoutButton: {
