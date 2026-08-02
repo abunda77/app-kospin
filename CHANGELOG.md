@@ -118,7 +118,8 @@ dan proyek ini mengikuti [Pemversian Semantik](https://semver.org/lang/id/spec/v
 
 ### Perbaikan
 - Fix mekanisme auto logout
-- Fix banner tidak menampilkan gambar terbaru tanpa clear cache/data: ditambahkan cache busting `?v={updated_at}` pada URL gambar banner di halaman utama (`index.tsx`) dan dashboard (`dashboard.tsx`)
+- Fix banner tidak menampilkan gambar terbaru tanpa clear cache/data: ditambahkan cache busting `?v={updated_at}` pada URL gambar banner di halaman utama (`index.tsx`)
+- Fix cache busting banner di `dashboard.tsx`: render gambar banner kini menggunakan `withCacheBuster(banner.url, banner.updated_at)` sehingga gambar diperbarui sesuai perubahan di server
 
 ### Dihapus
 - Tidak ada

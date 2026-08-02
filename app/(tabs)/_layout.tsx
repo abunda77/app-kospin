@@ -4,14 +4,13 @@ import { Platform, StyleSheet, Image, View, Text, Dimensions } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type RouteNames = 'index' | 'dashboard' | 'mutasi' | 'aktivitas' | 'akun';
+type RouteNames = 'index' | 'dashboard' | 'mutasi' | 'akun';
 
 const getIconSource = (routeName: RouteNames) => {
   const iconPath = {
     index: require('../../assets/tab-icons/home.png'),
     dashboard: require('../../assets/tab-icons/menu.png'),
     mutasi: require('../../assets/tab-icons/mutasi.png'),
-    aktivitas: require('../../assets/tab-icons/aktivitas.png'),
     akun: require('../../assets/tab-icons/akun.png')
   };
 
@@ -150,13 +149,6 @@ export default function TabLayout() {
         options={{
           title: 'Mutasi',
           tabBarIcon: ({ color }) => <TabBarIcon routeName="mutasi" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="aktivitas"
-        options={{
-          title: 'Aktivitas',
-          tabBarIcon: ({ color }) => <TabBarIcon routeName="aktivitas" color={color} />,
         }}
       />
       <Tabs.Screen

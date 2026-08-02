@@ -387,7 +387,6 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ isVisible, onClose, text,
 
 const menuItems: MenuItem[] = [
   { id: 1, icon: 'document-text-outline', label: 'Mutasi', route: '/(tabs)/mutasi' },
-  { id: 2, icon: 'mail-outline', label: 'Aktivitas', route: '/(tabs)/aktivitas' },
   { id: 3, icon: 'person-outline', label: 'Akun', route: '/(tabs)/akun' },
 ];
 
