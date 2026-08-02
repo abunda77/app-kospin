@@ -732,7 +732,7 @@ export default function Dashboard() {
                     onPress={() => handleBannerPress(banner)}
                   >
                     <Image
-                      source={{ uri: banner.url }}
+                      source={{ uri: withCacheBuster(banner.url, banner.updated_at) }}
                       style={styles.bannerImage}
                       resizeMode="cover"
                     />

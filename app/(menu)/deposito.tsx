@@ -118,7 +118,7 @@ export default function Deposito() {
       const responseData = await depositoResponse.json();
 
       if (depositoResponse.status === 404) {
-        // Handle the case where user has no deposito
+        console.log('[Deposito] Status 404 - user tidak memiliki rekening deposito');
         setDepositoData({
           info_profile: profileData.data,
           deposito: []
@@ -137,13 +137,7 @@ export default function Deposito() {
 
       setDepositoData(responseData.data);
     } catch (error) {
-      console.error('Error fetching deposito data:', error);
-      Toast.show({
-        type: 'info',
-        text1: 'Informasi',
-        text2: 'Anda belum memiliki rekening deposito',
-        position: 'bottom'
-      });
+      console.error('[Deposito] Error fetching deposito data:', error);
     }
   };
 
@@ -263,6 +257,12 @@ export default function Deposito() {
             )}
             {isLoading ? (
               renderSkeletonCards()
+            ) : depositoData?.deposito.length === 0 ? (
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>
+                  Anda belum memiliki rekening deposito
+                </Text>
+              </View>
             ) : (
               depositoData?.deposito.map((item) => (
                 <View key={item.id} style={styles.card}>
@@ -333,6 +333,7 @@ export default function Deposito() {
           </View>
         </Animated.View>
       </Animated.ScrollView>
+      <Toast />
     </SafeAreaView>
   );
 }
@@ -450,5 +451,26 @@ const styles = StyleSheet.create({
   },
   manualText: {
     color: '#D97706',
+  },
+  emptyStateContainer: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
   },
 });

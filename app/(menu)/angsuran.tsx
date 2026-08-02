@@ -206,16 +206,10 @@ export default function Angsuran() {
         tagihan: allTagihan
       });
 
-    } catch (error) {
-      console.error('Error in fetchTagihanData:', error);
-      Toast.show({
-        type: 'info',
-        text1: 'Informasi',
-        text2: 'Anda tidak memiliki tagihan yang belum dibayar',
-        position: 'bottom'
-      });
-    }
-  };
+  } catch (error) {
+    console.error('Error in fetchTagihanData:', error);
+  }
+};
 
   const checkLoginStatus = async () => {
     try {
@@ -556,10 +550,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   emptyStateText: {
     fontSize: 16,
