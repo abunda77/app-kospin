@@ -115,11 +115,35 @@ export default function Deposito() {
         }
       );
 
-      if (!depositoResponse.ok) throw new Error('Failed to fetch deposito data');
-      const data: DepositoResponse = await depositoResponse.json();
-      setDepositoData(data.data);
+      const responseData = await depositoResponse.json();
+
+      if (depositoResponse.status === 404) {
+        // Handle the case where user has no deposito
+        setDepositoData({
+          info_profile: profileData.data,
+          deposito: []
+        });
+        return;
+      }
+
+      if (!depositoResponse.ok) {
+        console.error('Deposito API Error:', {
+          status: depositoResponse.status,
+          statusText: depositoResponse.statusText,
+          error: responseData
+        });
+        throw new Error(`Failed to fetch deposito data: ${depositoResponse.status}`);
+      }
+
+      setDepositoData(responseData.data);
     } catch (error) {
       console.error('Error fetching deposito data:', error);
+      Toast.show({
+        type: 'info',
+        text1: 'Informasi',
+        text2: 'Anda belum memiliki rekening deposito',
+        position: 'bottom'
+      });
     }
   };
 

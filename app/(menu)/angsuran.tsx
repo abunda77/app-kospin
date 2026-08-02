@@ -126,6 +126,20 @@ export default function Angsuran() {
         }
       });
 
+      const pinjamanData = await pinjamanResponse.json();
+
+      if (pinjamanResponse.status === 404) {
+        // Handle the case where user has no pinjaman
+        setTagihanData({
+          info_profile: {
+            id_user: profileData.data.id_user,
+            nama_lengkap: profileData.data.nama_lengkap
+          },
+          tagihan: []
+        });
+        return;
+      }
+
       if (!pinjamanResponse.ok) {
         console.error('Pinjaman Response Error:', {
           status: pinjamanResponse.status,
@@ -133,8 +147,6 @@ export default function Angsuran() {
         });
         throw new Error(`Failed to fetch pinjaman data: ${pinjamanResponse.status}`);
       }
-
-      const pinjamanData = await pinjamanResponse.json();
 
       // Set the profile data directly from the pinjaman response
       setTagihanData({

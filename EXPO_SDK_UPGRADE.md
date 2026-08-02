@@ -41,12 +41,59 @@ npm install --legacy-peer-deps
 ✅ **Server running without errors**
 ✅ **Compatible with your installed Expo Go app**
 
-## Next Steps
-1. Your Expo development server is now running
-2. You can scan the QR code with your Expo Go app (SDK 54)
-3. The app should load without any SDK version conflicts
+---
+
+# Google Play Target API Level — Upgrade SDK 54 → 57
+
+## Problem
+Google Play Console mewajibkan aplikasi menargetkan **Android 16 (API level 36) atau lebih tinggi** mulai **31 Agustus 2026**. Saat ini aplikasi menargetkan **Android 15 (API 35)**, sehingga tidak bisa diupdate setelah batas waktu tersebut.
+
+## Solution
+Upgrade ke **Expo SDK 57** (latest: `57.0.9`) yang mendukung Android API 36.
+
+## Steps
+
+### 1. Install Android SDK Platform 36
+```powershell
+& "C:\Users\Administrator\AppData\Local\Android\Sdk\cmdline-tools\latest\bin\sdkmanager" "platforms;android-36"
+```
+
+### 2. Upgrade Expo SDK ke 57
+```powershell
+npx expo install expo@^57.0.0 -- --legacy-peer-deps
+npm install --legacy-peer-deps
+```
+
+### 3. (Opsional) Tambah `expo-build-properties` untuk memastikan target API
+```powershell
+npx expo install expo-build-properties -- --legacy-peer-deps
+```
+
+Di `app.json`, tambahkan plugin:
+```jsonc
+"plugins": [
+  // ... existing plugins
+  [
+    "expo-build-properties",
+    {
+      "android": {
+        "compileSdkVersion": 36,
+        "targetSdkVersion": 36,
+        "minSdkVersion": 24
+      }
+    }
+  ]
+]
+```
+
+### 4. Build & Publish via EAS
+```powershell
+npx eas build --platform android --profile production
+```
+
+Upload AAB hasil build ke Google Play Console (bisa test via Internal/Closed testing dulu).
 
 ## Notes
-- Used `--legacy-peer-deps` flag to handle peer dependency warnings
-- All packages are now aligned with Expo SDK 54 requirements
-- The project is ready for development and testing
+- Gunakan `--legacy-peer-deps` untuk menghindari konflik peer dependency Expo SDK 57.
+- Setelah upgrade, jalankan `npx expo start --clear` untuk membersihkan cache Metro.
+- **Deadline: 31 Agustus 2026** — lakukan upgrade sebelum batas waktu tersebut.

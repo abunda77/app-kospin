@@ -86,7 +86,7 @@ export default function Gadai() {
             <Text style={styles.contactDetail}>Denpasar Selatan, Kota Denpasar, Bali 80223</Text>
             <TouchableOpacity onPress={openWhatsApp}>
               <Text style={[styles.contactItem, styles.whatsappLink]}>
-                📱 WhatsApp: +6287778715788
+                📱 WhatsApp: +628133308688
               </Text>
             </TouchableOpacity>
             <Text style={styles.contactItem}>✉️ Email: cs@kospinsinaraarthanaya.com</Text>
