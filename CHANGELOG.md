@@ -105,6 +105,19 @@ dan proyek ini mengikuti [Pemversian Semantik](https://semver.org/lang/id/spec/v
 ### Dihapus
 - Tidak ada
 
+## [1.0.6] - 2026-08-02
+
+### Ditambahkan
+
+### Diubah
+- Tidak ada
+
+### Perbaikan
+- Tidak ada
+
+### Dihapus
+- Hapus tab dan halaman "Aktivitas" dari navigasi (`aktivitas.tsx` dihapus, referensi di `_layout.tsx` dan `index.tsx` dibersihkan)
+
 ## [1.0.5] - 2026-07-30
 
 ### Ditambahkan

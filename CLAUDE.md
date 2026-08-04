@@ -40,10 +40,10 @@ eas build --platform all
 
 Two route groups split the app:
 
-- `app/(tabs)/` — bottom tab navigation: `index` (Beranda/home with login), `dashboard` (menu grid), `mutasi` (transaction history), `aktivitas` (activity), `akun` (account). The tab bar is a custom floating bar with device-aware bottom offset (hardware nav buttons vs gesture nav on Android, home indicator on iOS).
-- `app/(menu)/` — authenticated stack screens behind a login gate. The `(menu)/_layout.tsx` checks `SecureStore` for `secure_token` on mount and on every focus; if absent, it redirects to `(tabs)`. This is the auth guard for the entire authenticated section.
+- `app/(tabs)/` — bottom tab navigation with 4 tabs: `index` (Beranda/home with login), `dashboard` (menu grid), `mutasi` (transaction history), `akun` (account). The tab bar is a custom floating bar with device-aware bottom offset (hardware nav buttons vs gesture nav on Android, home indicator on iOS).
+- `app/(menu)/` — authenticated stack screens behind a login gate. The `(menu)/_layout.tsx` checks `SecureStore` for `secure_token` on mount and on every focus; if absent, it redirects to `(tabs)`. This is the auth guard for the entire authenticated section. Includes nested route groups `kredit/` (loan detail, history, payment, thank-you) and `tabungan/` (savings deposit, withdrawal method, withdrawal thank-you, thank-you).
 
-`app/_layout.tsx` (root) loads the SpaceMono font, hides the splash screen, and wraps everything in a `ThemeProvider` with light/dark scheme.
+`app/_layout.tsx` (root) loads the SpaceMono font, hides the splash screen, wraps everything in a `ThemeProvider` with light/dark scheme, and wraps everything in `AutoLogoutProvider`.
 
 ### Authentication
 
@@ -51,6 +51,7 @@ Two route groups split the app:
 - Non-sensitive user data stored in **`AsyncStorage`** under key `userData`.
 - Login happens inline in `app/(tabs)/index.tsx` — POST to `/api/login`, saves token + userData, redirects to `/dashboard`.
 - `(menu)/_layout.tsx` re-checks auth on every screen focus via `useFocusEffect`.
+- **Auto-logout**: `AutoLogoutProvider` (wrapping the entire app in root layout) automatically logs out users after 1 minute of inactivity. It detects touch events via `PanResponder` and app background/foreground transitions via `AppState`. On timeout, it calls the server logout endpoint and clears `SecureStore` + `AsyncStorage`.
 
 ### API Layer
 
@@ -62,7 +63,7 @@ Two route groups split the app:
 - Import `globals.css` in screens that use Tailwind classes: `import "../globals.css"`.
 - `StyleSheet.create` is used heavily alongside NativeWind — both approaches coexist in this codebase.
 - `expo-linear-gradient` is used for gradients (login button, banner fallback, loading states).
-- `react-native-reanimated` v4 for animations — requires `react-native-worklets` plugin in `babel.config.js`.
+- `react-native-reanimated` v4 for animations — requires `react-native-worklets` and `react-native-worklets-core` as npm dependencies, and the `react-native-reanimated/plugin` in `babel.config.js`.
 
 ### Key Conventions
 
