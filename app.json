@@ -18,14 +18,23 @@
       "backgroundColor": "#1F7900"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran.",
+        "NSPhotoLibraryUsageDescription": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo_mobile_1024.png",
         "backgroundColor": "#1F7900"
       },
-      "package": "com.abunda.poskospin"
+      "package": "com.abunda.poskospin",
+      "permissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -43,7 +52,16 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-media-library",
+        {
+          "audioPermission": "Aplikasi memerlukan akses audio.",
+          "photosPermission": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran.",
+          "savePhotosPermission": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "extra": {
       "router": {

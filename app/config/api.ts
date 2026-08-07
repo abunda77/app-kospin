@@ -50,6 +50,20 @@ export const API_ENDPOINTS = {
   ANGSURAN_DETAILS: '/api/angsuran/details',
   // Tambahan endpoint untuk mutasi
   MUTASI_BY_PERIODE: (noTabungan: string, periode: string) => `/api/mutasi/${noTabungan}/${periode}`,
+  // Endpoint setoran simpanan (QRIS)
+  SETORAN_REKENING_OPTIONS: '/api/setoran/rekening-options',
+  SETORAN_GENERATE: '/api/setoran',
+  SETORAN_AKTIF: '/api/setoran/aktif',
+  SETORAN_HISTORY: '/api/setoran/history',
+  SETORAN_DETAIL: (id: number) => `/api/setoran/${id}`,
+  SETORAN_KLAIM: (id: number) => `/api/setoran/${id}/klaim`,
+  // Endpoint penarikan simpanan
+  PENARIKAN_REKENING_OPTIONS: '/api/penarikan/rekening-options',
+  PENARIKAN_SUBMIT: '/api/penarikan',
+  PENARIKAN_AKTIF: '/api/penarikan/aktif',
+  PENARIKAN_HISTORY: '/api/penarikan/history',
+  PENARIKAN_DETAIL: (id: number) => `/api/penarikan/${id}`,
+  PENARIKAN_REVISI: (id: number) => `/api/penarikan/${id}/revisi`,
 };
 
 export default {
