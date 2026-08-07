@@ -57,6 +57,7 @@ export const API_ENDPOINTS = {
   SETORAN_HISTORY: '/api/setoran/history',
   SETORAN_DETAIL: (id: number) => `/api/setoran/${id}`,
   SETORAN_KLAIM: (id: number) => `/api/setoran/${id}/klaim`,
+  SETORAN_BATALKAN: (id: number) => `/api/setoran/${id}/batalkan`,
   // Endpoint penarikan simpanan
   PENARIKAN_REKENING_OPTIONS: '/api/penarikan/rekening-options',
   PENARIKAN_SUBMIT: '/api/penarikan',
@@ -64,6 +65,7 @@ export const API_ENDPOINTS = {
   PENARIKAN_HISTORY: '/api/penarikan/history',
   PENARIKAN_DETAIL: (id: number) => `/api/penarikan/${id}`,
   PENARIKAN_REVISI: (id: number) => `/api/penarikan/${id}/revisi`,
+  PENARIKAN_BATALKAN: (id: number) => `/api/penarikan/${id}/batalkan`,
 };
 
 export default {

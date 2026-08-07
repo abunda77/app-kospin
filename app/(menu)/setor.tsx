@@ -126,6 +126,9 @@ export default function Setor() {
   // Download QRIS
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Pembatalan setoran
+  const [isSubmittingBatal, setIsSubmittingBatal] = useState(false);
+
   // ─── Data loading ──────────────────────────────────────────────────────────
 
   const loadData = useCallback(async (token: string) => {
@@ -326,6 +329,63 @@ export default function Setor() {
     } finally {
       setIsSubmittingKlaim(false);
     }
+  };
+
+  // ─── Batalkan Setoran ──────────────────────────────────────────────────────
+
+  const handleBatalkanSetoran = async () => {
+    if (!activeSetoran || isSubmittingBatal) return;
+
+    setIsSubmittingBatal(true);
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) return;
+
+      const response = await fetch(
+        `${getApiBaseUrl()}${API_ENDPOINTS.SETORAN_BATALKAN(activeSetoran.id)}`,
+        {
+          method: 'POST',
+          headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        }
+      );
+      const body = await response.json();
+      if (!response.ok || body.status === false) {
+        Alert.alert('Pembatalan Gagal', extractErrorMessage(body));
+        return;
+      }
+
+      const nomorSetoran = activeSetoran.nomor_setoran;
+      setActiveSetoran(null);
+      setIsSubmittingBatal(false);
+
+      const dataToken = await SecureStore.getItemAsync('secure_token');
+      if (dataToken) await loadData(dataToken);
+
+      Alert.alert(
+        'Setoran Dibatalkan',
+        body.message ?? `Setoran QRIS ${nomorSetoran} berhasil dibatalkan. Anda dapat membuat setoran baru.`
+      );
+    } catch {
+      Alert.alert('Pembatalan Gagal', 'Tidak dapat terhubung ke server.');
+    } finally {
+      setIsSubmittingBatal(false);
+    }
+  };
+
+  const confirmBatalkanSetoran = () => {
+    if (!activeSetoran) return;
+    Alert.alert(
+      'Batalkan Setoran?',
+      `Pastikan Anda BELUM melakukan pembayaran QRIS ${activeSetoran.nomor_setoran}. QRIS yang sudah dibatalkan tidak dapat dipakai untuk pembayaran.`,
+      [
+        { text: 'Tidak', style: 'cancel' },
+        {
+          text: 'Ya, Batalkan',
+          style: 'destructive',
+          onPress: handleBatalkanSetoran,
+        },
+      ]
+    );
   };
 
   // ─── Download QRIS ─────────────────────────────────────────────────────────
@@ -591,7 +651,7 @@ export default function Setor() {
               )}
             </View>
 
-            {/* Tombol Download QRIS — dinonaktifkan sementara
+            {/* Tombol Download QRIS — hanya jika ada URL gambar dan belum expired */}
             {activeSetoran.qris_image_url && !isExpired && (
               <TouchableOpacity
                 style={[styles.downloadButton, isDownloading && styles.downloadButtonDisabled]}
@@ -614,7 +674,6 @@ export default function Setor() {
                 </Text>
               </TouchableOpacity>
             )}
-            */}
 
             {/* Jumlah bayar dengan kode unik */}
             <View style={styles.jumlahBayarBox}>
@@ -663,6 +722,24 @@ export default function Setor() {
                   <Ionicons name="checkmark-circle-outline" size={18} color="#FFF" />
                   <Text style={[styles.actionButtonText, { marginLeft: 6 }]}>Saya Sudah Bayar</Text>
                 </LinearGradient>
+              </TouchableOpacity>
+            )}
+
+            {/* Tombol batalkan setoran */}
+            {!isExpired && (
+              <TouchableOpacity
+                style={[styles.cancelButton, isSubmittingBatal && styles.submitButtonDisabled]}
+                onPress={confirmBatalkanSetoran}
+                disabled={isSubmittingBatal}
+              >
+                {isSubmittingBatal ? (
+                  <ActivityIndicator size="small" color="#DC3545" />
+                ) : (
+                  <Ionicons name="close-circle-outline" size={18} color="#DC3545" />
+                )}
+                <Text style={styles.cancelButtonText}>
+                  {isSubmittingBatal ? 'Membatalkan…' : 'Batalkan Setoran'}
+                </Text>
               </TouchableOpacity>
             )}
 
@@ -1204,6 +1281,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#1F7900',
+  },
+
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: '#DC3545',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#FFF5F5',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC3545',
   },
 
   // Empty state

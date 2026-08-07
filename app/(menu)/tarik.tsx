@@ -115,6 +115,9 @@ export default function TarikTunai() {
   const [revisiCatatan, setRevisiCatatan] = useState('');
   const [isSubmittingRevisi, setIsSubmittingRevisi] = useState(false);
 
+  // Pembatalan penarikan
+  const [isSubmittingBatal, setIsSubmittingBatal] = useState(false);
+
   // ─── Data loading ──────────────────────────────────────────────────────────
 
   const loadData = useCallback(async (token: string) => {
@@ -316,6 +319,63 @@ export default function TarikTunai() {
     }
   };
 
+  // ─── Batalkan Penarikan ───────────────────────────────────────────────────
+
+  const handleBatalkanPenarikan = async () => {
+    if (!activePenarikan || isSubmittingBatal) return;
+
+    setIsSubmittingBatal(true);
+    try {
+      const token = await SecureStore.getItemAsync('secure_token');
+      if (!token) return;
+
+      const response = await fetch(
+        `${getApiBaseUrl()}${API_ENDPOINTS.PENARIKAN_BATALKAN(activePenarikan.id)}`,
+        {
+          method: 'POST',
+          headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        }
+      );
+      const body = await response.json();
+      if (!response.ok || body.status === false) {
+        Alert.alert('Pembatalan Gagal', extractErrorMessage(body));
+        return;
+      }
+
+      const nomorPenarikan = activePenarikan.nomor_penarikan;
+      setActivePenarikan(null);
+      setIsSubmittingBatal(false);
+
+      const dataToken = await SecureStore.getItemAsync('secure_token');
+      if (dataToken) await loadData(dataToken);
+
+      Alert.alert(
+        'Penarikan Dibatalkan',
+        body.message ?? `Penarikan ${nomorPenarikan} berhasil dibatalkan. Anda dapat mengajukan penarikan baru.`
+      );
+    } catch {
+      Alert.alert('Pembatalan Gagal', 'Tidak dapat terhubung ke server.');
+    } finally {
+      setIsSubmittingBatal(false);
+    }
+  };
+
+  const confirmBatalkanPenarikan = () => {
+    if (!activePenarikan) return;
+    Alert.alert(
+      'Batalkan Penarikan?',
+      `Permohonan penarikan ${activePenarikan.nomor_penarikan} sebesar ${formatCurrency(activePenarikan.jumlah)} akan dibatalkan dan tidak dapat dikembalikan.`,
+      [
+        { text: 'Tidak', style: 'cancel' },
+        {
+          text: 'Ya, Batalkan',
+          style: 'destructive',
+          onPress: handleBatalkanPenarikan,
+        },
+      ]
+    );
+  };
+
   // ─── Render helpers ────────────────────────────────────────────────────────
 
   const renderSkeleton = () => (
@@ -495,6 +555,23 @@ export default function TarikTunai() {
               ? 'Penarikan telah disetujui dan sedang dalam proses transfer.'
               : 'Permohonan sedang diproses oleh admin. Mohon tunggu konfirmasi.'}
           </Text>
+
+          {status === 'menunggu_verifikasi' && (
+            <TouchableOpacity
+              style={[styles.cancelButton, isSubmittingBatal && styles.buttonDisabled]}
+              onPress={confirmBatalkanPenarikan}
+              disabled={isSubmittingBatal}
+            >
+              {isSubmittingBatal ? (
+                <ActivityIndicator size="small" color="#DC3545" />
+              ) : (
+                <Ionicons name="close-circle-outline" size={18} color="#DC3545" />
+              )}
+              <Text style={styles.cancelButtonText}>
+                {isSubmittingBatal ? 'Membatalkan…' : 'Batalkan Penarikan'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -980,6 +1057,25 @@ const styles = StyleSheet.create({
   },
   actionButton: { borderRadius: 8, overflow: 'hidden' },
   actionButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: '#DC3545',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: '#FFF5F5',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC3545',
+  },
 
   // Status cards
   statusCardHeader: { flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 8 },

@@ -56,7 +56,6 @@
       [
         "expo-media-library",
         {
-          "audioPermission": "Aplikasi memerlukan akses audio.",
           "photosPermission": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran.",
           "savePhotosPermission": "Aplikasi memerlukan akses galeri untuk menyimpan gambar QRIS setoran.",
           "isAccessMediaLocationEnabled": false

@@ -85,7 +85,7 @@ Semua endpoint memakai amplop yang sama:
 |---|---|
 | 200 / 201 | Sukses |
 | 401 | Tidak terautentikasi (token invalid/kosong) |
-| 403 | Transaksi milik user lain |
+| 403 | Aksi tidak diizinkan pada status transaksi saat ini |
 | 404 | Data tidak ditemukan / bukan milik user |
 | 422 | Validasi gagal atau business rule menolak |
 | 500 | Kesalahan server |
@@ -212,7 +212,50 @@ Hanya bisa saat status penarikan `perlu_revisi` (tampilkan `catatan_verifikasi` 
 
 Response sukses `200`: objek penarikan dengan `status` kembali ke `menunggu_verifikasi`.
 
-### 3.7 Status Penarikan
+### 3.7 Batalkan Penarikan
+
+```
+POST /api/penarikan/{id}/batalkan
+Content-Type: application/json
+```
+
+Request tidak memerlukan body. Penarikan hanya dapat dibatalkan oleh pemilik transaksi ketika status masih `menunggu_verifikasi`. Setelah dibatalkan:
+
+- Status berubah menjadi `dibatalkan`.
+- Penarikan tidak lagi dikembalikan oleh `GET /api/penarikan/aktif`.
+- Penarikan tetap tersedia pada `GET /api/penarikan/history` sebagai riwayat.
+- User dapat membuat pengajuan penarikan baru.
+
+Response sukses `200`:
+
+```json
+{
+  "status": true,
+  "message": "Penarikan berhasil dibatalkan.",
+  "data": {
+    "id": 45,
+    "nomor_penarikan": "PNK-20260807-123456",
+    "jenis_simpanan": "Simpanan Harian",
+    "jumlah": 100000,
+    "bank": "BRI",
+    "nama_bank": "BRI Unit Kota",
+    "nama_nasabah": "Nasabah Uji",
+    "status": "dibatalkan",
+    "status_label": "DIBATALKAN",
+    "no_tabungan": "00123-01",
+    "created_at": "2026-08-07T10:00:00+00:00"
+  }
+}
+```
+
+Kemungkinan response gagal:
+
+- `401`: token tidak valid atau tidak dikirim.
+- `403`: penarikan sudah diproses atau statusnya bukan `menunggu_verifikasi`.
+- `404`: ID tidak ditemukan atau transaksi bukan milik user yang login.
+- `422`: status berubah ketika proses pembatalan berlangsung.
+
+### 3.8 Status Penarikan
 
 | Nilai | Keterangan |
 |---|---|
@@ -340,7 +383,51 @@ Dipanggil setelah user membayar, atau saat admin meminta revisi bukti (status `p
 
 Response sukses `200`: objek setoran dengan `status` menjadi `menunggu_verifikasi`.
 
-### 4.7 Status Setoran
+### 4.7 Batalkan Setoran
+
+```
+POST /api/setoran/{id}/batalkan
+Content-Type: application/json
+```
+
+Request tidak memerlukan body. Setoran hanya dapat dibatalkan oleh pemilik transaksi ketika status masih `menunggu_pembayaran`. Setelah dibatalkan:
+
+- Status berubah menjadi `dibatalkan`.
+- Setoran tidak lagi dikembalikan oleh `GET /api/setoran/aktif`.
+- Setoran tetap tersedia pada `GET /api/setoran/history` sebagai riwayat.
+- User dapat membuat setoran QRIS baru.
+
+Response sukses `200`:
+
+```json
+{
+  "status": true,
+  "message": "Setoran berhasil dibatalkan.",
+  "data": {
+    "id": 77,
+    "nomor_setoran": "STR-20260807-654321",
+    "jenis_simpanan": "Simpanan Harian",
+    "jumlah": 50000,
+    "kode_unik": 12,
+    "jumlah_bayar": 50012,
+    "status": "dibatalkan",
+    "status_label": "DIBATALKAN",
+    "no_tabungan": "00123-01",
+    "created_at": "2026-08-07T10:00:00+00:00"
+  }
+}
+```
+
+Kemungkinan response gagal:
+
+- `401`: token tidak valid atau tidak dikirim.
+- `403`: pembayaran sudah diklaim atau statusnya bukan `menunggu_pembayaran`.
+- `404`: ID tidak ditemukan atau transaksi bukan milik user yang login.
+- `422`: status berubah ketika proses pembatalan berlangsung.
+
+> Pembatalan pada sistem tidak dapat menarik kembali payload QRIS yang sudah ditampilkan. Aplikasi harus meminta konfirmasi user bahwa pembayaran belum dilakukan sebelum memanggil endpoint ini.
+
+### 4.8 Status Setoran
 
 | Nilai | Keterangan |
 |---|---|
@@ -471,6 +558,28 @@ const res = await api(`/setoran/${setoranId}/klaim`, {
 });
 ```
 
+### 5.5 Batalkan setoran atau penarikan
+
+Endpoint pembatalan tidak memerlukan request body:
+
+```typescript
+async function batalkanSetoran(setoranId: number) {
+  return api<SetoranResponse>(`/setoran/${setoranId}/batalkan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function batalkanPenarikan(penarikanId: number) {
+  return api(`/penarikan/${penarikanId}/batalkan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+```
+
+Tampilkan dialog konfirmasi sebelum menjalankan fungsi. Setelah sukses, refresh endpoint `/aktif` dan `/history` agar form pengajuan baru serta status riwayat langsung diperbarui.
+
 ---
 
 ## 6. Panduan Flow UI
@@ -480,17 +589,21 @@ const res = await api(`/setoran/${setoranId}/klaim`, {
 1. `GET /penarikan/rekening-options` → isi dropdown rekening.
 2. User pilih nominal (preset/kustom) + isi data bank → `POST /penarikan`.
 3. Jika ada `GET /penarikan/aktif`, tampilkan kartu status dan sembunyikan form (sama seperti web: hanya 1 penarikan aktif per rekening).
-4. Jika status aktif `perlu_revisi` → tampilkan `catatan_verifikasi` + form revisi → `POST /penarikan/{id}/revisi`.
-5. Riwayat: `GET /penarikan/history` — tampilkan `status_label`, `alasan_penolakan` / `catatan_verifikasi` sesuai konteks, dan `referensi_transfer` + `waktu_transfer` bila sudah selesai.
+4. Jika status `menunggu_verifikasi`, tampilkan tombol "Batalkan Penarikan" dengan dialog konfirmasi → `POST /penarikan/{id}/batalkan`.
+5. Jika status aktif `perlu_revisi` → tampilkan `catatan_verifikasi` + form revisi → `POST /penarikan/{id}/revisi`.
+6. Setelah pembatalan berhasil, refresh `/penarikan/aktif` dan `/penarikan/history`.
+7. Riwayat: `GET /penarikan/history` — tampilkan `status_label`, `alasan_penolakan` / `catatan_verifikasi` sesuai konteks, dan `referensi_transfer` + `waktu_transfer` bila sudah selesai.
 
 ### Setoran Simpanan (QRIS)
 
 1. `GET /setoran/rekening-options` → isi dropdown rekening.
 2. User pilih nominal → `POST /setoran`.
 3. Tampilkan QRIS (`qris_image_url`), nominal **`jumlah_bayar`** (highlight kode unik), dan countdown menuju `kedaluwarsa_at`.
-4. Tombol "Saya Sudah Bayar" → form klaim → `POST /setoran/{id}/klaim`.
-5. Jika setoran aktif berstatus `perlu_revisi` → tampilkan `catatan_verifikasi` dan izinkan kirim ulang klaim ke endpoint yang sama.
-6. Jika QRIS kedaluwarsa (`kedaluwarsa`), arahkan user generate setoran baru.
+4. Selama status `menunggu_pembayaran`, tampilkan tombol "Batalkan Setoran" dengan konfirmasi bahwa pembayaran belum dilakukan → `POST /setoran/{id}/batalkan`.
+5. Tombol "Saya Sudah Bayar" → form klaim → `POST /setoran/{id}/klaim`.
+6. Jika setoran aktif berstatus `perlu_revisi` → tampilkan `catatan_verifikasi` dan izinkan kirim ulang klaim ke endpoint yang sama.
+7. Setelah pembatalan berhasil, refresh `/setoran/aktif` dan `/setoran/history`.
+8. Jika QRIS kedaluwarsa (`kedaluwarsa`), arahkan user generate setoran baru.
 
 ---
 
