@@ -1,6 +1,6 @@
 # API Simpanan — Setoran & Penarikan (Mobile)
 
-Dokumentasi API untuk fitur **Setoran Simpanan (QRIS)** dan **Penarikan Simpanan** pada aplikasi mobile React Native. Endpoint ini mereplikasi flow halaman dashboard user `/user/setoran-simpanan` dan `/user/penarikan-simpanan`.
+Dokumentasi API untuk fitur **Setoran Simpanan (QRIS / Transfer Rekening)** dan **Penarikan Simpanan** pada aplikasi mobile React Native. Endpoint ini mereplikasi flow halaman dashboard user `/user/setoran-simpanan` dan `/user/penarikan-simpanan`.
 
 - Base URL: `{APP_URL}/api`
 - Autentikasi: Laravel Sanctum (Bearer Token)
@@ -269,9 +269,9 @@ Kemungkinan response gagal:
 
 ---
 
-## 4. Setoran Simpanan (QRIS)
+## 4. Setoran Simpanan (QRIS / Transfer Rekening)
 
-Flow: generate QRIS → user scan/bayar via aplikasi pembayaran apa pun → kirim klaim pembayaran → verifikasi admin → dana masuk ke tabungan.
+Flow: pilih metode pembayaran → tampilkan QRIS atau rekening tujuan → user membayar → kirim klaim pembayaran → verifikasi admin → dana masuk ke tabungan.
 
 ### 4.1 Daftar Rekening Tujuan
 
@@ -281,7 +281,7 @@ GET /api/setoran/rekening-options
 
 Format response sama dengan 3.1.
 
-### 4.2 Generate QRIS Setoran
+### 4.2 Buat Instruksi Pembayaran Setoran
 
 ```
 POST /api/setoran
@@ -289,7 +289,8 @@ Content-Type: application/json
 
 {
   "id_tabungan": 12,
-  "jumlah": 50000
+  "jumlah": 50000,
+  "metode_pembayaran": "qris"
 }
 ```
 
@@ -297,13 +298,14 @@ Content-Type: application/json
 |---|---|---|---|
 | `id_tabungan` | integer | ya | ID dari `rekening-options` |
 | `jumlah` | integer | ya | Nominal setoran (Rp). Min 10.000, maks 100.000.000 (dari config `setoran`) |
+| `metode_pembayaran` | string | tidak | `qris` atau `transfer_rekening`. Default `qris` jika tidak dikirim |
 
 Response sukses `201`:
 
 ```json
 {
   "status": true,
-  "message": "QRIS berhasil di-generate.",
+  "message": "Instruksi pembayaran berhasil dibuat.",
   "data": {
     "id": 77,
     "nomor_setoran": "STR-20260807-654321",
@@ -311,6 +313,9 @@ Response sukses `201`:
     "jumlah": 50000,
     "kode_unik": 12,
     "jumlah_bayar": 50012,
+    "metode_pembayaran": "qris",
+    "metode_pembayaran_label": "QRIS",
+    "rekening_transfer": null,
     "qris_payload": "000201010212...",
     "qris_image_url": "https://app.example.com/storage/qris-generated/qris-dynamic-20260807.png",
     "qris_dibuat_at": "2026-08-07T10:00:00+00:00",
@@ -336,9 +341,11 @@ Response sukses `201`:
 Catatan penting untuk UI:
 
 - **`jumlah_bayar`** = `jumlah` + `kode_unik` — inilah nominal yang harus dibayar user (tampilkan dengan jelas, termasuk kode unik).
-- **`qris_image_url`** — URL publik gambar QRIS, render langsung dengan `<Image source={{ uri: qris_image_url }} />`. Jika `null`, fallback dengan merender `qris_payload` memakai library QR generator (mis. `react-native-qrcode-svg`).
-- **`kedaluwarsa_at`** — buat countdown; QRIS kedaluwarsa (default 30 menit, config `setoran.durasi_qris`).
-- Penolakan umum (`422`): masih ada setoran aktif untuk rekening ini, QRIS statis tidak tersedia.
+- **`metode_pembayaran`** — gunakan sebagai sumber kebenaran untuk percabangan UI.
+- **`qris_image_url`** — hanya digunakan untuk metode `qris`. Jika `null` tetapi payload tersedia, aplikasi dapat merender `qris_payload` memakai library QR generator.
+- **`rekening_transfer`** — hanya berisi detail rekening untuk `transfer_rekening`; bernilai `null` untuk QRIS.
+- **`kedaluwarsa_at`** — buat countdown untuk kedua metode; instruksi pembayaran default berlaku 30 menit.
+- Penolakan umum (`422`): masih ada setoran aktif. Khusus QRIS, request dapat ditolak jika QRIS statis tidak tersedia.
 
 ### 4.3 Setoran Aktif
 
@@ -395,7 +402,7 @@ Request tidak memerlukan body. Setoran hanya dapat dibatalkan oleh pemilik trans
 - Status berubah menjadi `dibatalkan`.
 - Setoran tidak lagi dikembalikan oleh `GET /api/setoran/aktif`.
 - Setoran tetap tersedia pada `GET /api/setoran/history` sebagai riwayat.
-- User dapat membuat setoran QRIS baru.
+- User dapat membuat setoran baru.
 
 Response sukses `200`:
 
@@ -410,6 +417,13 @@ Response sukses `200`:
     "jumlah": 50000,
     "kode_unik": 12,
     "jumlah_bayar": 50012,
+    "metode_pembayaran": "transfer_rekening",
+    "metode_pembayaran_label": "Transfer Rekening",
+    "rekening_transfer": {
+      "bank": "BCA",
+      "nomor_rekening": "0889333288",
+      "atas_nama": "KOPERASI SINARA ARTHA"
+    },
     "status": "dibatalkan",
     "status_label": "DIBATALKAN",
     "no_tabungan": "00123-01",
@@ -425,27 +439,256 @@ Kemungkinan response gagal:
 - `404`: ID tidak ditemukan atau transaksi bukan milik user yang login.
 - `422`: status berubah ketika proses pembatalan berlangsung.
 
-> Pembatalan pada sistem tidak dapat menarik kembali payload QRIS yang sudah ditampilkan. Aplikasi harus meminta konfirmasi user bahwa pembayaran belum dilakukan sebelum memanggil endpoint ini.
+> Pembatalan tidak dapat menarik kembali payload QRIS atau instruksi rekening yang sudah ditampilkan. Aplikasi harus meminta konfirmasi user bahwa pembayaran belum dilakukan sebelum memanggil endpoint ini.
 
 ### 4.8 Status Setoran
 
 | Nilai | Keterangan |
 |---|---|
-| `menunggu_pembayaran` | QRIS dibuat, belum ada klaim |
+| `menunggu_pembayaran` | Instruksi pembayaran dibuat, belum ada klaim |
 | `menunggu_verifikasi` | Klaim dikirim, menunggu admin |
 | `sedang_diperiksa` | Admin sedang mereview |
 | `perlu_revisi` | User harus kirim ulang klaim (lihat `catatan_verifikasi`) |
 | `disetujui` | Disetujui admin, menunggu posting |
 | `selesai` | Dana masuk ke tabungan |
 | `ditolak` | Ditolak (lihat `alasan_penolakan`) |
-| `kedaluwarsa` | QRIS lewat waktu tanpa pembayaran |
+| `kedaluwarsa` | Instruksi pembayaran lewat waktu tanpa klaim |
 | `dibatalkan` | Dibatalkan |
 
 ---
 
-## 5. Contoh Integrasi React Native
+## 5. Update API: Metode Transfer Rekening
 
-### 5.1 API client sederhana
+Section ini menjadi referensi migrasi aplikasi mobile setelah penambahan metode pembayaran transfer rekening.
+
+### 5.1 Ringkasan Perubahan Kontrak
+
+Tidak ada endpoint baru dan tidak ada perubahan HTTP method. Tujuh endpoint setoran tetap digunakan:
+
+| Method | Endpoint | Perubahan |
+|---|---|---|
+| `POST` | `/api/setoran` | Menerima field opsional `metode_pembayaran` |
+| `GET` | `/api/setoran/aktif` | Objek setoran memuat field metode dan rekening transfer |
+| `GET` | `/api/setoran/history` | Setiap objek memuat field metode dan rekening transfer |
+| `GET` | `/api/setoran/{id}` | Objek setoran memuat field metode dan rekening transfer |
+| `POST` | `/api/setoran/{id}/klaim` | Request tidak berubah; response memuat field baru |
+| `POST` | `/api/setoran/{id}/batalkan` | Request tidak berubah; response memuat field baru |
+| `GET` | `/api/setoran/rekening-options` | Tidak berubah |
+
+Field baru pada seluruh objek setoran:
+
+| Field | Tipe | Nilai |
+|---|---|---|
+| `metode_pembayaran` | string | `qris` atau `transfer_rekening` |
+| `metode_pembayaran_label` | string | `QRIS` atau `Transfer Rekening` |
+| `rekening_transfer` | object \| null | Detail rekening jika transfer; `null` jika QRIS |
+
+Schema `rekening_transfer`:
+
+```json
+{
+  "bank": "BCA",
+  "nomor_rekening": "0889333288",
+  "atas_nama": "KOPERASI SINARA ARTHA"
+}
+```
+
+Nomor rekening harus diperlakukan sebagai **string**, bukan number, agar angka nol di depan tidak hilang. Data rekening harus dibaca dari response API dan tidak di-hardcode di aplikasi mobile agar perubahan konfigurasi server otomatis diterapkan.
+
+### 5.2 Request Transfer Rekening
+
+```http
+POST /api/setoran
+Authorization: Bearer {token}
+Accept: application/json
+Content-Type: application/json
+```
+
+```json
+{
+  "id_tabungan": 12,
+  "jumlah": 50000,
+  "metode_pembayaran": "transfer_rekening"
+}
+```
+
+Response sukses `201`:
+
+```json
+{
+  "status": true,
+  "message": "Instruksi pembayaran berhasil dibuat.",
+  "data": {
+    "id": 78,
+    "nomor_setoran": "STR-20260808-654322",
+    "jenis_simpanan": "Simpanan Harian",
+    "jumlah": 50000,
+    "kode_unik": 17,
+    "jumlah_bayar": 50017,
+    "metode_pembayaran": "transfer_rekening",
+    "metode_pembayaran_label": "Transfer Rekening",
+    "rekening_transfer": {
+      "bank": "BCA",
+      "nomor_rekening": "0889333288",
+      "atas_nama": "KOPERASI SINARA ARTHA"
+    },
+    "qris_payload": null,
+    "qris_image_url": null,
+    "qris_dibuat_at": null,
+    "kedaluwarsa_at": "2026-08-08T10:30:00+00:00",
+    "status": "menunggu_pembayaran",
+    "status_label": "MENUNGGU PEMBAYARAN",
+    "waktu_klaim_bayar": null,
+    "nama_pembayar": null,
+    "referensi_pembayaran": null,
+    "catatan_pengguna": null,
+    "catatan_verifikasi": null,
+    "alasan_penolakan": null,
+    "dikirim_at": null,
+    "disetujui_at": null,
+    "ditolak_at": null,
+    "selesai_at": null,
+    "no_tabungan": "00123-01",
+    "created_at": "2026-08-08T10:00:00+00:00"
+  }
+}
+```
+
+Untuk transfer rekening:
+
+- Tampilkan `rekening_transfer.bank`, `rekening_transfer.nomor_rekening`, dan `rekening_transfer.atas_nama`.
+- Highlight `jumlah_bayar`; nominal ini wajib ditransfer tepat termasuk kode unik.
+- Jangan mencoba merender QR karena seluruh field QRIS bernilai `null`.
+- Setelah user membayar, gunakan endpoint klaim yang sama: `POST /api/setoran/{id}/klaim`.
+- Klaim akan masuk ke dashboard admin dan memicu notifikasi WhatsApp admin seperti klaim QRIS.
+
+### 5.3 Validasi dan Kompatibilitas
+
+- `metode_pembayaran` bersifat opsional agar mobile versi lama tetap berfungsi.
+- Request tanpa `metode_pembayaran` diproses sebagai `qris`.
+- Nilai selain `qris` atau `transfer_rekening` menghasilkan `422` dengan error pada field `metode_pembayaran`.
+- Transfer rekening tidak bergantung pada ketersediaan QRIS statis.
+- Status, endpoint klaim, upload bukti, revisi, pembatalan, dan proses verifikasi admin tidak berubah.
+
+Contoh validasi gagal:
+
+```json
+{
+  "status": false,
+  "message": "Validasi gagal",
+  "errors": {
+    "metode_pembayaran": ["Metode pembayaran tidak valid."]
+  }
+}
+```
+
+### 5.4 TypeScript Contract untuk React Native
+
+```typescript
+type MetodePembayaranSetoran = 'qris' | 'transfer_rekening';
+
+type RekeningTransfer = {
+  bank: string;
+  nomor_rekening: string;
+  atas_nama: string;
+};
+
+type Setoran = {
+  id: number;
+  nomor_setoran: string;
+  jenis_simpanan: string;
+  jumlah: number;
+  kode_unik: number;
+  jumlah_bayar: number;
+  metode_pembayaran: MetodePembayaranSetoran;
+  metode_pembayaran_label: string;
+  rekening_transfer: RekeningTransfer | null;
+  qris_payload: string | null;
+  qris_image_url: string | null;
+  qris_dibuat_at: string | null;
+  kedaluwarsa_at: string | null;
+  status: string;
+  status_label: string;
+  waktu_klaim_bayar: string | null;
+  nama_pembayar: string | null;
+  referensi_pembayaran: string | null;
+  catatan_pengguna: string | null;
+  catatan_verifikasi: string | null;
+  alasan_penolakan: string | null;
+  dikirim_at: string | null;
+  disetujui_at: string | null;
+  ditolak_at: string | null;
+  selesai_at: string | null;
+  no_tabungan: string | null;
+  created_at: string | null;
+};
+
+type SetoranResponse = {
+  status: true;
+  message: string;
+  data: Setoran;
+};
+```
+
+Contoh membuat setoran:
+
+```typescript
+async function buatSetoran(
+  idTabungan: number,
+  jumlah: number,
+  metodePembayaran: MetodePembayaranSetoran,
+) {
+  return api<SetoranResponse>('/setoran', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      id_tabungan: idTabungan,
+      jumlah,
+      metode_pembayaran: metodePembayaran,
+    }),
+  });
+}
+```
+
+Contoh percabangan UI:
+
+```tsx
+import {Image, Text, View} from 'react-native';
+
+function InstruksiPembayaran({setoran}: {setoran: Setoran}) {
+  if (setoran.metode_pembayaran === 'transfer_rekening') {
+    if (!setoran.rekening_transfer) {
+      return <Text>Informasi rekening tidak tersedia.</Text>;
+    }
+
+    return (
+      <View>
+        <Text>Bank: {setoran.rekening_transfer.bank}</Text>
+        <Text>No. Rekening: {setoran.rekening_transfer.nomor_rekening}</Text>
+        <Text>Atas Nama: {setoran.rekening_transfer.atas_nama}</Text>
+        <Text>Total Transfer: Rp{setoran.jumlah_bayar.toLocaleString('id-ID')}</Text>
+      </View>
+    );
+  }
+
+  if (setoran.qris_image_url) {
+    return (
+      <Image
+        source={{uri: setoran.qris_image_url}}
+        style={{width: 280, height: 280}}
+      />
+    );
+  }
+
+  return <Text>QRIS tidak tersedia.</Text>;
+}
+```
+
+---
+
+## 6. Contoh Integrasi React Native
+
+### 6.1 API client sederhana
 
 ```typescript
 const API_URL = 'https://app.example.com/api';
@@ -481,36 +724,26 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 ```
 
-### 5.2 Generate QRIS setoran
+### 6.2 Buat Setoran QRIS
 
 ```typescript
-type SetoranResponse = {
-  status: boolean;
-  message: string;
-  data: {
-    id: number;
-    nomor_setoran: string;
-    jumlah: number;
-    kode_unik: number;
-    jumlah_bayar: number;
-    qris_payload: string;
-    qris_image_url: string | null;
-    kedaluwarsa_at: string | null;
-    status: string;
-  };
-};
-
 const res = await api<SetoranResponse>('/setoran', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ id_tabungan: 12, jumlah: 50000 }),
+  body: JSON.stringify({
+    id_tabungan: 12,
+    jumlah: 50000,
+    metode_pembayaran: 'qris',
+  }),
 });
 
-// tampilkan gambar QRIS
-<Image source={{ uri: res.data.qris_image_url }} style={{ width: 280, height: 280 }} />
+if (res.data.qris_image_url) {
+  // tampilkan gambar QRIS
+  <Image source={{uri: res.data.qris_image_url}} style={{width: 280, height: 280}} />;
+}
 ```
 
-### 5.3 Ajukan penarikan dengan upload bukti
+### 6.3 Ajukan penarikan dengan upload bukti
 
 ```typescript
 const formData = new FormData();
@@ -536,7 +769,7 @@ const res = await api('/penarikan', {
 });
 ```
 
-### 5.4 Klaim pembayaran setoran
+### 6.4 Klaim pembayaran setoran
 
 ```typescript
 const formData = new FormData();
@@ -558,7 +791,7 @@ const res = await api(`/setoran/${setoranId}/klaim`, {
 });
 ```
 
-### 5.5 Batalkan setoran atau penarikan
+### 6.5 Batalkan setoran atau penarikan
 
 Endpoint pembatalan tidak memerlukan request body:
 
@@ -582,7 +815,7 @@ Tampilkan dialog konfirmasi sebelum menjalankan fungsi. Setelah sukses, refresh 
 
 ---
 
-## 6. Panduan Flow UI
+## 7. Panduan Flow UI
 
 ### Penarikan Simpanan
 
@@ -594,20 +827,21 @@ Tampilkan dialog konfirmasi sebelum menjalankan fungsi. Setelah sukses, refresh 
 6. Setelah pembatalan berhasil, refresh `/penarikan/aktif` dan `/penarikan/history`.
 7. Riwayat: `GET /penarikan/history` — tampilkan `status_label`, `alasan_penolakan` / `catatan_verifikasi` sesuai konteks, dan `referensi_transfer` + `waktu_transfer` bila sudah selesai.
 
-### Setoran Simpanan (QRIS)
+### Setoran Simpanan (QRIS / Transfer Rekening)
 
 1. `GET /setoran/rekening-options` → isi dropdown rekening.
-2. User pilih nominal → `POST /setoran`.
-3. Tampilkan QRIS (`qris_image_url`), nominal **`jumlah_bayar`** (highlight kode unik), dan countdown menuju `kedaluwarsa_at`.
-4. Selama status `menunggu_pembayaran`, tampilkan tombol "Batalkan Setoran" dengan konfirmasi bahwa pembayaran belum dilakukan → `POST /setoran/{id}/batalkan`.
-5. Tombol "Saya Sudah Bayar" → form klaim → `POST /setoran/{id}/klaim`.
-6. Jika setoran aktif berstatus `perlu_revisi` → tampilkan `catatan_verifikasi` dan izinkan kirim ulang klaim ke endpoint yang sama.
-7. Setelah pembatalan berhasil, refresh `/setoran/aktif` dan `/setoran/history`.
-8. Jika QRIS kedaluwarsa (`kedaluwarsa`), arahkan user generate setoran baru.
+2. User pilih nominal dan metode `qris` / `transfer_rekening` → `POST /setoran`.
+3. Percabangkan UI berdasarkan `metode_pembayaran`: tampilkan QRIS atau detail `rekening_transfer`.
+4. Tampilkan nominal **`jumlah_bayar`** (highlight kode unik) dan countdown menuju `kedaluwarsa_at` untuk kedua metode.
+5. Selama status `menunggu_pembayaran`, tampilkan tombol "Batalkan Setoran" dengan konfirmasi bahwa pembayaran belum dilakukan → `POST /setoran/{id}/batalkan`.
+6. Tombol "Saya Sudah Bayar" → form klaim → `POST /setoran/{id}/klaim`.
+7. Jika setoran aktif berstatus `perlu_revisi` → tampilkan `catatan_verifikasi` dan izinkan kirim ulang klaim ke endpoint yang sama.
+8. Setelah pembatalan berhasil, refresh `/setoran/aktif` dan `/setoran/history`.
+9. Jika instruksi kedaluwarsa (`kedaluwarsa`), arahkan user membuat setoran baru.
 
 ---
 
-## 7. Catatan Teknis
+## 8. Catatan Teknis
 
 - Semua tanggal memakai format ISO 8601 (`toIso8601String()`), mis. `2026-08-07T10:00:00+00:00`. Parsing dengan `new Date(value)` di JS.
 - Nilai nominal selalu integer Rupiah tanpa desimal.
@@ -615,3 +849,5 @@ Tampilkan dialog konfirmasi sebelum menjalankan fungsi. Setelah sukses, refresh 
 - Maksimal 1 transaksi aktif per rekening untuk masing-masing jenis (penarikan & setoran) — enforce juga di sisi UI dengan mengecek endpoint `/aktif`.
 - Gambar QRIS berada di disk publik (`/storage/...`) dan dapat di-cache. Bukti upload disimpan di disk privat server dan tidak dikembalikan sebagai URL.
 - Error validasi (`422`) berisi `errors` berbentuk map field → array pesan berbahasa Indonesia; cocok untuk ditampilkan langsung di bawah field form.
+- Gunakan `metode_pembayaran` sebagai sumber kebenaran untuk percabangan UI. Jangan mengandalkan field QRIS `null` sebagai penentu metode.
+- Nomor rekening transfer adalah string dan harus ditampilkan persis seperti response server.

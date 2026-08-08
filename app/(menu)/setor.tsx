@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Pressable,
   Alert,
   RefreshControl,
   Modal,
@@ -17,7 +18,7 @@ import {
   Platform,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, Stack } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
@@ -36,6 +37,14 @@ interface RekeningOption {
   saldo_akhir: number;
 }
 
+type MetodePembayaranSetoran = 'qris' | 'transfer_rekening';
+
+interface RekeningTransfer {
+  bank: string;
+  nomor_rekening: string;
+  atas_nama: string;
+}
+
 interface SetoranData {
   id: number;
   nomor_setoran: string;
@@ -43,6 +52,9 @@ interface SetoranData {
   jumlah: number;
   kode_unik: number;
   jumlah_bayar: number;
+  metode_pembayaran: MetodePembayaranSetoran;
+  metode_pembayaran_label: string;
+  rekening_transfer: RekeningTransfer | null;
   qris_payload: string | null;
   qris_image_url: string | null;
   kedaluwarsa_at: string | null;
@@ -101,6 +113,7 @@ const extractErrorMessage = (body: Record<string, unknown>): string => {
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
 export default function Setor() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -110,6 +123,8 @@ export default function Setor() {
   const [isAccountSelectorVisible, setIsAccountSelectorVisible] = useState(false);
 
   const [nominal, setNominal] = useState('');
+  const [metodePembayaran, setMetodePembayaran] =
+    useState<MetodePembayaranSetoran>('qris');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [activeSetoran, setActiveSetoran] = useState<SetoranData | null>(null);
@@ -182,7 +197,7 @@ export default function Setor() {
 
   useEffect(() => {
     checkLoginStatus();
-  }, []);
+  }, [checkLoginStatus]);
 
   useFocusEffect(
     useCallback(() => {
@@ -224,9 +239,19 @@ export default function Setor() {
     }
   }, [loadData]);
 
-  // ─── Generate QRIS ─────────────────────────────────────────────────────────
+  // ─── Navigasi kembali ─────────────────────────────────────────────────────
 
-  const handleGenerateQris = async () => {
+  const handleBackToDashboard = () => {
+    if (Platform.OS === 'android') {
+      router.replace('/(tabs)/dashboard');
+    } else {
+      router.push('/(tabs)/dashboard');
+    }
+  };
+
+  // ─── Buat instruksi pembayaran ─────────────────────────────────────────────
+
+  const handleBuatSetoran = async () => {
     if (!selectedAccount) {
       Alert.alert('Pilih Rekening', 'Silakan pilih rekening tujuan setoran.');
       return;
@@ -257,18 +282,22 @@ export default function Setor() {
         {
           method: 'POST',
           headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id_tabungan: selectedAccount.id, jumlah }),
+          body: JSON.stringify({
+            id_tabungan: selectedAccount.id,
+            jumlah,
+            metode_pembayaran: metodePembayaran,
+          }),
         }
       );
       const body = await response.json();
       if (!response.ok || body.status === false) {
-        Alert.alert('Gagal Generate QRIS', extractErrorMessage(body));
+        Alert.alert('Setoran Gagal', extractErrorMessage(body));
         return;
       }
       setActiveSetoran(body.data);
       setNominal('');
     } catch {
-      Alert.alert('Gagal Generate QRIS', 'Tidak dapat terhubung ke server.');
+      Alert.alert('Setoran Gagal', 'Tidak dapat terhubung ke server.');
     } finally {
       setIsSubmitting(false);
     }
@@ -363,7 +392,7 @@ export default function Setor() {
 
       Alert.alert(
         'Setoran Dibatalkan',
-        body.message ?? `Setoran QRIS ${nomorSetoran} berhasil dibatalkan. Anda dapat membuat setoran baru.`
+        body.message ?? `Setoran ${nomorSetoran} berhasil dibatalkan. Anda dapat membuat setoran baru.`
       );
     } catch {
       Alert.alert('Pembatalan Gagal', 'Tidak dapat terhubung ke server.');
@@ -374,9 +403,13 @@ export default function Setor() {
 
   const confirmBatalkanSetoran = () => {
     if (!activeSetoran) return;
+    const instruksi =
+      activeSetoran.metode_pembayaran === 'transfer_rekening'
+        ? 'instruksi transfer rekening'
+        : 'QRIS';
     Alert.alert(
       'Batalkan Setoran?',
-      `Pastikan Anda BELUM melakukan pembayaran QRIS ${activeSetoran.nomor_setoran}. QRIS yang sudah dibatalkan tidak dapat dipakai untuk pembayaran.`,
+      `Pastikan Anda BELUM melakukan pembayaran untuk setoran ${activeSetoran.nomor_setoran}. ${instruksi} yang sudah dibatalkan tidak dapat dipakai untuk pembayaran.`,
       [
         { text: 'Tidak', style: 'cancel' },
         {
@@ -495,16 +528,16 @@ export default function Setor() {
 
     const status = activeSetoran.status;
 
-    // QRIS kedaluwarsa: biarkan user buat setoran baru
+    // Instruksi kedaluwarsa: biarkan user buat setoran baru
     if (status === 'kedaluwarsa' || (status === 'menunggu_pembayaran' && sisaDetik === 0)) {
       return (
         <View style={[styles.card, styles.cardWarning]}>
           <View style={styles.statusCardHeader}>
             <Ionicons name="time-outline" size={24} color="#DC6C00" />
-            <Text style={styles.statusTitleWarning}>QRIS Kedaluwarsa</Text>
+            <Text style={styles.statusTitleWarning}>Instruksi Pembayaran Kedaluwarsa</Text>
           </View>
           <Text style={styles.statusDesc}>
-            QRIS untuk nomor setoran{' '}
+            Instruksi untuk nomor setoran{' '}
             <Text style={{ fontWeight: '700' }}>{activeSetoran.nomor_setoran}</Text>{' '}
             telah melewati batas waktu.
           </Text>
@@ -600,9 +633,10 @@ export default function Setor() {
       );
     }
 
-    // Menunggu pembayaran → tampilkan QRIS
+    // Menunggu pembayaran → tampilkan instruksi sesuai metode
     if (status === 'menunggu_pembayaran') {
       const isExpired = sisaDetik !== null && sisaDetik === 0;
+      const isTransfer = activeSetoran.metode_pembayaran === 'transfer_rekening';
 
       return (
         <View style={styles.card}>
@@ -613,8 +647,14 @@ export default function Setor() {
             end={{ x: 1, y: 0 }}
           >
             <View style={styles.cardHeaderContent}>
-              <Ionicons name="qr-code-outline" size={20} color="#FFFFFF" />
-              <Text style={styles.cardHeaderTitle}>Setoran QRIS</Text>
+              <Ionicons
+                name={isTransfer ? 'business-outline' : 'qr-code-outline'}
+                size={20}
+                color="#FFFFFF"
+              />
+              <Text style={styles.cardHeaderTitle}>
+                Setoran {activeSetoran.metode_pembayaran_label}
+              </Text>
             </View>
           </LinearGradient>
 
@@ -628,31 +668,52 @@ export default function Setor() {
               <Text style={[styles.value, styles.rekeningBadge]}>{activeSetoran.no_tabungan}</Text>
             </View>
 
-            {/* Gambar QRIS */}
-            <View style={styles.qrisImageContainer}>
-              {activeSetoran.qris_image_url ? (
-                <Image
-                  source={{ uri: activeSetoran.qris_image_url }}
-                  style={styles.qrisImage}
-                  resizeMode="contain"
-                />
-              ) : (
-                <View style={styles.qrisFallback}>
-                  <Ionicons name="qr-code" size={48} color="#CCCCCC" />
-                  <Text style={styles.qrisFallbackText}>
-                    Gambar QRIS tidak tersedia.{'\n'}Gunakan payload di bawah:
+            {isTransfer ? (
+              activeSetoran.rekening_transfer ? (
+                <View style={styles.transferAccountBox}>
+                  <View style={styles.transferAccountIcon}>
+                    <Ionicons name="business" size={28} color="#1F7900" />
+                  </View>
+                  <Text style={styles.transferBank}>{activeSetoran.rekening_transfer.bank}</Text>
+                  <Text style={styles.transferAccountNumber} selectable>
+                    {activeSetoran.rekening_transfer.nomor_rekening}
                   </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator>
-                    <Text style={styles.qrisPayloadText} selectable>
-                      {activeSetoran.qris_payload}
-                    </Text>
-                  </ScrollView>
+                  <Text style={styles.transferAccountName}>
+                    a.n. {activeSetoran.rekening_transfer.atas_nama}
+                  </Text>
+                  <Text style={styles.transferNote}>
+                    Transfer tepat sesuai total pembayaran agar setoran mudah diverifikasi.
+                  </Text>
                 </View>
-              )}
-            </View>
+              ) : (
+                <View style={styles.instructionUnavailable}>
+                  <Ionicons name="warning-outline" size={24} color="#DC6C00" />
+                  <Text style={styles.instructionUnavailableText}>
+                    Informasi rekening transfer tidak tersedia. Muat ulang halaman atau hubungi layanan bantuan.
+                  </Text>
+                </View>
+              )
+            ) : (
+              <View style={styles.qrisImageContainer}>
+                {activeSetoran.qris_image_url ? (
+                  <Image
+                    source={{ uri: activeSetoran.qris_image_url }}
+                    style={styles.qrisImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={styles.qrisFallback}>
+                    <Ionicons name="qr-code" size={48} color="#CCCCCC" />
+                    <Text style={styles.qrisFallbackText}>
+                      QRIS tidak tersedia. Silakan muat ulang halaman atau hubungi layanan bantuan.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
 
-            {/* Tombol Download QRIS — hanya jika ada URL gambar dan belum expired */}
-            {activeSetoran.qris_image_url && !isExpired && (
+            {/* Tombol Download QRIS — hanya untuk QRIS dengan URL gambar */}
+            {!isTransfer && activeSetoran.qris_image_url && !isExpired && (
               <TouchableOpacity
                 style={[styles.downloadButton, isDownloading && styles.downloadButtonDisabled]}
                 onPress={() =>
@@ -710,7 +771,7 @@ export default function Setor() {
               <View style={[styles.countdownRow, { backgroundColor: '#FFF3CD' }]}>
                 <Ionicons name="warning-outline" size={16} color="#DC6C00" />
                 <Text style={[styles.countdownText, { color: '#DC6C00' }]}>
-                  QRIS telah kedaluwarsa
+                  Instruksi pembayaran telah kedaluwarsa
                 </Text>
               </View>
             )}
@@ -781,6 +842,10 @@ export default function Setor() {
         <View style={styles.infoRow}>
           <Text style={styles.label}>Nominal</Text>
           <Text style={styles.value}>{formatCurrency(activeSetoran.jumlah)}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Metode Pembayaran</Text>
+          <Text style={styles.value}>{activeSetoran.metode_pembayaran_label}</Text>
         </View>
         <Text style={styles.infoNote}>
           Setoran sedang diproses oleh admin. Anda akan mendapat notifikasi setelah diverifikasi.
@@ -879,9 +944,53 @@ export default function Setor() {
               ))}
             </View>
 
+            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Metode Pembayaran</Text>
+            <View style={styles.paymentMethodRow}>
+              {([
+                { value: 'qris', label: 'QRIS', icon: 'qr-code-outline' },
+                {
+                  value: 'transfer_rekening',
+                  label: 'Transfer Rekening',
+                  icon: 'business-outline',
+                },
+              ] as const).map((method) => {
+                const isSelected = metodePembayaran === method.value;
+                return (
+                  <TouchableOpacity
+                    key={method.value}
+                    style={[
+                      styles.paymentMethodButton,
+                      isSelected && styles.paymentMethodButtonActive,
+                    ]}
+                    onPress={() => setMetodePembayaran(method.value)}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons
+                      name={method.icon}
+                      size={22}
+                      color={isSelected ? '#1F7900' : '#777777'}
+                    />
+                    <Text
+                      style={[
+                        styles.paymentMethodText,
+                        isSelected && styles.paymentMethodTextActive,
+                      ]}
+                    >
+                      {method.label}
+                    </Text>
+                    <Ionicons
+                      name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                      size={18}
+                      color={isSelected ? '#1F7900' : '#AAAAAA'}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
             <TouchableOpacity
               style={[styles.submitButton, (!nominal || isSubmitting) && styles.submitButtonDisabled]}
-              onPress={handleGenerateQris}
+              onPress={handleBuatSetoran}
               disabled={!nominal || isSubmitting}
             >
               <LinearGradient
@@ -894,8 +1003,12 @@ export default function Setor() {
                   <ActivityIndicator color="#FFF" />
                 ) : (
                   <>
-                    <Ionicons name="qr-code-outline" size={18} color="#FFF" />
-                    <Text style={[styles.actionButtonText, { marginLeft: 8 }]}>Buat QRIS</Text>
+                    <Ionicons
+                      name={metodePembayaran === 'qris' ? 'qr-code-outline' : 'business-outline'}
+                      size={18}
+                      color="#FFF"
+                    />
+                    <Text style={[styles.actionButtonText, { marginLeft: 8 }]}>Lanjutkan Pembayaran</Text>
                   </>
                 )}
               </LinearGradient>
@@ -916,6 +1029,7 @@ export default function Setor() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -930,10 +1044,44 @@ export default function Setor() {
             />
           }
         >
-          {/* Header */}
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>Setoran Simpanan</Text>
-            <Text style={styles.headerSubtitle}>via QRIS</Text>
+          {/* Header — layout mengikuti dashboard */}
+          <View style={styles.header}>
+            <LinearGradient
+              colors={['#155D00', '#1F7900', '#0D4A00']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0.8 }}
+              style={styles.headerGradient}
+            >
+              <View style={styles.headerTop}>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={handleBackToDashboard}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="arrow-back" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <View style={styles.userInfo}>
+                  <Text style={styles.headerTitle}>Setoran Simpanan</Text>
+                  <Text style={styles.headerSubtitle}>QRIS atau Transfer Rekening</Text>
+                </View>
+                <View style={styles.headerIcons}>
+                  <View style={styles.iconGroup}>
+                    <Pressable
+                      style={[styles.iconButton, styles.iconButtonLeft]}
+                      android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                    >
+                      <Ionicons name="notifications-outline" size={24} color="#FFF" />
+                    </Pressable>
+                    <Pressable
+                      style={[styles.iconButton, styles.iconButtonRight]}
+                      android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                    >
+                      <Ionicons name="headset-outline" size={24} color="#FFF" />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            </LinearGradient>
           </View>
 
           {/* Konten */}
@@ -1088,16 +1236,65 @@ export default function Setor() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
 
-  headerContainer: {
-    backgroundColor: '#1F7900',
-    paddingTop: 24,
-    paddingBottom: 32,
-    paddingHorizontal: 20,
+  header: {
+    width: '100%',
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
-  headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  headerGradient: {
+    paddingTop: 24,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '600', color: '#FFFFFF' },
+  headerSubtitle: { fontSize: 11, fontStyle: 'italic', color: '#F5F5F5', marginTop: 8 },
+  headerIcons: {
+    flexDirection: 'row',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    overflow: 'hidden',
+    marginRight: -12,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconButtonLeft: {
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  iconButtonRight: {
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+  },
 
-  content: { padding: 16, marginTop: -16 },
+  content: { padding: 16, marginTop: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -1184,6 +1381,24 @@ const styles = StyleSheet.create({
   quickAmountText: { fontSize: 12, color: '#1F7900', fontWeight: '500' },
   quickAmountTextActive: { color: '#FFFFFF' },
 
+  paymentMethodRow: { gap: 10 },
+  paymentMethodButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    padding: 14,
+    backgroundColor: '#FAFAFA',
+  },
+  paymentMethodButtonActive: {
+    borderColor: '#1F7900',
+    backgroundColor: '#E7F7ED',
+  },
+  paymentMethodText: { flex: 1, fontSize: 14, fontWeight: '600', color: '#555555' },
+  paymentMethodTextActive: { color: '#1F7900' },
+
   submitButton: { marginTop: 16, borderRadius: 8, overflow: 'hidden' },
   submitButtonDisabled: { opacity: 0.5 },
   gradientButton: {
@@ -1228,6 +1443,51 @@ const styles = StyleSheet.create({
   },
   qrisFallbackText: { fontSize: 12, color: '#666', textAlign: 'center', marginVertical: 8 },
   qrisPayloadText: { fontSize: 10, color: '#333', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
+
+  transferAccountBox: {
+    alignItems: 'center',
+    backgroundColor: '#F7FBF5',
+    borderWidth: 1,
+    borderColor: '#CDE7C5',
+    borderRadius: 12,
+    padding: 18,
+    marginVertical: 16,
+  },
+  transferAccountIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E7F7ED',
+    marginBottom: 10,
+  },
+  transferBank: { fontSize: 16, fontWeight: '700', color: '#333333' },
+  transferAccountNumber: {
+    fontSize: 25,
+    fontWeight: '800',
+    color: '#1F7900',
+    letterSpacing: 1,
+    marginTop: 5,
+  },
+  transferAccountName: { fontSize: 13, color: '#555555', marginTop: 4 },
+  transferNote: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 14,
+  },
+  instructionUnavailable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    marginVertical: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFF3CD',
+  },
+  instructionUnavailableText: { flex: 1, fontSize: 13, lineHeight: 18, color: '#856404' },
 
   jumlahBayarBox: {
     backgroundColor: '#E7F7ED',

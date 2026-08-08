@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Pressable,
   Alert,
   RefreshControl,
   Modal,
@@ -16,7 +17,7 @@ import {
   Platform,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, Stack } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getApiBaseUrl, API_ENDPOINTS } from '../config/api';
 import LoginRequired from '../../components/LoginRequired';
@@ -89,6 +90,7 @@ const extractErrorMessage = (body: Record<string, unknown>): string => {
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
 export default function TarikTunai() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -193,6 +195,16 @@ export default function TarikTunai() {
       setRefreshing(false);
     }
   }, [loadData]);
+
+  // ─── Navigasi kembali ─────────────────────────────────────────────────────
+
+  const handleBackToDashboard = () => {
+    if (Platform.OS === 'android') {
+      router.replace('/(tabs)/dashboard');
+    } else {
+      router.push('/(tabs)/dashboard');
+    }
+  };
 
   // ─── Validasi & Submit Penarikan ───────────────────────────────────────────
 
@@ -751,6 +763,7 @@ export default function TarikTunai() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -766,10 +779,44 @@ export default function TarikTunai() {
           }
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>Penarikan Simpanan</Text>
-            <Text style={styles.headerSubtitle}>Transfer ke rekening bank Anda</Text>
+          {/* Header — layout mengikuti dashboard */}
+          <View style={styles.header}>
+            <LinearGradient
+              colors={['#155D00', '#1F7900', '#0D4A00']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0.8 }}
+              style={styles.headerGradient}
+            >
+              <View style={styles.headerTop}>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={handleBackToDashboard}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="arrow-back" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <View style={styles.userInfo}>
+                  <Text style={styles.headerTitle}>Penarikan Simpanan</Text>
+                  <Text style={styles.headerSubtitle}>Transfer ke rekening bank Anda</Text>
+                </View>
+                <View style={styles.headerIcons}>
+                  <View style={styles.iconGroup}>
+                    <Pressable
+                      style={[styles.iconButton, styles.iconButtonLeft]}
+                      android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                    >
+                      <Ionicons name="notifications-outline" size={24} color="#FFF" />
+                    </Pressable>
+                    <Pressable
+                      style={[styles.iconButton, styles.iconButtonRight]}
+                      android_ripple={{ color: 'rgba(255, 255, 255, 0.2)', borderless: true }}
+                    >
+                      <Ionicons name="headset-outline" size={24} color="#FFF" />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            </LinearGradient>
           </View>
 
           {/* Konten */}
@@ -935,16 +982,65 @@ const infoRowStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
 
-  headerContainer: {
-    backgroundColor: '#1F7900',
-    paddingTop: 24,
-    paddingBottom: 32,
-    paddingHorizontal: 20,
+  header: {
+    width: '100%',
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
-  headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  headerGradient: {
+    paddingTop: 24,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '600', color: '#FFFFFF' },
+  headerSubtitle: { fontSize: 11, fontStyle: 'italic', color: '#F5F5F5', marginTop: 8 },
+  headerIcons: {
+    flexDirection: 'row',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    overflow: 'hidden',
+    marginRight: -12,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconButtonLeft: {
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  iconButtonRight: {
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+  },
 
-  content: { padding: 16, marginTop: -16 },
+  content: { padding: 16, marginTop: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
